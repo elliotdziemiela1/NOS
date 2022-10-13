@@ -21,7 +21,7 @@ spin_lock new_lock(){
     ret.locked = 1;
     return ret;
 }
-void spin_lock_irsave(spin_lock & lock, unsigned long & flags){
+void spin_lock_irsave(spin_lock * lock, unsigned long * flags){
     CLI();
     GET_FLAGS(flags);
     while (1){
@@ -31,7 +31,7 @@ void spin_lock_irsave(spin_lock & lock, unsigned long & flags){
         }
     }
 }
-void spin_unlock_irrestore(spin_lock & lock, unsigned long & flags){
+void spin_unlock_irrestore(spin_lock * lock, unsigned long * flags){
     STI();
     SET_FLAGS(flags);
     lock.locked = 0;
