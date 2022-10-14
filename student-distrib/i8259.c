@@ -48,12 +48,12 @@ void enable_irq(uint32_t irq_num) {
     int i;
 
     if (irq_num <= 7){ // irq lies on pic 1 (IRQs 0-7)
-        for (i = 0; i < irq_num; i++;)
+        for (i = 0; i < irq_num; i++)
             irq = irq<<1;
         irq ^= irq; // flips bits of irq (should now be seven 1s and one 0)
         master_mask &= irq;
     } else if (irq_num <= 15){ // irq lies on pic 2 (IRQs 8-15)
-        for (i = 0; i < irq_num-8; i++;)
+        for (i = 0; i < irq_num-8; i++)
             irq = irq<<1;
         irq ^= irq; // flips bits of irq (should now be seven 1s and one 0)
         slave_mask &= irq;
@@ -67,11 +67,11 @@ void disable_irq(uint32_t irq_num) {
     int i;
 
     if (irq_num <= 7){ // irq lies on pic 1 (IRQs 0-7)
-        for (i = 0; i < irq_num; i++;)
+        for (i = 0; i < irq_num; i++)
             irq = irq<<1;
         master_mask |= irq;
     } else if (irq_num <= 15){ // irq lies on pic 2 (IRQs 8-15)
-        for (i = 0; i < irq_num-8; i++;)
+        for (i = 0; i < irq_num-8; i++)
             irq = irq<<1;
         slave_mask |= irq;
     }

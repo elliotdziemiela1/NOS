@@ -6,11 +6,11 @@
                                     :"=m" (X)         \
                                     ); 
 #define SET_FLAGS(X) asm volatile ("pushl %0;\
-                                    popfl %%eax;"       \
-                                    : :"=m" (X)         \
+                                    popf"       \
+                                    : :"r" (X)         \
                                     ); 
-#define CLI() asm volatile ("cli;"\); 
-#define STI() asm volatile ("sti;"\); 
+#define CLI() asm volatile ("cli;"); 
+#define STI() asm volatile ("sti;"); 
 
 
 spin_lock new_lock(){
