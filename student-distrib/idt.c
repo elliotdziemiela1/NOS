@@ -1,6 +1,7 @@
-#include "x86_desc.h"
+#include "idt.h"
 #define KERNEL_CODE_SEGMENT 0x0
 
+void init_idt(){
 // irq0 = rtc
 gate_desc_t irq0;
 irq0.seg_selector = KERNEL_CODE_SEGMENT;
@@ -154,7 +155,14 @@ simdfp.seg_selector = KERNEL_CODE_SEGMENT;
 simdfp.dpl = 0; //privilege level =0 (kernel)
 SET_IDT_ENTRY(simdfp, &simdfpHandler);
 idt[0x13] = simdfp;
+}
 
+// void initiialize_IDT(){
+//     int i;
+//     for(i = 0; i < NUM_VEC; i++){
+//         idt[i].seg_selector = KERNEL_CODE_SEGMENT;
+//     }
+// }
 
 void rtcHandler(){printf("rtc interrupt handler called");while(1){}}
 void kbHandler(){printf("keyboard interrupt handler called");while(1){};}
