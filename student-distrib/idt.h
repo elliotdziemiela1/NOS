@@ -3,6 +3,6 @@
 
 #include "x86_desc.h"
 
-extern void initialize_idt();
+extern void init_idt();
 
 #endif
