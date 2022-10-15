@@ -1,5 +1,5 @@
 #include "x86_desc.h"
-#define KERNEL_CODE_SEGMENT 0x0;
+#define KERNEL_CODE_SEGMENT 0x0
 
 // irq0 = rtc
 gate_desc_t irq0;
