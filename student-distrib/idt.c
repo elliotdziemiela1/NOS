@@ -1,5 +1,5 @@
 #include "x86_desc.h"
-#define KERNEL_CODE_SEGMENT 0x0
+#define KERNEL_CODE_SEGMENT 0x0;
 
 // irq0 = rtc
 gate_desc_t irq0;
@@ -18,6 +18,7 @@ idt[0x21] = irq1;
 // system calls
 gate_desc_t sysCall;
 sysCall.seg_selector = KERNEL_CODE_SEGMENT;
+sysCall.dpl = 3; //privilege level =0 (user)
 SET_IDT_ENTRY(sysCall, &sysCallHandler);
 idt[0x80] = sysCall;
 
