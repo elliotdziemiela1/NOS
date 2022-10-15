@@ -145,7 +145,7 @@ do {                                                            \
 } while (0)
 
 /* An interrupt descriptor entry (goes into the IDT) */
-typedef union idt_desc_t {
+typedef union gate_desc_t {
     uint32_t val[2];
     struct {
         uint16_t offset_15_00;
@@ -160,10 +160,10 @@ typedef union idt_desc_t {
         uint32_t present   : 1;
         uint16_t offset_31_16;
     } __attribute__ ((packed));
-} idt_desc_t;
+} gate_desc_t;
 
 /* The IDT itself (declared in x86_desc.S */
-extern idt_desc_t idt[NUM_VEC];
+extern gate_desc_t idt[NUM_VEC];
 /* The descriptor used to load the IDTR */
 extern x86_desc_t idt_desc_ptr;
 

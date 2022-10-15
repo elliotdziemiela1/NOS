@@ -43,6 +43,12 @@ void i8259_init(void) {
 }
 
 /* Enable (unmask) the specified IRQ by setting it's bit in the mask to 0*/
+/* Masking and unmasking of interrupts on an 8259A outside of the interrupt 
+* sequence requires only a single write to the second port (0x21 or 0xA1), 
+* and the byte written to this port specifies which interrupts should be masked. 
+* - course notes
+*/
+/* I dont think I need to acquire the lock for enable/disable since data writing is atomic*/
 void enable_irq(uint32_t irq_num) {
     uint8_t irq = 1;
     int i;
@@ -52,13 +58,16 @@ void enable_irq(uint32_t irq_num) {
             irq = irq<<1;
         irq ^= irq; // flips bits of irq (should now be seven 1s and one 0)
         master_mask &= irq;
+        outb(master_mask, MASTER_8259_PORT+1); // mask all of PIC 1. +1 means data port. 
     } else if (irq_num <= 15){ // irq lies on pic 2 (IRQs 8-15)
         for (i = 0; i < irq_num-8; i++)
             irq = irq<<1;
         irq ^= irq; // flips bits of irq (should now be seven 1s and one 0)
         slave_mask &= irq;
+        outb(slave_mask, SLAVE_8259_PORT+1); // mask all of PIC 2. +1 means data port.
     }
     // could write code to raise exception if >15 or if irq is already enabled
+    
 }
 
 /* Disable (mask) the specified IRQ by setting it's bit in the mask to 1*/
@@ -70,13 +79,18 @@ void disable_irq(uint32_t irq_num) {
         for (i = 0; i < irq_num; i++)
             irq = irq<<1;
         master_mask |= irq;
+        outb(master_mask, MASTER_8259_PORT+1); // mask all of PIC 1. +1 means data port. 
     } else if (irq_num <= 15){ // irq lies on pic 2 (IRQs 8-15)
         for (i = 0; i < irq_num-8; i++)
             irq = irq<<1;
         slave_mask |= irq;
+        outb(slave_mask, SLAVE_8259_PORT+1); // mask all of PIC 2. +1 means data port.
     }
 }
 
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num) {
+    if (irq_num >= 8)
+		outb(SLAVE_8259_PORT,0x20); // 0x20 is eoi command code for PIC
+	outb(MASTER_8259_PORT,0x20);
 }

@@ -1,16 +1,5 @@
 #include "synch.h"
-
-#define GET_FLAGS(X) asm volatile ("pushfl;\
-                                    popl %%eax;       \
-                                    movl %%eax, %0;"  \
-                                    :"=m" (X)         \
-                                    ); 
-#define SET_FLAGS(X) asm volatile ("pushl %0;\
-                                    popf"       \
-                                    : :"r" (X)         \
-                                    ); 
-#define CLI() asm volatile ("cli;"); 
-#define STI() asm volatile ("sti;"); 
+#include "lib.h"
 
 
 spin_lock new_lock(){
@@ -19,8 +8,7 @@ spin_lock new_lock(){
     return ret;
 }
 void spin_lock_irsave(spin_lock * lock, unsigned long * flags){
-    CLI();
-    GET_FLAGS(flags);
+    cli_and_save(flags);
     while (1){
         if (!lock->locked){
             lock->locked=1;
@@ -29,7 +17,7 @@ void spin_lock_irsave(spin_lock * lock, unsigned long * flags){
     }
 }
 void spin_unlock_irrestore(spin_lock * lock, unsigned long flags){
-    STI();
-    SET_FLAGS(flags);
+    sti();
+    restore_flags(flags);
     lock->locked = 0;
 }

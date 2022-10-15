@@ -41,6 +41,9 @@ keep_going:
     movw    %cx, %fs
     movw    %cx, %gs
 
+    pushl idt_desc_ptr #pushes the idt descriptor ("x86_desc_t") as argument for lidt
+    call lidt
+
     # Push the parameters that entry() expects (see kernel.c):
     # eax = multiboot magic
     # ebx = address of multiboot info struct
