@@ -8,6 +8,7 @@
 #include "i8259.h"
 #include "debug.h"
 #include "tests.h"
+#include "idt.h"
 
 #define RUN_TESTS
 
@@ -136,11 +137,20 @@ void entry(unsigned long magic, unsigned long addr) {
         ltr(KERNEL_TSS);
     }
 
+    /* init idt */
+    init_idt();
+    lidt(idt_desc_ptr);
+
     /* Init the PIC */
     i8259_init();
 
+    // MAKE SURE TO INSTALL HANDLERS BEFORE DOING THIS
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
+    rtc_init();
+    enable_irq(8); // 8 is irq for rtc
+    keyboard_init();
+    enable_irq(1); // 1 is irq for keyboard
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your

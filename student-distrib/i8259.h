@@ -39,4 +39,9 @@ void disable_irq(uint32_t irq_num);
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num);
 
+/* initialize the rtc */
+void rtc_init();
+/* initialize the keyboard */
+void keyboard_init();
+
 #endif /* _I8259_H */
