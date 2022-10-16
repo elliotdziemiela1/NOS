@@ -90,7 +90,12 @@ void disable_irq(uint32_t irq_num) {
 
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num) {
-    if (irq_num >= 8)
-		outb(SLAVE_8259_PORT,0x20); // 0x20 is eoi command code for PIC
-	outb(MASTER_8259_PORT,0x20);
+    if (irq_num < 8){
+        outb(EOI|irq_num, MASTER_8259_PORT);
+    } else {
+        irq_num = irq_num - 8;
+        outb(EOI | irq_num, SLAVE_8259_PORT);
+        outb(EOI | 2, MASTER_8259_PORT);
+    }
+    
 }
