@@ -1,0 +1,12 @@
+
+1. Problem: OS image not booting
+   Symptom: boot loop keeps running
+   Time to fix problem: 2 hours
+   Action done to fix problem: devel being used was broken so used another group member's devel
+
+2. Problem: RTC tests not working
+   Symptom: screen of characters is not blinking 
+   Time to fix problem: 3 hours and counting
+   Action done to fix problem: 
+
+
