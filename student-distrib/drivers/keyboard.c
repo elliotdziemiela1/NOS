@@ -20,7 +20,7 @@ char scanTable[0xff];
 void keyboard_init(){
     insert_handler(KB_IRQ,&keyboard_handler,0);
     int i;
-    for (i = 0; i < 0xff; i++){
+    for (i = 0; i < 0xff; i++){ //0xFF for 256 entries
         scanTable[i] = '!';
     }
     //numbers
@@ -79,7 +79,7 @@ void keyboard_handler(){
     cli();
     uint8_t tmp = inb(KB_DATAPORT);
     disable_irq(KB_IRQ);
-    if ((tmp <= 0x0b) && (tmp >= 0x02) ||
+    if ((tmp <= 0x0b) && (tmp >= 0x02) ||  //checking bounds of the scan code according to init above
         (tmp <= 0x19) && (tmp >= 0x10) ||
         (tmp <= 0x26) && (tmp >= 0x1e) ||
         (tmp <= 0x32) && (tmp >= 0x2c)){

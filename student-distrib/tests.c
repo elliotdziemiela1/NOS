@@ -87,7 +87,7 @@ int page_fault(){
  * Outputs: PASS/FAIL
  * Side Effects: None
  * Coverage: RTC handling
- * Files: x86_desc.h
+ * Files: 
  */
 int rtc_test(){
 	TEST_HEADER;
@@ -109,6 +109,6 @@ int rtc_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("idt_test", rtc_test());
+	TEST_OUTPUT("divide_zero", divide_zero());
 	// launch your tests here
 }

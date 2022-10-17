@@ -29,8 +29,8 @@ void rtc_init(){ // MAKE SURE TO INSTALL RTC HANDLER BEFORE CALLING THIS FUNCTIO
     outb(prev | 0x40, RTC_INDEX_PORT+1);	// write the previous value ORed with 0x40. This turns on bit 6 of register B
 
 
-    rate &= 0;
-    rate = 6;
+    // rate &= 0;
+    // rate = 6;
    
     // outb(0x8A, RTC_INDEX_PORT);		// x8B: select register B, and disable NMI
     // prev= inb(RTC_INDEX_PORT+1);	// x71: read the current value of register B
@@ -54,10 +54,10 @@ void rtc_init(){ // MAKE SURE TO INSTALL RTC HANDLER BEFORE CALLING THIS FUNCTIO
 void rtc_handler(){
 
     disable_irq(RTC_IRQ);
-    outb(0x0C, RTC_INDEX_PORT);
-    inb(0x71);
+    outb(0x0C, RTC_INDEX_PORT); //selects registers C
+    inb(RTC_INDEX_PORT + 1); // just throw away contents
     printf("rtc is working");
-    test_interrupts();
+    //test_interrupts();
     
 
     send_eoi(RTC_IRQ);

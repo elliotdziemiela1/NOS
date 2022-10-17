@@ -16,6 +16,8 @@ spin_lock pic_lock;
 
 
 /* Initialize the 8259 PIC */
+//No inputs or outputs
+//Side effects is that it initialzies the PIC
 void i8259_init(void) {
     pic_lock = new_lock();
     unsigned long flags;
@@ -79,7 +81,7 @@ void disable_irq(uint32_t irq_num) {
         master_mask |= irq;
         outb(master_mask, MASTER_8259_PORT+1); // mask all of PIC 1. +1 means data port. 
     } else if (irq_num <= 15){ // irq lies on pic 2 (IRQs 8-15)
-        for (i = 0; i < irq_num-8; i++)
+        for (i = 0; i < irq_num-8; i++) //go to next irq number
             irq = irq<<1;
         slave_mask |= irq;
         outb(slave_mask, SLAVE_8259_PORT+1); // mask all of PIC 2. +1 means data port.
@@ -91,9 +93,9 @@ void send_eoi(uint32_t irq_num) {
     if (irq_num < 8){
         outb(EOI|irq_num, MASTER_8259_PORT);
     } else {
-        irq_num = irq_num - 8;
-        outb(EOI | irq_num, SLAVE_8259_PORT);
-        outb(EOI | 2, MASTER_8259_PORT);
+        irq_num = irq_num - 8; //irq number for rtc
+        outb(EOI | irq_num, SLAVE_8259_PORT); 
+        outb(EOI | 2, MASTER_8259_PORT); 
     }
 
     // if(irq_num >= 8)
