@@ -10,7 +10,7 @@
 char scanTable[0xff];
 
 void keyboard_init(){
-    insert_handler(KB_IRQ,&keyboard_handler);
+    insert_handler(KB_IRQ,&keyboard_handler,0);
     int i;
     for (i = 0; i < 0xff; i++){
         scanTable[i] = '!';
@@ -57,9 +57,9 @@ void keyboard_init(){
 
 void keyboard_handler(){
     cli();
-    disable_irq(KB_IRQ);
     uint8_t tmp = inb(KB_DATAPORT);
-    printf(scanTable[tmp]);
+    disable_irq(KB_IRQ);
+    putc(scanTable[tmp]);
     send_eoi(KB_IRQ);
     enable_irq(KB_IRQ);
     sti();

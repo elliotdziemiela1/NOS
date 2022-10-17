@@ -52,12 +52,12 @@ void i8259_init(void) {
 void enable_irq(uint32_t irq_num) {
     uint8_t irq = 1;
     int i;
-
+    if (irq_num < 0)
+        return;
     if (irq_num <= 7){ // irq lies on pic 1 (IRQs 0-7)
         for (i = 0; i < irq_num; i++)
             irq = irq<<1;
-        irq ^= irq; // flips bits of irq (should now be seven 1s and one 0)
-        master_mask &= irq;
+        master_mask ^= irq; 
         outb(master_mask, MASTER_8259_PORT+1); // mask all of PIC 1. +1 means data port. 
     } else if (irq_num <= 15){ // irq lies on pic 2 (IRQs 8-15)
         for (i = 0; i < irq_num-8; i++)

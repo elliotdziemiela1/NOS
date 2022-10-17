@@ -3,7 +3,7 @@
 #define KERNEL_CODE_SEGMENT 0x0
 
 // ptr = address of handler function to insert into IDT.
-void insert_handler(int irqNum, uint32_t ptr);
+void insert_handler(int irqNum, uint32_t ptr, int dpl); // REMEMBER TO CALL THIS IN KERNEL.c
 
 void dummyrtcHandler();
 void dummykbHandler();

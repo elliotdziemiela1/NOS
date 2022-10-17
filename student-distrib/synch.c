@@ -4,7 +4,7 @@
 
 spin_lock new_lock(){
     spin_lock ret;
-    ret.locked = 1;
+    ret.locked = 0;
     return ret;
 }
 void spin_lock_irsave(spin_lock * lock, unsigned long * flags){

@@ -45,6 +45,24 @@ int idt_test(){
 	return result;
 }
 
+
+int divide_zero(){
+	TEST_HEADER;
+
+	int result = FAIL;
+	asm volatile("int $0");
+	result = PASS;
+	return result;
+}
+int page_fault(){
+	TEST_HEADER;
+
+	int result = FAIL;
+	asm volatile("int $14");
+	result = PASS;
+	return result;
+}
+
 // add more tests here
 
 /* Checkpoint 2 tests */
@@ -55,6 +73,6 @@ int idt_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("idt_test", idt_test());
+	TEST_OUTPUT("idt_test", page_fault());
 	// launch your tests here
 }

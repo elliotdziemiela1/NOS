@@ -2,11 +2,10 @@
 #include "types.h"
 #include "lib.h"
 #include "idt.h"
-#define KERNEL_CODE_SEGMENT 0x0
 
 // ptr = address of handler function to insert into IDT.
-void insert_handler(int irqNum, uint32_t ptr){
-    SET_IDT_ENTRY(idt[0x20 + irqNum], ptr); //x20 = start of irqs in idt
+void insert_handler(int irqNum, uint32_t ptr, int dpl){
+    SET_IDT_ENTRY(idt[0x20 + irqNum], ptr, dpl); //x20 = start of irqs in idt
 }
 
 void dummyrtcHandler(){printf("rtc interrupt handler called");while(1){}}
@@ -33,158 +32,73 @@ void mcHandler(){printf("Exception: Machine Check");while(1){};}
 void simdfpHandler(){printf("Exception: SIMD Floating-Point");while(1){};}
 
 void init_idt(){
-    gate_desc_t irq8;
-    irq8.seg_selector = KERNEL_CODE_SEGMENT;
-    irq8.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(irq8, &dummyrtcHandler);
-    idt[0x21] = irq8;
+    // irq8 = rtc
+    SET_IDT_ENTRY(idt[0x28], &dummyrtcHandler, 0);
 
     // irq1 = keyboard
-    gate_desc_t irq1;
-    irq1.seg_selector = KERNEL_CODE_SEGMENT;
-    irq1.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(irq1, &dummykbHandler);
-    idt[0x21] = irq1;
+    SET_IDT_ENTRY(idt[0x21], &dummykbHandler, 0);
 
     // system calls
-    gate_desc_t sysCall;
-    sysCall.seg_selector = KERNEL_CODE_SEGMENT;
-    sysCall.dpl = 3; //privilege level =0 (user)
-    SET_IDT_ENTRY(sysCall, &sysCallHandler);
-    idt[0x80] = sysCall;
+    SET_IDT_ENTRY(idt[0x80], &sysCallHandler, 3);
 
     // divide by 0 exception
-    gate_desc_t zero;
-    zero.seg_selector = KERNEL_CODE_SEGMENT;
-    zero.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(zero, &divZeroHandler);
-    idt[0x0] = zero;
+    SET_IDT_ENTRY(idt[0x0], &divZeroHandler, 0);
 
     // RESERVED exception
-    gate_desc_t res;
-    res.seg_selector = KERNEL_CODE_SEGMENT;
-    res.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(res, &resHandler);
-    idt[0x1] = res;
+    SET_IDT_ENTRY(idt[0x1], &resHandler, 0);
 
     // NMI exception
-    gate_desc_t nmi;
-    nmi.seg_selector = KERNEL_CODE_SEGMENT;
-    nmi.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(nmi, &nmiHandler);
-    idt[0x2] = nmi;
+    SET_IDT_ENTRY(idt[0x2], &nmiHandler, 0);
 
     // Breakpoint exception
-    gate_desc_t bp;
-    bp.seg_selector = KERNEL_CODE_SEGMENT;
-    bp.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(bp, &bpHandler);
-    idt[0x3] = bp;
+    SET_IDT_ENTRY(idt[0x3], &bpHandler, 0);
 
     // Overflow exception
-    gate_desc_t of;
-    of.seg_selector = KERNEL_CODE_SEGMENT;
-    of.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(of, &ofHandler);
-    idt[0x4] = of;
+    SET_IDT_ENTRY(idt[0x4], &ofHandler, 0);
 
     // BOUND Range Exceeded exception
-    gate_desc_t bre;
-    bre.seg_selector = KERNEL_CODE_SEGMENT;
-    bre.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(bre, &breHandler);
-    idt[0x5] = bre;
+    SET_IDT_ENTRY(idt[0x5], &breHandler, 0);
 
     // Invalid Opcode exception
-    gate_desc_t invop;
-    invop.seg_selector = KERNEL_CODE_SEGMENT;
-    invop.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(invop, &invopHandler);
-    idt[0x6] = invop;
+    SET_IDT_ENTRY(idt[0x6], &invopHandler, 0);
 
     // Device Not Available exception
-    gate_desc_t dna;
-    dna.seg_selector = KERNEL_CODE_SEGMENT;
-    dna.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(dna, &dnaHandler);
-    idt[0x7] = dna;
+    SET_IDT_ENTRY(idt[0x7], &dnaHandler, 0);
 
     // Double Fault exception
-    gate_desc_t df;
-    df.seg_selector = KERNEL_CODE_SEGMENT;
-    df.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(df, &dfHandler);
-    idt[0x8] = df;
+    SET_IDT_ENTRY(idt[0x8], &dfHandler, 0);
 
     // Coprocessor Segment Overrun exception
-    gate_desc_t cso;
-    cso.seg_selector = KERNEL_CODE_SEGMENT;
-    cso.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(cso, &csoHandler);
-    idt[0x9] = cso;
+    SET_IDT_ENTRY(idt[0x9], &csoHandler, 0);
 
     // Invalid TSS exception
-    gate_desc_t itss;
-    itss.seg_selector = KERNEL_CODE_SEGMENT;
-    itss.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(itss, &itssHandler);
-    idt[0xa] = itss;
+    SET_IDT_ENTRY(idt[0xa], &itssHandler, 0);
 
     // Segment Not Present exception
-    gate_desc_t snp;
-    snp.seg_selector = KERNEL_CODE_SEGMENT;
-    snp.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(snp, &snpHandler);
-    idt[0xb] = snp;
+    SET_IDT_ENTRY(idt[0xb], &snpHandler, 0);
 
     // Stack-Segment Fault exception
-    gate_desc_t ssf;
-    ssf.seg_selector = KERNEL_CODE_SEGMENT;
-    ssf.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(ssf, &ssfHandler);
-    idt[0xc] = ssf;
+    SET_IDT_ENTRY(idt[0xc], &ssfHandler, 0);
 
     // General Protection exception
-    gate_desc_t gp;
-    gp.seg_selector = KERNEL_CODE_SEGMENT;
-    gp.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(gp, &gpHandler);
-    idt[0xd] = gp;
+    SET_IDT_ENTRY(idt[0xd], &gpHandler, 0);
 
     // Page Fault exception
-    gate_desc_t pf;
-    pf.seg_selector = KERNEL_CODE_SEGMENT;
-    pf.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(pf, &pfHandler);
-    idt[0xe] = pf;
+    SET_IDT_ENTRY(idt[0xe], &pfHandler, 0);
 
     // Math Fault exception
-    gate_desc_t mf;
-    mf.seg_selector = KERNEL_CODE_SEGMENT;
-    mf.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(mf, &mfHandler);
-    idt[0x10] = mf;
+    SET_IDT_ENTRY(idt[0x10], &mfHandler, 0);
 
     // Alignment Check exception
-    gate_desc_t ac;
-    ac.seg_selector = KERNEL_CODE_SEGMENT;
-    ac.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(ac, &acHandler);
-    idt[0x11] = ac;
+    SET_IDT_ENTRY(idt[0x11], &acHandler, 0);
+
 
     // Machine Check exception
-    gate_desc_t mc;
-    mc.seg_selector = KERNEL_CODE_SEGMENT;
-    mc.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(mc, &mcHandler);
-    idt[0x12] = mc;
+    SET_IDT_ENTRY(idt[0x12], &mcHandler, 0);
+
 
     // SIMD Floating-Point exception
-    gate_desc_t simdfp;
-    simdfp.seg_selector = KERNEL_CODE_SEGMENT;
-    simdfp.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(simdfp, &simdfpHandler);
-    idt[0x12] = simdfp;
+    SET_IDT_ENTRY(idt[0x13], &simdfpHandler, 0);
 }
 
 /* If want to make umbrella function, you can pull the exception number from the 
