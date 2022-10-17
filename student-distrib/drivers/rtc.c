@@ -37,7 +37,7 @@ void rtc_init(){ // MAKE SURE TO INSTALL RTC HANDLER BEFORE CALLING THIS FUNCTIO
     // outb(0x8A, RTC_INDEX_PORT);		// set the index again (a read will reset the index to register D)
     // outb((prev & 0xF0) | rate, RTC_INDEX_PORT+1);	// write the previous value ORed with 0x40. This turns on bit 6 of register B
 
-    insert_handler(RTC_IRQ, &rtc_handler,0);
+    insert_handler(RTC_IRQ, (int)&rtc_handler,0);
     enable_irq(RTC_IRQ);
 
 }
@@ -54,7 +54,7 @@ void rtc_init(){ // MAKE SURE TO INSTALL RTC HANDLER BEFORE CALLING THIS FUNCTIO
 void rtc_handler(){
 
     disable_irq(RTC_IRQ);
-    outb(0x0C, RTC_INDEX_PORT); //selects registers C
+    outb(0x8C, RTC_INDEX_PORT); //selects registers C
     inb(RTC_INDEX_PORT + 1); // just throw away contents
     printf("rtc is working");
     //test_interrupts();
