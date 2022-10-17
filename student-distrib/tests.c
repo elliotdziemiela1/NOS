@@ -29,6 +29,7 @@ static inline void assertion_failure(){
  * Coverage: Load IDT, IDT definition
  * Files: x86_desc.h/S
  */
+
 int idt_test(){
 	TEST_HEADER;
 
@@ -45,6 +46,59 @@ int idt_test(){
 	return result;
 }
 
+/* Divide by Zero Test 
+ * 
+ * Checks if IDT works with divide by zero exception
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: IDT Exception Handling
+ * Files: x86_desc.h
+ */
+int divide_zero(){
+	TEST_HEADER;
+
+	int result = FAIL;
+	asm volatile("int $0");
+	result = PASS;
+	return result;
+}
+/* Page fault Test 
+ * 
+ * Checks if page faulting works
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: IDT Exception Handling
+ * Files: x86_desc.h
+ */
+int page_fault(){
+	TEST_HEADER;
+
+	int result = FAIL;
+	asm volatile("int $14");
+	result = PASS;
+	return result;
+}
+/* RTC Test 
+ * 
+ * Checks if RTC works
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: RTC handling
+ * Files: x86_desc.h
+ */
+int rtc_test(){
+	TEST_HEADER;
+
+	int result = FAIL;
+	asm volatile("int $40");
+	result = PASS;
+	return result;
+}
+
+
 // add more tests here
 
 /* Checkpoint 2 tests */
@@ -55,6 +109,6 @@ int idt_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("idt_test", idt_test());
+	TEST_OUTPUT("idt_test", rtc_test());
 	// launch your tests here
 }

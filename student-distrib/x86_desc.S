@@ -93,15 +93,18 @@ ldt_bottom:
 
 .align 4
     .word 0 # Padding
-idt_desc_ptr:
-    .word idt_bottom - idt - 1
-    .long idt
-
+idt_desc_ptr: #start of IDT descriptor
+    .word idt_bottom - idt - 1 #size member of IDT descriptor
+    .long idt #linear address of IDT member of IDT descriptor
 
     .align  16
+gdt_desc: #called in boot.S
+    .word gdt_bottom - gdt - 1 #Size of the GDT table
+    .long gdt #Starting address of the GDT
+    .align 16
 idt:
 _idt:
-    .rept NUM_VEC
+    .rept NUM_VEC #NUM_VEC defined in x86_desc.h
     .quad 0
     .endr
 
