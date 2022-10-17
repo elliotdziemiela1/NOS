@@ -3,6 +3,15 @@
 #include "lib.h"
 #include "idt.h"
 
+/* init_idt
+ * 
+ * Puts the IDT handlers in the correct position in the IDT table
+ * Inputs: irqNum, ptr, dpl
+ * Outputs: None
+ * Side Effects: Makes changes to the IDT table
+ * Coverage: Interrupt handling
+ * Files: None
+ */
 // ptr = address of handler function to insert into IDT.
 void insert_handler(int irqNum, uint32_t ptr, int dpl){
     SET_IDT_ENTRY(idt[0x20 + irqNum], ptr, dpl); //x20 = start of irqs in idt
@@ -31,6 +40,15 @@ void acHandler(){printf("Exception: Alignment Check");while(1){};}
 void mcHandler(){printf("Exception: Machine Check");while(1){};}
 void simdfpHandler(){printf("Exception: SIMD Floating-Point");while(1){};}
 
+/* init_idt
+ * 
+ * Initializes all the entires in the table
+ * Inputs: None
+ * Outputs: None
+ * Side Effects: Initializes IDT table
+ * Coverage: Load IDT, IDT definition
+ * Files: None
+ */
 void init_idt(){
     // irq8 = rtc
     SET_IDT_ENTRY(idt[0x28], &dummyrtcHandler, 0);

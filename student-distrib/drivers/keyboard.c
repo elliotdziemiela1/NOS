@@ -8,7 +8,15 @@
 #define KB_IRQ 0x1
 
 char scanTable[0xff];
-
+/* keyboard_init
+ * 
+ * Initializes the keyboard
+ * Inputs: None
+ * Outputs: None
+ * Side Effects: Sets up the initialization of keyboard
+ * Coverage: Keyboard Initialization
+ * Files: None
+ */
 void keyboard_init(){
     insert_handler(KB_IRQ,&keyboard_handler,0);
     int i;
@@ -58,7 +66,15 @@ void keyboard_init(){
 }
 
 
-
+/* keyboard_handler
+ * 
+ * Handles the keyboard interrupts
+ * Inputs: None
+ * Outputs: None
+ * Side Effects: Handles the keyboard interrupts
+ * Coverage: Keyboard interrupt handling
+ * Files: None
+ */
 void keyboard_handler(){
     cli();
     uint8_t tmp = inb(KB_DATAPORT);

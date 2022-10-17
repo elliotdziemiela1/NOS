@@ -66,8 +66,6 @@ void enable_irq(uint32_t irq_num) {
         slave_mask &= irq;
         outb(slave_mask, SLAVE_8259_PORT+1); // mask all of PIC 2. +1 means data port.
     }
-    // could write code to raise exception if >15 or if irq is already enabled
-    
 }
 
 /* Disable (mask) the specified IRQ by setting it's bit in the mask to 1*/
@@ -97,5 +95,9 @@ void send_eoi(uint32_t irq_num) {
         outb(EOI | irq_num, SLAVE_8259_PORT);
         outb(EOI | 2, MASTER_8259_PORT);
     }
+
+    // if(irq_num >= 8)
+    //     outb(SLAVE_8259_PORT, EOI|irq_num);
+    // outb(MASTER_8259_PORT, EOI|irq_num);
     
 }
