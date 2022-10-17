@@ -15,6 +15,7 @@ void keyboard_init(){
     for (i = 0; i < 0xff; i++){
         scanTable[i] = '!';
     }
+    //numbers
     scanTable[0x02] = '1';
     scanTable[0x03] = '2';
     scanTable[0x04] = '3';
@@ -25,6 +26,7 @@ void keyboard_init(){
     scanTable[0x09] = '8';
     scanTable[0x0a] = '9';
     scanTable[0x0b] = '0';
+    //first letter line
     scanTable[0x10] = 'q';
     scanTable[0x11] = 'w';
     scanTable[0x12] = 'e';
@@ -35,6 +37,7 @@ void keyboard_init(){
     scanTable[0x17] = 'i';
     scanTable[0x18] = 'o';
     scanTable[0x19] = 'p';
+    //second letter line
     scanTable[0x1e] = 'a';
     scanTable[0x1f] = 's';
     scanTable[0x20] = 'd';
@@ -44,6 +47,7 @@ void keyboard_init(){
     scanTable[0x24] = 'j';
     scanTable[0x25] = 'k';
     scanTable[0x26] = 'l';
+    // last letter line
     scanTable[0x2c] = 'z';
     scanTable[0x2d] = 'x';
     scanTable[0x2e] = 'c';
@@ -59,7 +63,12 @@ void keyboard_handler(){
     cli();
     uint8_t tmp = inb(KB_DATAPORT);
     disable_irq(KB_IRQ);
-    putc(scanTable[tmp]);
+    if ((tmp <= 0x0b) && (tmp >= 0x02) ||
+        (tmp <= 0x19) && (tmp >= 0x10) ||
+        (tmp <= 0x26) && (tmp >= 0x1e) ||
+        (tmp <= 0x32) && (tmp >= 0x2c)){
+        putc(scanTable[tmp]);
+    }
     send_eoi(KB_IRQ);
     enable_irq(KB_IRQ);
     sti();
