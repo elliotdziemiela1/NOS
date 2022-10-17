@@ -1,4 +1,5 @@
 /* synch.h - api for locks/semaphores */
+#pragma once
 
 typedef struct spin_lock{
     int locked;

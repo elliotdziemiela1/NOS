@@ -74,6 +74,15 @@ gdt_ptr:
     # Set up an entry for user DS
     .quad 0x00CFF2000000FFFF
 
+gdt_end:
+    .align	16
+
+gdt_desc: #called in boot.S
+    .word gdt_end - gdt - 1 #Size of the GDT table
+    .long _gdt #Starting address of the GDT
+    .align 16
+
+
     # Set up an entry for TSS
 tss_desc_ptr:
     .quad 0
