@@ -9,6 +9,8 @@
 #include "debug.h"
 #include "tests.h"
 #include "idt.h"
+#include "./drivers/keyboard.h"
+#include "./drivers/rtc.h"
 
 #define RUN_TESTS
 
@@ -149,7 +151,7 @@ void entry(unsigned long magic, unsigned long addr) {
      * PIC, any other initialization stuff... */
     rtc_init();
     enable_irq(8); // 8 is irq for rtc
-    keyboard_init();
+    // I don't think we need to init the keyboard
     enable_irq(1); // 1 is irq for keyboard
 
     /* Enable interrupts */

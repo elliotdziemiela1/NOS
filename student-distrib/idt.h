@@ -2,8 +2,13 @@
 #include "types.h"
 #define KERNEL_CODE_SEGMENT 0x0
 
-void rtcHandler(){printf("rtc interrupt handler called");while(1){}}
-void kbHandler(){printf("keyboard interrupt handler called");while(1){};}
+// ptr = address of handler function to insert into IDT.
+void insert_handler(int irqNum, uint32_t ptr){
+    SET_IDT_ENTRY(idt[0x20 + irqNum], ptr); //x20 = start of irqs in idt
+}
+
+void dummyrtcHandler(){printf("rtc interrupt handler called");while(1){}}
+void dummykbHandler(){printf("keyboard interrupt handler called");while(1){};}
 void sysCallHandler(){printf("system call handler called");while(1){};}
 void divZeroHandler(){printf("Exception: Divide Error");while(1){};}
 void resHandler(){printf("Exception: RESERVED");while(1){};}
@@ -29,14 +34,14 @@ void init_idt(){
     gate_desc_t irq8;
     irq8.seg_selector = KERNEL_CODE_SEGMENT;
     irq8.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(irq8, &rtcHandler);
+    SET_IDT_ENTRY(irq8, &dummyrtcHandler);
     idt[0x21] = irq8;
 
     // irq1 = keyboard
     gate_desc_t irq1;
     irq1.seg_selector = KERNEL_CODE_SEGMENT;
     irq1.dpl = 0; //privilege level =0 (kernel)
-    SET_IDT_ENTRY(irq1, &kbHandler);
+    SET_IDT_ENTRY(irq1, &dummykbHandler);
     idt[0x21] = irq1;
 
     // system calls
