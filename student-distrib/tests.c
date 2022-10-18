@@ -109,6 +109,6 @@ int rtc_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("divide_zero", divide_zero());
+	TEST_OUTPUT("rtc_test", rtc_test());
 	// launch your tests here
 }
