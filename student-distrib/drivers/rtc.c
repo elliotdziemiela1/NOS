@@ -39,7 +39,6 @@ void rtc_init(){ // MAKE SURE TO INSTALL RTC HANDLER BEFORE CALLING THIS FUNCTIO
 
     insert_handler(RTC_IRQ, (int)&rtc_handler,0);
     enable_irq(RTC_IRQ);
-
 }
 
 /* rtc_handler

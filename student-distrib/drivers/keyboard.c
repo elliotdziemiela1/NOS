@@ -63,6 +63,8 @@ void keyboard_init(){
     scanTable[0x30] = 'b';
     scanTable[0x31] = 'n';
     scanTable[0x32] = 'm';
+
+    enable_irq(KB_IRQ);
 }
 
 
@@ -88,5 +90,10 @@ void keyboard_handler(){
     send_eoi(KB_IRQ);
     enable_irq(KB_IRQ);
     sti();
+    
+    asm volatile(" \n\
+    leave \n\
+    iret"
+    );
 }
 

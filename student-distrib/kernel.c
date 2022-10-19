@@ -146,10 +146,8 @@ void entry(unsigned long magic, unsigned long addr) {
     // // MAKE SURE TO INSTALL HANDLERS BEFORE DOING THIS
     // /* Initialize devices, memory, filesystem, enable device interrupts on the
     //  * PIC, any other initialization stuff... */
-    rtc_init();
+    //rtc_init();
     keyboard_init();
-    enable_irq(8); // 8 is irq for rtc
-    enable_irq(1); // 1 is irq for keyboard
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
