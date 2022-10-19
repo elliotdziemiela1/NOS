@@ -53,18 +53,16 @@ void rtc_init(){ // MAKE SURE TO INSTALL RTC HANDLER BEFORE CALLING THIS FUNCTIO
  */
 void rtc_handler(){
 
-    //disable_irq(RTC_IRQ);
-
-    // cli();
-    outb(0x8C, RTC_INDEX_PORT); //selects registers C
-    inb(RTC_INDEX_PORT + 1); // just throw away contents
-    printf("rtc is working");
+    outb(0x0C, RTC_INDEX_PORT);
+    inb(0x71);
     test_interrupts();
-    
-    
     send_eoi(RTC_IRQ);
-    // sti();
+    
+    asm volatile(" \n\
+    leave \n\
+    iret"
+    );
 
-    //enable_irq(RTC_IRQ);
+
 
 }

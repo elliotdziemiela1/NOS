@@ -20,8 +20,6 @@ spin_lock pic_lock;
 //Side effects is that it initialzies the PIC
 void i8259_init(void) {
     pic_lock = new_lock();
-    unsigned long flags;
-    spin_lock_irsave(&pic_lock, &flags);
 
     master_mask = 0xff; 
     slave_mask = 0xff;
@@ -39,8 +37,7 @@ void i8259_init(void) {
     outb(ICW3_SLAVE, SLAVE_8259_PORT+1); // tells PIC 2 that it is a secondary PIC on IRQ2
     outb(ICW4, SLAVE_8259_PORT+1);
 
-    // Don't know about udelay and outputting the cached values.
-    spin_unlock_irrestore(&pic_lock, flags);
+    enable_irq(2);
 
 }
 
@@ -95,10 +92,10 @@ void send_eoi(uint32_t irq_num) {
     }
     if (irq_num < 8){
         outb(EOI|irq_num, MASTER_8259_PORT);
-    } else {
-        irq_num = irq_num - 8; //irq number for rtc
-        outb(EOI | irq_num, SLAVE_8259_PORT); 
-        outb(EOI | 2, MASTER_8259_PORT); 
+    } else if (irq_num < 16){
+        irq_num = irq_num - 8;
+        outb(EOI | irq_num, SLAVE_8259_PORT);
+        outb(EOI | 2, MASTER_8259_PORT);
     }
 
     // if(irq_num >= 8)
