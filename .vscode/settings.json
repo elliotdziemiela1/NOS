@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "rtc.h": "c",
-        "synch.h": "c"
+        "synch.h": "c",
+        "types.h": "c"
     }
 }

@@ -184,7 +184,7 @@ ece391_read (int32_t fd, void* buf, int32_t nbytes)
     uint8_t* from;
     uint8_t* to;
 
-    if (NULL == dir || dir_fd != fd)
+    if (NULL == dir || dir_fd != fd) 
         return __ece391_read (fd, buf, nbytes);
     if (NULL == (de = readdir (dir)))
         return 0;
