@@ -63,8 +63,6 @@ void keyboard_init(){
     scanTable[0x30] = 'b';
     scanTable[0x31] = 'n';
     scanTable[0x32] = 'm';
-
-    enable_irq(KB_IRQ);
 }
 
 

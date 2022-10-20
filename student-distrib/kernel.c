@@ -147,7 +147,9 @@ void entry(unsigned long magic, unsigned long addr) {
     // /* Initialize devices, memory, filesystem, enable device interrupts on the
     //  * PIC, any other initialization stuff... */
     //rtc_init();
+    // enable_irq(8);
     keyboard_init();
+    enable_irq(1);
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your

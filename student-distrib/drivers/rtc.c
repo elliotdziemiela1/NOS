@@ -38,7 +38,6 @@ void rtc_init(){ // MAKE SURE TO INSTALL RTC HANDLER BEFORE CALLING THIS FUNCTIO
     outb((prev & 0xF0) | rate, RTC_INDEX_PORT+1);	// write the previous value ORed with 0x40. This turns on bit 6 of register B
 
     insert_handler(RTC_IRQ, (int)&rtc_handler,0);
-    enable_irq(RTC_IRQ);
 }
 
 /* rtc_handler
