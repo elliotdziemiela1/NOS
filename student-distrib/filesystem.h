@@ -31,7 +31,7 @@ typedef struct boot_block{
 //file descriptor
 typedef struct inode{
     int32_t file_size;
-    int32_t data_block_index[MAX_DATA_BLOCK_INDEX]; //unsure why this is 1023
+    int32_t data_block_index[MAX_DATA_BLOCK_INDEX];
 }inode_t;
 
 void initialize_filesystem(const uint32_t file_system_start_address);
@@ -52,6 +52,9 @@ int32_t open_directory(const uint32_t* filename);
 int32_t read_directory(int32_t fd, void* buf, int32_t nbytes);
 int32_t write_directory(int32_t fd, void* buf, int32_t nbytes);
 int32_t close_directory(int32_t fd);
+
+int32_t read_data_block(uint32_t* file_start, uint32_t offset, uint8_t* buf, uint32_t length);
+
 
 
 
