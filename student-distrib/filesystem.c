@@ -15,6 +15,9 @@ void initialize_filesystem(const uint32_t file_system_start_address){
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
     uint32_t i;
     uint32_t num_dir = boot_block -> num_directories;
+    uint32_t success_value;
+
+    //check edge case of the file name that's greater than 32 characters
 
     //parameter validation
     if(fname == NULL){
@@ -24,10 +27,8 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
     for(i = 0; i < num_dir; i++){
         if(strncmp((int8_t*) fname, (int8_t*) (boot_block -> direntries[i].file_name), strlen((int8_t*) fname)) == 0){
             //copy information from dentry in boot block into given dentry
-            strcpy((int8_t*) dentry -> file_name, (const int8_t*) fname);
-            dentry -> file_type = boot_block -> direntries[i].file_name;
-            dentry -> inode_num = boot_block -> direntries[i].inode_num;
-            return 0;
+            success_value = read_dentry_by_index((uint32_t) (boot_block -> direntries[i].inode_num), (dentry_t*) dentry);
+            return success_value;
         }
     }
     //return -1 if unsuccessful
@@ -35,7 +36,6 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
 }
 
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
-    uint32_t i;
     uint32_t num_dir = boot_block -> num_directories;
 
     //parameter validation
@@ -43,19 +43,33 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
         return -1;
     }
 
-    for(i = 0; i < num_dir; i++){
-        if(index == boot_block -> direntries[i].inode_num){
-            //copy information from dentry in boot block into given dentry
-            strcpy((int8_t*) dentry -> file_name, (const int8_t*)boot_block -> direntries[i].file_name);
-            dentry -> file_type = boot_block -> direntries[i].file_name;
-            dentry -> inode_num = index;
-            return 0;
-        }
-    }
-    //return -1 if unsuccessful
-    return -1;   
+    //copy information from dentry in boot block into given dentry
+    strcpy((int8_t*) dentry -> file_name, (const int8_t*)boot_block -> direntries[index].file_name);
+    dentry -> file_type = boot_block -> direntries[index].file_name;
+    dentry -> inode_num = index;
+    return 0;
 }
 
+int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length){
+    uint32_t inode_data_block_idx;
+    uint32_t data_block_position_offset;
+    uint32_t place_in_datablock;
+    uint32_t bytes_read;
+
+    //parameter validation
+    if(inode >= num_inodes || inode < 0) return -1;
+    inode_t* cur_inode = (inode_t*) (&inode_start[inode]);
+
+    if(buf == NULL){
+        return -1;
+    }else if(offset > (cur_inode -> file_size)){ // can't offset more than allocated space. technically reached end of file so return 0
+        return 0;
+    }
+    inode_data_block_idx = offset / BLOCK_SIZE;
+    data_block_position_offset = offset % BLOCK_SIZE;
+
+    return 1;
+}
 
 
 
