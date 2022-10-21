@@ -19,7 +19,7 @@ typedef struct dentry{
     int8_t reserved[24];
 }dentry_t;
 
-//this is the first dentry inside the directory
+//first dentry inside the directory along with rest of the dentry blocks
 typedef struct boot_block{
     int32_t num_directories;
     int32_t num_inodes;
@@ -28,9 +28,10 @@ typedef struct boot_block{
     dentry_t direntries[63];
 }boot_block_t;
 
+//file descriptor
 typedef struct inode{
     int32_t file_size;
-    int32_t data_block_index[MAX_DATA_BLOCK_INDEX];
+    int32_t data_block_index[MAX_DATA_BLOCK_INDEX]; //unsure why this is 1023
 }inode_t;
 
 void initialize_filesystem(const uint32_t file_system_start_address);
@@ -39,5 +40,19 @@ void initialize_filesystem(const uint32_t file_system_start_address);
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry);
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry);
 int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
+
+//file operation functions
+int32_t open_file(const uint32_t* filename);
+int32_t read_file(int32_t fd, void* buf, int32_t nbytes);
+int32_t write_file(int32_t fd, void* buf, int32_t nbytes);
+int32_t close_file(int32_t fd);
+
+//directory operation functions
+int32_t open_directory(const uint32_t* filename);
+int32_t read_directory(int32_t fd, void* buf, int32_t nbytes);
+int32_t write_directory(int32_t fd, void* buf, int32_t nbytes);
+int32_t close_directory(int32_t fd);
+
+
 
 
