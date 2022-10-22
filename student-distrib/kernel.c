@@ -11,6 +11,7 @@
 #include "idt.h"
 #include "./drivers/keyboard.h"
 #include "./drivers/rtc.h"
+#include "./drivers/terminal.h"
 
 #define RUN_TESTS
 
@@ -157,9 +158,13 @@ void entry(unsigned long magic, unsigned long addr) {
     printf("Enabling Interrupts\n");
     sti();
 
-    char test[20];
-    gets(test,20);
-    printf(test);
+    terminal_open();
+    while (1){
+        char test[20];
+        gets(test,20);
+        terminal_write(test,20);
+    }
+    
 
 
 #ifdef RUN_TESTS

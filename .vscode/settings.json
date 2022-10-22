@@ -3,6 +3,7 @@
         "rtc.h": "c",
         "synch.h": "c",
         "types.h": "c",
-        "keyboard.h": "c"
+        "keyboard.h": "c",
+        "lib.h": "c"
     }
 }

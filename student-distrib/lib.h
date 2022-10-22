@@ -31,6 +31,7 @@ int32_t safe_strncpy(int8_t* dest, const int8_t* src, int32_t n);
 /* elliot defined functions */
 void verticalScroll(int lines);
 void setCursor(int x, int y);
+void setCursorX(int x);
 
 /* Port read functions */
 /* Inb reads a byte and returns its value as a zero-extended 32-bit

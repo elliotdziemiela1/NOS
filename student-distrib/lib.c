@@ -17,7 +17,7 @@ static char* video_mem = (char *)VIDEO;
  * Return Value: none
  * Function: Clears video memory */
 void verticalScroll(int lines){
-
+    
 }
 
 /* void setCursor(int x, int y)
@@ -25,7 +25,11 @@ void verticalScroll(int lines){
  * Return Value: none
  * Function: Clears video memory */
 void setCursor(int x, int y){
-    
+    screen_x = x;
+    screen_y = y;
+}
+void setCursorX(int x){
+    screen_x = x;
 }
 
 /* void clear(void);
