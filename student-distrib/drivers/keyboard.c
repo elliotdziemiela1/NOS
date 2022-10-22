@@ -77,16 +77,19 @@ void keyboard_init(){
  * Inputs: buffer - the buffer to write to 
  *         nbytes - the number of bytes or characters to write to buffer
  * Outputs: buffer - the data in this buffer is overwritten by characters
- *          read from the keyboard.
+ *          read from the keyboard, ending with a line feed where the user presses enter
  * Return Value: the number of bytes or characters written to buffer
  */
 int32_t gets(char * buffer, int nbytes){
+    if (nbytes < 2)
+        return -1;
     buf = buffer;
-    length = nbytes;
+    length = nbytes-1;
     pos = 0;
     reading = 1;
     enable_irq(KB_IRQ);
     while (reading){}
+    disable_irq(KB_IRQ);
     return pos;
 }
 
@@ -104,20 +107,24 @@ void keyboard_handler(){
     cli();
     uint8_t input = inb(KB_DATAPORT);
     disable_irq(KB_IRQ);
-    if (input == ENTER_CODE){
-        reading = 0;
-    } else if (input == BACKSPACE_CODE){
-        if (pos > 0){
-            buf[pos-1] = '_';
-            pos--;
-        }
-    } else if (pos < length){
-        if (((input <= 0x0b) && (input >= 0x02)) ||  //checking bounds of the scan code according to init above
-            ((input <= 0x19) && (input >= 0x10)) ||
-            ((input <= 0x26) && (input >= 0x1e)) ||
-            ((input <= 0x32) && (input >= 0x2c))){
-            buf[pos] = scanTable[input]; // add character to buffer we're currently writing to
-            pos++;
+    if (reading){
+        if (input == ENTER_CODE){
+            reading = 0;
+            buf[pos] = '\n';
+        } else if (input == BACKSPACE_CODE){
+            if (pos > 0){
+                buf[pos-1] = '_';
+                pos--;
+            }
+        } else if (pos < length){
+            if (((input <= 0x0b) && (input >= 0x02)) ||  //checking bounds of the scan code according to init above
+                ((input <= 0x19) && (input >= 0x10)) ||
+                ((input <= 0x26) && (input >= 0x1e)) ||
+                ((input <= 0x32) && (input >= 0x2c))){
+                buf[pos] = scanTable[input]; // add character to buffer we're currently writing to
+                putc(scanTable[input]);
+                pos++;
+            }
         }
     }
     send_eoi(KB_IRQ);

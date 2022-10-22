@@ -6,23 +6,28 @@
 
 char buf[BUFFER_SIZE]; 
 int pos; // position in buffer to write next character (0 indexed)
-char path[]; // string of current path to display left of command
 
 static void clearBuf(){ // THIS CODE NEEDS TO BE CHANGED
-    // buf = { '_' }; // fills buffer with underscores
-    // buf[BUFFER_SIZE-1] = '\n'; // signifies end of buffer
+    char path[10] = {'s','o','m','e','w','h','e','r','e',':'};
+    int i;
+    for (i = 0; i < PATH_LENGTH; i++){
+        buf[i] = path[i];
+    }
+    for (i = PATH_LENGTH; i < BUFFER_SIZE-1; i++){
+        buf[i] = '_';
+    }
 
-    // path = {'s','o','m','e','w','h','e','r','e',':'};
-    // int i;
-    // for (i = 0; i < PATH_LENGTH; i++){
-    //     buf[i] = path[i];
-    // }
+    buf[BUFFER_SIZE-1] = '\n'; // signifies end of buffer
 
-    // pos = PATH_LENGTH;
+    pos = PATH_LENGTH;
 }
 
 uint32_t open(){
     clearBuf();
+    return 0;
+}
+
+uint32_t read(){
     return 0;
 }
 
@@ -46,5 +51,6 @@ uint32_t write(uint8_t * in, int32_t nbytes){
     }
     return pos;
 }
+
 
 

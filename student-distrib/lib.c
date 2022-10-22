@@ -8,9 +8,25 @@
 #define NUM_ROWS    25
 #define ATTRIB      0x7
 
-static int screen_x;
-static int screen_y;
+static int screen_x; // x coordiante of the cursor
+static int screen_y; // y coordiante of the cursor
 static char* video_mem = (char *)VIDEO;
+
+/* void verticalScroll(int lines)
+ * Inputs: lines - the number of lines to scroll vram up
+ * Return Value: none
+ * Function: Clears video memory */
+void verticalScroll(int lines){
+
+}
+
+/* void setCursor(int x, int y)
+ * Inputs: x - the x coordinate of the cursor
+ * Return Value: none
+ * Function: Clears video memory */
+void setCursor(int x, int y){
+    
+}
 
 /* void clear(void);
  * Inputs: void
