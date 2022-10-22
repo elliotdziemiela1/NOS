@@ -7,7 +7,8 @@
 #define KB_DATAPORT 0x60
 #define KB_IRQ 0x1
 #define RETURN_CODE 
-#define BACKSPACE_CODE
+#define BACKSPACE_CODE 0x0e // scan code for backspace pressed
+#define ENTER_CODE 0x1c // scan code for enter pressed
 
 char scanTable[0xff];
 char * buf; // the buffer to write characters to
@@ -72,13 +73,21 @@ void keyboard_init(){
     scanTable[0x32] = 'm';
 }
 
-void gets(char * buffer, int nbytes){
+/* gets
+ * Inputs: buffer - the buffer to write to 
+ *         nbytes - the number of bytes or characters to write to buffer
+ * Outputs: buffer - the data in this buffer is overwritten by characters
+ *          read from the keyboard.
+ * Return Value: the number of bytes or characters written to buffer
+ */
+int32_t gets(char * buffer, int nbytes){
     buf = buffer;
     length = nbytes;
     pos = 0;
     reading = 1;
     enable_irq(KB_IRQ);
     while (reading){}
+    return pos;
 }
 
 
@@ -95,7 +104,7 @@ void keyboard_handler(){
     cli();
     uint8_t input = inb(KB_DATAPORT);
     disable_irq(KB_IRQ);
-    if (input == RETURN_CODE){
+    if (input == ENTER_CODE){
         reading = 0;
     } else if (input == BACKSPACE_CODE){
         if (pos > 0){
@@ -107,7 +116,6 @@ void keyboard_handler(){
             ((input <= 0x19) && (input >= 0x10)) ||
             ((input <= 0x26) && (input >= 0x1e)) ||
             ((input <= 0x32) && (input >= 0x2c))){
-            putc(scanTable[input]); // print character to screen
             buf[pos] = scanTable[input]; // add character to buffer we're currently writing to
             pos++;
         }

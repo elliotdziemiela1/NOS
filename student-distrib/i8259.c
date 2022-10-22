@@ -69,9 +69,6 @@ void enable_irq(uint32_t irq_num) {
 
 /* Disable (mask) the specified IRQ by setting it's bit in the mask to 1*/
 void disable_irq(uint32_t irq_num) {
-    uint8_t irq = 1;
-    int i;
-
     if (irq_num <= 7){ // irq lies on pic 1 (IRQs 0-7)
         // for (i = 0; i < irq_num; i++)
         //     irq = irq<<1;

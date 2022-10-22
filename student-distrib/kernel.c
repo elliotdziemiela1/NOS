@@ -157,6 +157,11 @@ void entry(unsigned long magic, unsigned long addr) {
     printf("Enabling Interrupts\n");
     sti();
 
+    char test[20];
+    gets(test,20);
+    printf(test);
+
+
 #ifdef RUN_TESTS
     /* Run tests */
     // launch_tests();
