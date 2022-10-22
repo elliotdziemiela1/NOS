@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "filesystem.h"
 
 #define PASS 1
 #define FAIL 0
@@ -100,8 +101,19 @@ int rtc_test(){
 
 
 // add more tests here
-
 /* Checkpoint 2 tests */
+
+void test_file_system(){
+	dentry_t cur_file;
+	read_dentry_by_name("frame0.txt", (dentry_t*) &cur_file);
+	uint32_t cur_inode = cur_file.inode_num;
+	int8_t* buf;
+	uint32_t length = 120;
+
+	read_data(cur_inode, 0, buf, length);
+
+	printf(buf);
+}
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */

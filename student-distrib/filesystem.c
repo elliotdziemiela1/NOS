@@ -52,12 +52,12 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
 
 int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length){
     uint32_t inode_data_block_idx;
-    uint32_t data_block_position_offset;
-    uint32_t place_in_datablock;
+    uint32_t data_block_position;
+    uint32_t data_block_address;
     uint32_t bytes_read;
 
     //parameter validation
-    if(inode >= num_inodes || inode < 0) return -1;
+    if(inode >= boot_block -> num_inodes || inode < 0) return -1;
     inode_t* cur_inode = (inode_t*) (&inode_start[inode]);
 
     if(buf == NULL){
@@ -65,10 +65,31 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
     }else if(offset > (cur_inode -> file_size)){ // can't offset more than allocated space. technically reached end of file so return 0
         return 0;
     }
-    inode_data_block_idx = offset / BLOCK_SIZE;
-    data_block_position_offset = offset % BLOCK_SIZE;
 
-    return 1;
+    inode_data_block_idx = offset / BLOCK_SIZE;
+    data_block_position = offset % BLOCK_SIZE;
+
+    data_block_address = cur_inode -> data_block_index[inode_data_block_idx];
+
+    for(bytes_read = 0; bytes_read < length; bytes_read++, data_block_position++){
+        if(data_block_position >= BLOCK_SIZE){
+            data_block_position = 0;
+            inode_data_block_idx += 1;
+            
+            data_block_address = cur_inode -> data_block_index[inode_data_block_idx];
+            
+            if (data_block_address >= boot_block -> num_data_blocks){
+                return -1;
+            }
+
+            //reached the end of the file
+            if(offset + bytes_read >= cur_inode -> file_size) break;
+        }
+
+        memcpy(buf + bytes_read, (void*)(first_data_block + (data_block_address * BLOCK_SIZE) + data_block_position), 1);
+    }
+
+    return bytes_read;
 }
 
 
