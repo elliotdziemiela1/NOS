@@ -148,8 +148,7 @@ void entry(unsigned long magic, unsigned long addr) {
     //  * PIC, any other initialization stuff... */
     //rtc_init();
     // enable_irq(8);
-    keyboard_init();
-    enable_irq(1);
+    keyboard_init(); // we dont call enable keyboard irq since we dont want to use it yet
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your

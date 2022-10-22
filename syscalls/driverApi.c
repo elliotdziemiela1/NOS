@@ -12,7 +12,7 @@
 int32_t __ece391_read (int32_t fd, void* buf, int32_t nbytes){
     if (fd != 0){
         return ((file_descriptor_t *)fd)->read(buf, nbytes); // PLACEHOLDER UNTIL WE MAKE FDs
-    } else { // else read from keyboard which doesn't have an fd
+    } else { // else read from keyboard which doesn't have a fd
         
     }
 }
