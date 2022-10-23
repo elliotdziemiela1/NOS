@@ -122,7 +122,7 @@ void keyboard_handler(){
                 ((input <= 0x26) && (input >= 0x1e)) ||
                 ((input <= 0x32) && (input >= 0x2c))){
                 buf[pos] = scanTable[input]; // add character to buffer we're currently writing to
-                putc(scanTable[input]);
+                putcBetter(scanTable[input]);
                 pos++;
             }
         }

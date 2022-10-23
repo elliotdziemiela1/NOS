@@ -21,12 +21,13 @@ static void acceptNewCommand(){ // THIS CODE NEEDS TO BE CHANGED
 
     pos = PATH_LENGTH;
 
-    printf(buf);
-    setCursorX(pos);
+    printfBetter(buf);
+    setCursor(pos, getCursorY()-2);
 }
 
 uint32_t terminal_open(){
     clear();
+    setCursor(0,0);
     acceptNewCommand();
     return 0;
 }
@@ -51,6 +52,7 @@ uint32_t terminal_write(uint8_t * in, int32_t nbytes){
             pos++;
         }
     }
+    setCursor(0, getCursorY()+1);
     acceptNewCommand();
     return pos;
 }
