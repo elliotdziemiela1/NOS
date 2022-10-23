@@ -160,9 +160,9 @@ void entry(unsigned long magic, unsigned long addr) {
 
     terminal_open();
     while (1){
-        char test[20];
-        gets(test,20);
-        terminal_write(test,20);
+        char test[BUFFER_SIZE-PATH_LENGTH];
+        gets(test,BUFFER_SIZE-PATH_LENGTH);
+        terminal_write(test,BUFFER_SIZE-PATH_LENGTH);
     }
     
 

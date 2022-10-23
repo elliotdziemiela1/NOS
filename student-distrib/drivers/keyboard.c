@@ -113,8 +113,11 @@ void keyboard_handler(){
             buf[pos] = '\n';
         } else if (input == BACKSPACE_CODE){
             if (pos > 0){
-                buf[pos-1] = '_';
+                buf[pos-1] = ' ';
                 pos--;
+                setCursor(getCursorX()-1,getCursorY());
+                putcBetter(' ');
+                setCursor(getCursorX()-1,getCursorY());
             }
         } else if (pos < length){
             if (((input <= 0x0b) && (input >= 0x02)) ||  //checking bounds of the scan code according to init above

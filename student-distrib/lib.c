@@ -3,11 +3,6 @@
 
 #include "lib.h"
 
-#define VIDEO       0xB8000
-#define NUM_COLS    80
-#define NUM_ROWS    25
-#define ATTRIB      0x7
-
 static int screen_x; // x coordiante of the cursor
 static int screen_y; // y coordiante of the cursor
 static char* video_mem = (char *)VIDEO;
@@ -17,7 +12,11 @@ static char* video_mem = (char *)VIDEO;
  * Return Value: none
  * Function: Clears video memory */
 void verticalScroll(int lines){
-    
+    int i;
+    for (i = 0; i < lines; i++){ // 2=ascii code+attribute byte
+        memcpy(video_mem, video_mem+NUM_COLS*2, NUM_COLS*NUM_ROWS*2); 
+        screen_y--;
+    }
 }
 
 /* void setCursor(int x, int y)
@@ -46,6 +45,7 @@ void clear(void) {
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
 }
+
 
 /* Standard printf().
  * Only supports the following format strings:

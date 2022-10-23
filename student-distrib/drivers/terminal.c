@@ -1,8 +1,6 @@
 #include "../types.h"
 #include "terminal.h"
 #include "../lib.h"
-#define BUFFER_SIZE 128
-#define PATH_LENGTH 10 // length of path string displayed at left of terminal screen
 
 char buf[BUFFER_SIZE]; 
 int pos; // position in buffer to write next character (0 indexed)
@@ -14,7 +12,7 @@ static void acceptNewCommand(){ // THIS CODE NEEDS TO BE CHANGED
         buf[i] = path[i];
     }
     for (i = PATH_LENGTH; i < BUFFER_SIZE-1; i++){
-        buf[i] = '_';
+        buf[i] = ' ';
     }
 
     buf[BUFFER_SIZE-1] = '\n'; // signifies end of buffer
@@ -47,12 +45,17 @@ uint32_t terminal_write(uint8_t * in, int32_t nbytes){
     int i;
     for (i = 0; i < nbytes; i++){
         char c = in[i];
-        if (pos < BUFFER_SIZE-2){ // buf[BUFFER_SIZE-1]=newline. buf[BUFFER_SIZE-2]=last char in buf
+        if (pos < BUFFER_SIZE-1){ // buf[BUFFER_SIZE-1]=newline. buf[BUFFER_SIZE-2]=last char in buf
             buf[pos] = c;
             pos++;
         }
     }
+    
     setCursor(0, getCursorY()+1);
+    if (getCursorY() >= NUM_ROWS){
+        verticalScroll(1);
+        setCursor(0,NUM_ROWS-1);
+    }
     acceptNewCommand();
     return pos;
 }
