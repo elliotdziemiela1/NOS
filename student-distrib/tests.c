@@ -103,16 +103,20 @@ int rtc_test(){
 // add more tests here
 /* Checkpoint 2 tests */
 
-void test_file_system(){
+int test_file_system(){
+	TEST_HEADER;
 	dentry_t cur_file;
 	read_dentry_by_name("frame0.txt", (dentry_t*) &cur_file);
 	uint32_t cur_inode = cur_file.inode_num;
-	int8_t* buf;
+	uint8_t* buf;
 	uint32_t length = 120;
+	uint32_t offset = 0;
 
-	read_data(cur_inode, 0, buf, length);
+	read_data(cur_inode, offset, buf, length);
 
-	printf(buf);
+	printf((int8_t*) buf);
+
+	return 1;
 }
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -121,6 +125,6 @@ void test_file_system(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("rtc_test", rtc_test());
+	TEST_OUTPUT("test_file_system", test_file_system());
 	// launch your tests here
 }

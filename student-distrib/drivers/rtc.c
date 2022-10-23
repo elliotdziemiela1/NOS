@@ -54,7 +54,7 @@ void rtc_handler(){
 
     outb(0x0C, RTC_INDEX_PORT);
     inb(0x71);
-    test_interrupts();
+    //test_interrupts();
     send_eoi(RTC_IRQ);
     
     asm volatile(" \n\

@@ -9,6 +9,7 @@
 #include "debug.h"
 #include "tests.h"
 #include "idt.h"
+#include "paging.h"
 #include "./drivers/keyboard.h"
 #include "./drivers/rtc.h"
 
@@ -143,6 +144,9 @@ void entry(unsigned long magic, unsigned long addr) {
     i8259_init();
     init_idt();
 
+    initialize_filesystem();
+
+    init_paging();
     // // MAKE SURE TO INSTALL HANDLERS BEFORE DOING THIS
     // /* Initialize devices, memory, filesystem, enable device interrupts on the
     //  * PIC, any other initialization stuff... */
