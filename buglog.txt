@@ -9,4 +9,10 @@
    Time to fix problem: 3 hours and counting
    Action done to fix problem: 
 
+3. Problem: RTC not changing frequency
+   Symptom: Screen blinks at same rate as it was intialized at
+   Time to fix problem: 1 hour
+   Action done to fix problem: needed to add in break statements
+
+4. 
 

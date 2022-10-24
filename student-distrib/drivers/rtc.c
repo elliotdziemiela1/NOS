@@ -7,10 +7,14 @@
 
 #define RTC_IRQ 0x8
 #define RTC_INDEX_PORT 0x70
+#define MAX_FREQ 1024
+#define MIN_FREQ 2
 
 char prev;
 unsigned int rate;
 int flag;
+
+//Note: used OSDEV for init, handler
 
 /* rtc_init
  * 
@@ -31,7 +35,7 @@ void rtc_init(){ // MAKE SURE TO INSTALL RTC HANDLER BEFORE CALLING THIS FUNCTIO
 
 
     rate &= 0;
-    rate = 0x06;
+    rate = 0x06; //default rate where frequency = 1024
    
     outb(0x8A, RTC_INDEX_PORT);		// x8B: select register B, and disable NMI
     prev= inb(RTC_INDEX_PORT+1);	// x71: read the current value of register B
@@ -65,6 +69,14 @@ void rtc_handler(){
 
 }
 
+/* rtc_read
+ * 
+ * Function that blocks until the next interrupt
+ * Inputs: file descriptor, buffer to read, number of bytes to read
+ * Outputs: None
+ * Return value: 0
+ * Files: None
+ */
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
 //check to see if interrupt has been generated and set flag accordingly
     flag = 0;
@@ -75,7 +87,15 @@ int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
     }
     return 0;
 }
-        
+
+/* rtc_write
+ * 
+ * Function changes frequency and writes a file 
+ * Inputs: file descriptor, buffer to read, number of bytes to read
+ * Outputs: None
+ * Return value: -1 if fail and 0 if success
+ * Files: None
+ */    
 int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes){
     //check if all values passed in are valid
     if(fd == 0 || fd == 1|| buf == NULL || nbytes != 4 ) {
@@ -91,6 +111,13 @@ int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes){
     return 0; //discussion slides say to return 0 or -1 but appendix b says number of bytes??
 }
 
+/* rtc_open
+ * 
+ * Function opens file and sets default frequency to 2 Hz
+ * Inputs: file descriptor, buffer to read, number of bytes to read
+ * Outputs: None
+ * Return value: -1 if fail and 0 if success
+ */
 int32_t rtc_open(const uint8_t* filename){
     if(filename == NULL){
         return -1;
@@ -99,18 +126,34 @@ int32_t rtc_open(const uint8_t* filename){
     return 0;
 }
 
+/* rtc_close
+ *
+ * Function closes a file
+ * Inputs: file descriptor, buffer to read, number of bytes to read
+ * Outputs: None
+ * Return value: 0
+ * Files: None
+ */
 int32_t rtc_close(int32_t fd){
     return 0;
 }
 
+/* set_frequency
+ * 
+ * Function takes frequency and changes the rate based on the value
+ * Inputs: frequency
+ * Outputs: None
+ * Return value: -1 if fail and 0 if success
+ * Files: None
+ */
 int32_t set_frequency(int32_t freq){
-    if (freq < 2 || freq > 1024){ //check if frequency is greater than minimum hz and less than max hz
+    if (freq < MIN_FREQ || freq > MAX_FREQ){ //check if frequency is greater than minimum hz and less than max hz
         return -1;
     }
     if(is_power_of_two(freq) == 0){
         return -1;
     }
-
+    //choose rate based on frequency value
     switch(freq){
         case 2: 
             rate= 0x0F;
@@ -157,6 +200,14 @@ int32_t set_frequency(int32_t freq){
 
 }
 
+/* is_power_of_two
+ * 
+ * Function checks if value is power of 2
+ * Inputs: number to check
+ * Outputs: None
+ * Return value: 1 if success and 0 if fail
+ * Files: None
+ */
 int is_power_of_two(int num){
     //check to see if number is power of 2
     if(num == 1 || num == 0){

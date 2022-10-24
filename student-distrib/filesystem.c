@@ -175,20 +175,62 @@ int32_t close_file(const uint8_t* filename){
     return -1;
 }
 
+/* get_file_length
+ * 
+ * Function returns file length
+ * Inputs: node number
+ * Outputs: None
+ * Return value: length of file
+ * Files: None
+ */
 int32_t get_file_length(int32_t inode_num){
     return inode_start[inode_num].file_size;
 }
 
+/* write_file
+ * 
+ * Function changes frequency and writes a file 
+ * Inputs: file descriptor, buffer to read, number of bytes to read
+ * Outputs: None
+ * Return value: always -1 since file is read only
+ * Files: None
+ */
 int32_t write_file(int32_t fd, void* buf, int32_t nbytes){
     return -1;
 }
 
+/* open_directory
+ * 
+ * Function provides access to file system
+ * Inputs: file name
+ * Outputs: None
+ * Return value: -1
+ * Files: None
+ */
 int32_t open_directory(const uint32_t* filename){
     return -1;
 }
+
+/* write_directory
+ * 
+ * Function writes to directory
+ * Inputs: file descriptor, buffer to read, number of bytes to read
+ * Outputs: None
+ * Return value: always -1 since file is read only
+ * Files: None
+ */
 int32_t write_directory(int32_t fd, void* buf, int32_t nbytes){
     return -1;
 }
+
+/* close_directory
+ * 
+ * Function closes the specified file descriptor
+ * Inputs: file descriptor, buffer to read, number of bytes to read
+ * Outputs: None
+ * Return value: always -1 since file is read only
+ * Files: None
+ */
 int32_t close_directory(int32_t fd){
     return -1;
 }
