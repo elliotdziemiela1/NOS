@@ -6,7 +6,8 @@
 #define BLOCK_SIZE 4096
 #define BLOCK_NUM 63 
 #define MAX_DATA_BLOCK_INDEX 1023
-#define MAX_DENTRIES
+#define MAX_FILES 8
+#define FILE_START_IDX 2
 
 typedef struct dentry{
     //name of the file which can be up to 32 characters in length

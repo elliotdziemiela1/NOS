@@ -141,8 +141,8 @@ int test_read_data(){
 	dentry_t cur_file;
 	read_dentry_by_name((const uint8_t*) "frame0.txt", (dentry_t*) &cur_file);
 	uint32_t cur_inode = cur_file.inode_num;
-	uint32_t length = 264;
-	uint8_t buf[264];
+	uint32_t length = get_file_length(cur_inode);
+	uint8_t buf[37000];
 	uint32_t offset = 0;
 
 	int32_t bytes_read = read_data(cur_inode, offset, buf, length);
@@ -179,16 +179,23 @@ int test_read_directory(){
 
 int test_open_files(uint8_t cmd){
 	TEST_HEADER;
-	int8_t* file_names[6] = {"frame0.txt", "frame1.txt", "hello", "pingpong", "testprint", "verylargetextwithverylongname.txt"};
+	int8_t* file_names[7] = {"frame0.txt", "frame1.txt", "hello", "created.txt", 
+		"testprint", "verylargetextwithverylongname.txt", "verylargetextwithverylongname.tx"};
 	open_file((const uint8_t*) file_names[0]);
 	open_file((const uint8_t*) file_names[1]);
 	open_file((const uint8_t*) file_names[2]);
 	open_file((const uint8_t*) file_names[3]);
 	open_file((const uint8_t*) file_names[4]);
+	open_file((const uint8_t*) file_names[5]);
 	open_file((const uint8_t*) file_names[6]);
 	dentry_t dentry;
 
-	read_dentry_by_name(file_names[cmd], (dentry_t*) &dentry);
+	int32_t result = read_dentry_by_name((const uint8_t*) file_names[cmd], (dentry_t*) &dentry);
+
+	//if read_dentry came back unsuccessful terminate
+	if(result == -1){
+		return result;
+	}
 
 	int32_t inode_num = dentry.inode_num;
 	int32_t file_length = get_file_length(inode_num);
@@ -208,7 +215,14 @@ int test_open_files(uint8_t cmd){
 		return 0;
 	}
 
-	
+	close_file((const uint8_t*) file_names[0]);
+	close_file((const uint8_t*) file_names[1]);
+	close_file((const uint8_t*) file_names[2]);
+	close_file((const uint8_t*) file_names[3]);
+	close_file((const uint8_t*) file_names[4]);
+	close_file((const uint8_t*) file_names[5]); 
+	close_file((const uint8_t*) file_names[6]);
+
 
 	return 1;
 }
@@ -246,11 +260,12 @@ void launch_tests(){
 	// If you want to print to the screen, i recommend the functions I made printfBetter, putcBetter, 
 	// end putsBetter because they dont wrap around once the cursor hits the edge (they make a new line)
 	
-	//TEST_OUTPUT("rtc test rate test", rtc_test_rate());
+	//TEST_OUTPUT("rtc test rate test", test_open_files(5));
 	// launch your tests here
 
 	//rtc_1_test();
-	test_open_files(0);
-	//test_read_directory();
+	//test_open_files(6);
+	test_read_directory();
+	//test_read_data();
 	return;
 }

@@ -14,5 +14,8 @@
    Time to fix problem: 1 hour
    Action done to fix problem: needed to add in break statements
 
-4. 
+4. Problem: Read Dentry by Name not retrieving valid idx
+   Symptom: Dentry always returning null
+   Time to fix: 30 min
+   Action done to fic problem: Wrong parameter checking. Comparing an inode number to the num of directories instead of num of inodes
 
