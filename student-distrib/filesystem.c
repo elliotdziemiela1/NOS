@@ -45,7 +45,7 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
 
     //copy information from dentry in boot block into given dentry
     strcpy((int8_t*) dentry -> file_name, (const int8_t*) boot_block -> direntries[index].file_name);
-    dentry -> file_type = boot_block -> direntries[index].file_name;
+    dentry -> file_type = boot_block -> direntries[index].file_type;
     dentry -> inode_num = index;
     return 0;
 }
@@ -93,7 +93,29 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
 }
 
 int32_t read_file(int32_t fd, void* buf, int32_t nbytes);
-int32_t read_directory(int32_t fd, void* buf, int32_t nbytes);
+int32_t read_directory(int32_t fd, void* buf, int32_t nbytes){
+    int i;
+    int j;
+    int inode_idx;
+    int cur_file_size;
+    int num_dir = boot_block -> num_directories;
+
+    for(i = 0; i < num_dir; i++){
+        dentry_t dentry = boot_block -> direntries[i];
+        inode_idx = dentry.inode_num;
+        cur_file_size = inode_start[inode_idx].file_size;
+
+        if(read_dentry_by_index(i, (dentry_t*) &dentry) == -1) return -1;
+
+        for(j = 0; j < 32; j++){
+            printf("%c", dentry.file_name[j]);
+        }
+
+        printf(" File Type: %d", dentry.file_type);
+        printf(" %d", cur_file_size);
+        printf("\n");
+    }
+}
 
 int32_t open_file(const uint32_t* filename){
     return -1;

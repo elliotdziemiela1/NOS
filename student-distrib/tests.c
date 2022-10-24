@@ -127,6 +127,17 @@ int test_file_system(){
 
 	return 1;
 }
+
+int test_read_directory(){
+	TEST_HEADER;
+	int32_t fd = 0;
+	int* buf = 0;
+	int32_t nbytes = 0;
+
+	read_directory(fd, (void*) buf, nbytes);
+
+	return 1;
+}
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -137,6 +148,6 @@ void launch_tests(){
 	//TEST_OUTPUT("test_file_system", test_file_system());
 	// launch your tests here
 
-	test_file_system();
+	test_read_directory();
 	return;
 }
