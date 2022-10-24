@@ -4,6 +4,8 @@
 
 #define PASS 1
 #define FAIL 0
+#define BUFFER_SIZE 128 // size of terminal buffer
+#define PATH_LENGTH 10 // length of path string displayed at left of terminal screen
 
 /* format these macros as you see fit */
 #define TEST_HEADER 	\
@@ -98,6 +100,19 @@ int rtc_test(){
 	return result;
 }
 
+int terminal_test(){
+	TEST_HEADER;
+
+	int result = PASS;
+	terminal_open();
+    while (1){
+        terminal_read();
+		char test[5] = {'f','i','l','e','\0'};
+		terminal_write(test, 5);
+    }
+	return result;
+}
+
 
 // add more tests here
 
@@ -109,6 +124,6 @@ int rtc_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("rtc_test", rtc_test());
+	TEST_OUTPUT("terminal_test", terminal_test());
 	// launch your tests here
 }

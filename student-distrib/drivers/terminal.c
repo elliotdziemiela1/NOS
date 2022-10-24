@@ -4,6 +4,7 @@
 
 char buf[BUFFER_SIZE]; 
 int pos; // position in buffer to write next character (0 indexed)
+int opened; // flag for whether or not the terminal is currently opened.
 
 static void acceptNewCommand(){ // THIS CODE NEEDS TO BE CHANGED
     char path[10] = {'s','o','m','e','w','h','e','r','e',':'};
@@ -26,12 +27,21 @@ static void acceptNewCommand(){ // THIS CODE NEEDS TO BE CHANGED
 uint32_t terminal_open(){
     clear();
     setCursor(0,0);
-    acceptNewCommand();
+    opened = 1;
     return 0;
 }
 
-uint32_t terminal_read(){
-    return 0;
+uint32_t terminal_write(uint8_t * in, int32_t nbytes){
+    if (!opened || !in)
+        return -1;
+    int i=0;
+    for (i = 0; i < nbytes; i++){
+        putcBetter(*in);
+        in++;
+    }
+    putcBetter('\n');
+
+    return i;
 }
 
 
@@ -41,22 +51,17 @@ uint32_t terminal_read(){
  * Return Value: returns the number of bytes/chars written to the terminal buffer
  * Function: writes the characters from input array "in" into the terminal buffer.
  * */
-uint32_t terminal_write(uint8_t * in, int32_t nbytes){
-    int i;
-    for (i = 0; i < nbytes; i++){
-        char c = in[i];
-        if (pos < BUFFER_SIZE-1){ // buf[BUFFER_SIZE-1]=newline. buf[BUFFER_SIZE-2]=last char in buf
-            buf[pos] = c;
-            pos++;
-        }
-    }
+uint32_t terminal_read(){
+    acceptNewCommand();
+    if (!opened)
+        return -1;
+    gets(buf,BUFFER_SIZE-PATH_LENGTH);
     
     setCursor(0, getCursorY()+1);
     if (getCursorY() >= NUM_ROWS){
         verticalScroll(1);
         setCursor(0,NUM_ROWS-1);
     }
-    acceptNewCommand();
     return pos;
 }
 

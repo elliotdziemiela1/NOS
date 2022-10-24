@@ -6,13 +6,16 @@
 
 #define KB_DATAPORT 0x60
 #define KB_IRQ 0x1
-#define BACKSPACE_CODE 0x0e // scan code for backspace pressed
-#define ENTER_CODE 0x1c // scan code for enter pressed
+#define BACKSPACE_CODE 0x0e  // scan codes
+#define ENTER_CODE 0x1c 
 #define CAPSLOCK_CODE 0x3a
 #define LEFT_SHIFT_PRESSED_CODE 0x2a
 #define LEFT_SHIFT_RELEASED_CODE 0xaa
 #define RIGHT_SHIFT_PRESSED_CODE 0x36
 #define RIGHT_SHIFT_RELEASED_CODE 0xb6
+#define CTRL_PRESSED_CODE 0x1d
+#define CTRL_RELEASED_CODE 0x9d
+#define L_CODE 0x26
 
 char scanTable[0x40] = {'\0','\0','1','2','3','4','5','6','7','8','9','0','-',
     '=','\0','\0','q','w','e','r','t','y','u','i','o','p','[',']','\0','\0','a',
@@ -34,6 +37,7 @@ int pos; // position in buf to write to next (0 indexed)
 int reading; // flag that says whether or not keyboard is currently in a read
 int shift; // flag that says whether or not shift is being held
 int capsLock; // flag that says whether or not caps lock is on
+int ctrl; // flag that says whether or not ctrl is pressed
 
 /* keyboard_init
  * 
@@ -64,6 +68,7 @@ int32_t gets(char * buffer, int nbytes){
     reading = 1;
     shift = 0;
     capsLock = 0;
+    ctrl = 0;
     enable_irq(KB_IRQ);
     while (reading){}
     disable_irq(KB_IRQ);
@@ -102,8 +107,17 @@ void keyboard_handler(){
             shift = 1;
         } else if ((input==LEFT_SHIFT_RELEASED_CODE) || (input==RIGHT_SHIFT_RELEASED_CODE)){
             shift = 0;
+        } else if (input==CTRL_PRESSED_CODE){
+            ctrl = 1;
+        } else if (input==CTRL_RELEASED_CODE){
+            ctrl = 0;
         } else if ((pos<length) && (input<=0x39)){ // x39 is the last index in the scan code arrays
-            if (shift){
+            if (ctrl){
+                if (input == L_CODE){
+                    clear();
+                    setCursor(0,0);
+                }
+            } else if (shift){
                 buf[pos] = scanTableShift[input]; // add character to buffer we're currently writing to
                 putcBetter(scanTableShift[input]);
             } else if (capsLock){

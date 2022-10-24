@@ -157,19 +157,12 @@ void entry(unsigned long magic, unsigned long addr) {
      * without showing you any output */
     printf("Enabling Interrupts\n");
     sti();
-
-    terminal_open();
-    while (1){
-        char test[BUFFER_SIZE-PATH_LENGTH];
-        gets(test,BUFFER_SIZE-PATH_LENGTH);
-        terminal_write(test,BUFFER_SIZE-PATH_LENGTH);
-    }
     
 
 
 #ifdef RUN_TESTS
     /* Run tests */
-    // launch_tests();
+    launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
 
