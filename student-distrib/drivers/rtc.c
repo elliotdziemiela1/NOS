@@ -31,7 +31,7 @@ void rtc_init(){ // MAKE SURE TO INSTALL RTC HANDLER BEFORE CALLING THIS FUNCTIO
 
 
     rate &= 0;
-    rate = 6;
+    rate = 0x06;
    
     outb(0x8A, RTC_INDEX_PORT);		// x8B: select register B, and disable NMI
     prev= inb(RTC_INDEX_PORT+1);	// x71: read the current value of register B
@@ -66,18 +66,18 @@ void rtc_handler(){
 
 }
 
-int32_t read(int32_t fd, void* buf, int32_t nbytes){
+int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
 //check to see if interrupt has been generated and set flag accordingly
     flag = 0;
     while(1){
         if(flag){
             break;
         }
-    return 0;
-        }
     }
+    return 0;
+}
         
-int32_t write(int32_t fd, const void* buf, int32_t nbytes){
+int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes){
     //check if all values passed in are valid
     if(fd == 0 || fd == 1|| buf == NULL || nbytes != 4 ) {
 		return -1;
@@ -89,10 +89,10 @@ int32_t write(int32_t fd, const void* buf, int32_t nbytes){
     }
     set_frequency(freq);
 
-    return nbytes; //discussion slides say to return 0 or -1 but appendix b says number of bytes??
+    return 0; //discussion slides say to return 0 or -1 but appendix b says number of bytes??
 }
 
-int32_t open(const uint8_t* filename){
+int32_t rtc_open(const uint8_t* filename){
     if(filename == NULL){
         return -1;
     }
@@ -100,7 +100,7 @@ int32_t open(const uint8_t* filename){
     return 0;
 }
 
-int32_t close(int32_t fd){
+int32_t rtc_close(int32_t fd){
     return 0;
 }
 
@@ -115,24 +115,34 @@ int32_t set_frequency(int32_t freq){
     switch(freq){
         case 2: 
             rate= 0x0F;
+            break;
         case 4: 
             rate= 0x0E;
+            break;
         case 8: 
             rate= 0x0D;
+            break;
         case 16: 
             rate= 0x0C;
+            break;
         case 32: 
-            rate= 0x0B;    
+            rate= 0x0B;
+            break;    
         case 64: 
             rate= 0x0A;
+            break;
         case 128: 
             rate= 0x09;
+            break;
         case 256: 
             rate= 0x08;
+            break;
         case 512: 
             rate= 0x07;
+            break;
         case 1024: 
             rate= 0x06;
+            break;
         default: 
             return -1;
     }
@@ -155,10 +165,9 @@ int is_power_of_two(int num){
     }
     while(num!=1){
         num = num/2;
-        if((n%2 != 0) && (num !- 1)){
+        if((num%2 != 0) && (num != 1)){
             return 0;
         }
-    return 1;
     }
-
+    return 1;
 }
