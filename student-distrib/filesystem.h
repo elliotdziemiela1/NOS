@@ -17,7 +17,7 @@ typedef struct dentry{
     //index node number for the file
     int32_t inode_num;
     //reserved 24B 
-    int8_t reserved[24];
+    int8_t reserved[24]; //reserved as described in the documentation
 }dentry_t;
 
 //first dentry inside the directory along with rest of the dentry blocks
@@ -25,8 +25,8 @@ typedef struct boot_block{
     int32_t num_directories;
     int32_t num_inodes;
     int32_t num_data_blocks;
-    int8_t reserved[52];
-    dentry_t direntries[63];
+    int8_t reserved[52]; //reserved as described in the documentation
+    dentry_t direntries[BLOCK_NUM];
 }boot_block_t;
 
 //file descriptor

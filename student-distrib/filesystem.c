@@ -176,7 +176,7 @@ int32_t read_directory(int32_t fd, void* buf, int32_t nbytes){
 
         if(read_dentry_by_index(i, (dentry_t*) &dentry) == -1) return -1;
 
-        for(j = 0; j < 32; j++){
+        for(j = 0; j < FILENAME_LENGTH; j++){
             printf("%c", dentry.file_name[j]);
         }
         printf("                  File Type: %d", dentry.file_type);
