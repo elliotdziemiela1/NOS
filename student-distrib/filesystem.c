@@ -92,7 +92,9 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
     return bytes_read;
 }
 
-int32_t read_file(int32_t fd, void* buf, int32_t nbytes);
+int32_t read_file(int32_t fd, void* buf, int32_t nbytes){
+
+}
 int32_t read_directory(int32_t fd, void* buf, int32_t nbytes){
     int i;
     int j;
@@ -124,6 +126,7 @@ int32_t read_directory(int32_t fd, void* buf, int32_t nbytes){
 int32_t open_file(const uint32_t* filename){
     return -1;
 }
+
 int32_t write_file(int32_t fd, void* buf, int32_t nbytes){
     return -1;
 }

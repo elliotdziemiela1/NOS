@@ -141,19 +141,22 @@ int test_file_system(){
 	dentry_t cur_file;
 	read_dentry_by_name("frame0.txt", (dentry_t*) &cur_file);
 	uint32_t cur_inode = cur_file.inode_num;
-	uint8_t* buf;
-	uint32_t length = 120;
+	uint32_t length = 264;
+	uint8_t buf[264];
 	uint32_t offset = 0;
 
 	int32_t bytes_read = read_data(cur_inode, offset, buf, length);
-	bytes_read = 2;
 
 	int i;
 
-	// for(i = 0; i < bytes_read; i++){
-	// 	// printf("%c", buf[i]);
-	// 	printf("%d", bytes_read);
-	// }
+	clear();
+	setCursor(0, 0);
+
+	printf("bytes read: %d \n", bytes_read);
+
+	for(i = 0; i < bytes_read; i++){
+		printf("%c", buf[i]);
+	}
 
 	//printf("%d", bytes_read);
 
@@ -170,6 +173,28 @@ int test_read_directory(){
 
 	return 1;
 }
+
+int rtc_1_test(){
+    TEST_HEADER;
+    int freq_pass;
+    int buf_size;
+    rtc_open(2);
+    clear();
+    setCursor(0,0);
+    for(freq_pass = 2; freq_pass <= 1024; freq_pass *= 2){
+        rtc_write(2, (void*)&freq_pass, 4);
+        buf_size = freq_pass;
+        while(buf_size > 0){
+            rtc_read(2, (void*)&freq_pass, 4);
+            putc('1');
+            buf_size--;
+            if((freq_pass - buf_size) % 80 == 0)
+                putc('\n');
+        }
+        clear();
+        setCursor(0,0);
+    }
+}
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -185,7 +210,7 @@ void launch_tests(){
 	//TEST_OUTPUT("rtc test rate test", rtc_test_rate());
 	// launch your tests here
 
-	//test_read_directory();
-	test_file_system();
+	rtc_1_test();
+	//test_file_system();
 	return;
 }
