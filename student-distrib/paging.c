@@ -11,7 +11,15 @@
 page_directory_entry_t page_dir[num_pde] __attribute__((aligned(pte_size)));
 page_table_entry_t video_mem[num_pte] __attribute__((aligned(pte_size)));
 
-
+/* init_paging
+ * 
+ * initializes page directory and video memory (page table)
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: Paging init
+ * Files: 
+ */
 void init_paging(){
     // page table setup
     int i;
@@ -32,8 +40,8 @@ void init_paging(){
     }
 
     // set video memory
-    uint32_t idx = VIDEO >> add_shift;
-    video_mem[idx].present = 1;
+    uint32_t idx = VIDEO >> add_shift; // masks top 20 bits of addr
+    video_mem[idx].present = 1; // marks as present
 
 
 
@@ -55,15 +63,16 @@ void init_paging(){
         page_dir[i].fourkb.pwt = 0;
     }
 
-    page_dir[0].fourkb.addr = (int)(video_mem) >> add_shift;
-    page_dir[0].fourkb.present = 1;
-    page_dir[0].fourkb.su = 1;
+    // init 4 kb
+    page_dir[0].fourkb.addr = (int)(video_mem) >> add_shift;// masks top 20 bits of addr
+    page_dir[0].fourkb.present = 1;// marks as present
+    page_dir[0].fourkb.su = 1; // marks as supervisor
 
     // init 4 mb
-    page_dir[1].fourmb.addr = (pte_size * num_pde) >> add_shift;
-    page_dir[1].fourmb.present = 1;
-    page_dir[1].fourmb.rw = 1;
-    page_dir[1].fourmb.ps = 1;
+    page_dir[1].fourmb.addr = (pte_size * num_pde) >> add_shift;// masks top 20 bits of addr
+    page_dir[1].fourmb.present = 1;// marks as present
+    page_dir[1].fourmb.rw = 1; // allows writing as well
+    page_dir[1].fourmb.ps = 1; // sets page size
 
     // set page dir
     loadPageDirectory(page_dir);

@@ -1,13 +1,12 @@
-
 1. Problem: OS image not booting
    Symptom: boot loop keeps running
    Time to fix problem: 2 hours
    Action done to fix problem: devel being used was broken so used another group member's devel
 
 2. Problem: RTC tests not working
-   Symptom: screen of characters is not blinking 
+   Symptom: screen of characters is not blinking
    Time to fix problem: 3 hours and counting
-   Action done to fix problem: 
+   Action done to fix problem:
 
 3. Problem: RTC not changing frequency
    Symptom: Screen blinks at same rate as it was intialized at
@@ -17,5 +16,19 @@
 4. Problem: Read Dentry by Name not retrieving valid idx
    Symptom: Dentry always returning null
    Time to fix: 30 min
-   Action done to fic problem: Wrong parameter checking. Comparing an inode number to the num of directories instead of num of inodes
+   Action done to fix problem: Wrong parameter checking. Comparing an inode number to the num of directories instead of num of inodes
 
+5. Problem: Only able to display part of file
+   Symptom: File buffer size too small
+   Time to fix: 10 min
+   Action done to fix problem: Increase buffer to max size
+
+6. Problem: RTC test not printing on multiple lines
+   Symptom: Continues printing on the same line on and on
+   Time to fix: 10 min
+   Action done to fix problem: Every 80 characters, printing '\n'
+
+7. Problem: Terminal printing wraps around instead of next line
+   Symptom: Rewrites on the same line
+   Time to fix: 45 min
+   Action dont to fix problem: Created a new putc function that goes to next line

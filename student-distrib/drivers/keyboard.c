@@ -60,9 +60,9 @@ void keyboard_init(){
  * Return Value: the number of bytes or characters written to buffer
  */
 int32_t gets(char * buffer, int nbytes){
-    if (nbytes < 2)
+    if (nbytes < 1) // shoulnt be called with 0 bytes
         return -1;
-    buf = buffer;
+    buf = buffer; // initialize keyboard variables
     length = nbytes-1;
     pos = 0;
     reading = 1;
@@ -70,7 +70,8 @@ int32_t gets(char * buffer, int nbytes){
     capsLock = 0;
     ctrl = 0;
     enable_irq(KB_IRQ);
-    while (reading){}
+    while (reading){} // this will end when the user presses enter in the keyboard
+    // handler, setting reading to false.
     disable_irq(KB_IRQ);
     return pos;
 }
@@ -90,11 +91,11 @@ void keyboard_handler(){
     uint8_t input = inb(KB_DATAPORT);
     disable_irq(KB_IRQ);
     if (reading){
-        if (input == ENTER_CODE){
-            reading = 0;
+        if (input == ENTER_CODE){ // end while loop in gets
+            reading = 0; 
             buf[pos] = '\n';
-        } else if (input == BACKSPACE_CODE){
-            if (pos > 0){
+        } else if (input == BACKSPACE_CODE){ // replace recently printed character with space
+            if (pos > 0){  // if there's anything to delete
                 buf[pos-1] = ' ';
                 pos--;
                 setCursor(getCursorX()-1,getCursorY());
@@ -113,7 +114,7 @@ void keyboard_handler(){
             ctrl = 0;
         } else if ((pos<length) && (input<=0x39)){ // x39 is the last index in the scan code arrays
             if (ctrl){
-                if (input == L_CODE){
+                if (input == L_CODE){ // ctrl + l = clear screen and reset cursor to top left
                     clear();
                     setCursor(0,0);
                 }

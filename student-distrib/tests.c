@@ -103,6 +103,10 @@ int rtc_test(){
 	return result;
 }
 
+/* terminal_test
+ * repeatedly calls terminal read then calls terminal write with a test character array
+ * Return: returns PASS.
+ */
 int terminal_test(){
 	TEST_HEADER;
 
@@ -120,6 +124,16 @@ int terminal_test(){
 // add more tests here
 /* Checkpoint 2 tests */
 
+
+/* File System test read
+ * 
+ * Checks if read data function works works
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: RTC handling
+ * Files: 
+ */
 int test_read_data(){
 	TEST_HEADER;
 	dentry_t cur_file;
@@ -147,6 +161,15 @@ int test_read_data(){
 	return 1;
 }
 
+
+/* File system Test Directory
+ * 
+ * Reads all directory names and prints to terminal
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Files: 
+ */
 int test_read_directory(){
 	TEST_HEADER;
 	int32_t fd = 0;
@@ -161,6 +184,16 @@ int test_read_directory(){
 	return success;
 }
 
+
+/* File system Test open/close
+ * 
+ * Checks if open and close functions for file works
+ * Inputs: num between 0-6 which specifies which file to open
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: RTC handling
+ * Files: 
+ */
 int test_open_files(uint8_t cmd){
 	TEST_HEADER;
 	int8_t* file_names[7] = {"frame0.txt", "frame1.txt", "hello", "created.txt", 
@@ -183,7 +216,7 @@ int test_open_files(uint8_t cmd){
 
 	int32_t inode_num = dentry.inode_num;
 	int32_t file_length = get_file_length(inode_num);
-	int8_t buf[37000];
+	int8_t buf[37000]; // 37000 is max file size
 
 	int32_t bytes_read = read_file(inode_num, buf, file_length);
 	clear();
@@ -211,6 +244,15 @@ int test_open_files(uint8_t cmd){
 	return 1;
 }
 
+
+/* RTC Test 
+ * 
+ * Checks if RTC clock rate changes
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: RTC clock
+ */
 int rtc_1_test(){
     TEST_HEADER;
     int freq_pass;
@@ -219,14 +261,14 @@ int rtc_1_test(){
     rtc_open(&something);
     clear();
     setCursor(0,0);
-    for(freq_pass = 2; freq_pass <= 1024; freq_pass *= 2){
+    for(freq_pass = 2; freq_pass <= 1024; freq_pass *= 2){ // 1024 is the highest working freq
         rtc_write(2, (void*)&freq_pass, 4);
         buf_size = freq_pass;
         while(buf_size > 0){
             rtc_read(2, (void*)&freq_pass, 4);
             putc('1');
             buf_size--;
-            if((freq_pass - buf_size) % 80 == 0)
+            if((freq_pass - buf_size) % 80 == 0) // 80 chars in one line of terminal
                 putc('\n');
         }
         clear();
@@ -246,12 +288,12 @@ void launch_tests(){
 	// If you want to print to the screen, i recommend the functions I made printfBetter, putcBetter, 
 	// end putsBetter because they dont wrap around once the cursor hits the edge (they make a new line)
 	
-	//TEST_OUTPUT("rtc test rate test", test_open_files(5));
+	TEST_OUTPUT("rtc test rate test", terminal_test());
 	// launch your tests here
 
 	//rtc_1_test();
 	//test_open_files(6);
-	test_read_directory();
+	// test_read_directory();
 	//test_read_data();
 	return;
 }
