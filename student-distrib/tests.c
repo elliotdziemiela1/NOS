@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "drivers/rtc.h"
 
 #define PASS 1
 #define FAIL 0
@@ -112,6 +113,23 @@ int terminal_test(){
     }
 	return result;
 }
+/* RTC Test 
+ * 
+ * Checks if RTC works
+ * Inputs: None
+ * Outputs: PASS/FAIL
+ * Side Effects: None
+ * Coverage: RTC handling
+ * Files: 
+ */
+int rtc_test_rate(){
+	TEST_HEADER;
+	int32_t test_f = 2;
+	const void* buf = (void*) &test_f;
+	// rtc_write(2, buf, 4);
+	// set_frequency(test_f);
+	rtc_open(2);
+}
 
 
 // add more tests here
@@ -124,6 +142,6 @@ int terminal_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("terminal_test", terminal_test());
+	TEST_OUTPUT("rtc test rate test", rtc_test_rate());
 	// launch your tests here
 }
