@@ -1,10 +1,9 @@
 #include "filesystem.h"
 
-
 boot_block_t * boot_block;
 inode_t * inode_start;
 uint32_t first_data_block;
-
+int32_t files[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
 
 void initialize_filesystem(const uint32_t file_system_start_address){
     boot_block = (boot_block_t *) file_system_start_address; //boot block is first in superblock
@@ -93,8 +92,18 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
 }
 
 int32_t read_file(int32_t fd, void* buf, int32_t nbytes){
-
+    int i;
+    //checks if the file is open in the first place
+    for(i = 2; i < 8; i++){
+        if(fd == files[i]){
+            int32_t file_length = inode_start[fd].file_size;
+            int32_t bytes_read = read_data(fd, 0, (uint8_t *) buf, file_length);
+            return bytes_read;
+        }
+    }
+    return -1; //file isn't opened
 }
+
 int32_t read_directory(int32_t fd, void* buf, int32_t nbytes){
     int i;
     int j;
@@ -123,16 +132,57 @@ int32_t read_directory(int32_t fd, void* buf, int32_t nbytes){
     }
 }
 
-int32_t open_file(const uint32_t* filename){
+int32_t open_file(const uint8_t* filename){
+    if(filename == NULL){
+        return -1;
+    }
+
+    dentry_t dentry;
+    if (read_dentry_by_name(filename, (dentry_t*) &dentry) == -1){
+        return -1; //file does not exist
+    }
+
+    int inode_num = dentry.inode_num;
+    int i;
+    for(i = 2; i < 8; i++){
+        if(files[i] == inode_num){
+            return 0; //file is already open
+        }
+    }
+    for(i = 2; i < 8; i++){
+        if(files[i] == -1){
+            files[i] = inode_num;
+            return 0; //file was opened
+        }
+    }
+
+    //if we're at this point, there are already five files open
     return -1;
+}
+
+//fd is an inode num
+int32_t close_file(const uint8_t* filename){
+    int i;
+    dentry_t dentry;
+    read_dentry_by_name(filename, (dentry_t*) &dentry);
+    int32_t inode_num = dentry.inode_num;
+    for(i = 2; i < 8; i++){
+        if(inode_num == files[i]){
+            files[i] = -1;
+            return 0;
+        }
+    }
+    return -1;
+}
+
+int32_t get_file_length(int32_t inode_num){
+    return inode_start[inode_num].file_size;
 }
 
 int32_t write_file(int32_t fd, void* buf, int32_t nbytes){
     return -1;
 }
-int32_t close_file(int32_t fd){
-    return -1;
-}
+
 int32_t open_directory(const uint32_t* filename){
     return -1;
 }

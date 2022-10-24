@@ -2,6 +2,7 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "drivers/rtc.h"
+#include "drivers/terminal.h"
 #include "filesystem.h"
 
 #define PASS 1
@@ -126,7 +127,6 @@ int terminal_test(){
 int rtc_test_rate(){
 	TEST_HEADER;
 	int32_t test_f = 2;
-	const void* buf = (void*) &test_f;
 	// rtc_write(2, buf, 4);
 	// set_frequency(test_f);
 	rtc_open(2);
@@ -136,10 +136,10 @@ int rtc_test_rate(){
 // add more tests here
 /* Checkpoint 2 tests */
 
-int test_file_system(){
+int test_read_data(){
 	TEST_HEADER;
 	dentry_t cur_file;
-	read_dentry_by_name("frame0.txt", (dentry_t*) &cur_file);
+	read_dentry_by_name((const uint8_t*) "frame0.txt", (dentry_t*) &cur_file);
 	uint32_t cur_inode = cur_file.inode_num;
 	uint32_t length = 264;
 	uint8_t buf[264];
@@ -155,7 +155,7 @@ int test_file_system(){
 	printf("bytes read: %d \n", bytes_read);
 
 	for(i = 0; i < bytes_read; i++){
-		printf("%c", buf[i]);
+		printfBetter("%c", buf[i]);
 	}
 
 	//printf("%d", bytes_read);
@@ -169,7 +169,46 @@ int test_read_directory(){
 	int* buf = 0;
 	int32_t nbytes = 0;
 
-	read_directory(fd, (void*) buf, nbytes);
+	clear();
+	setCursor(0, 0);
+
+	int32_t success = read_directory(fd, (void*) buf, nbytes);
+
+	return success;
+}
+
+int test_open_files(uint8_t cmd){
+	TEST_HEADER;
+	int8_t* file_names[6] = {"frame0.txt", "frame1.txt", "hello", "pingpong", "testprint", "verylargetextwithverylongname.txt"};
+	open_file((const uint8_t*) file_names[0]);
+	open_file((const uint8_t*) file_names[1]);
+	open_file((const uint8_t*) file_names[2]);
+	open_file((const uint8_t*) file_names[3]);
+	open_file((const uint8_t*) file_names[4]);
+	open_file((const uint8_t*) file_names[6]);
+	dentry_t dentry;
+
+	read_dentry_by_name(file_names[cmd], (dentry_t*) &dentry);
+
+	int32_t inode_num = dentry.inode_num;
+	int32_t file_length = get_file_length(inode_num);
+	int8_t buf[37000];
+
+	int32_t bytes_read = read_file(inode_num, buf, file_length);
+	clear();
+	setCursor(0, 0);
+	printf("file read: %s \n", file_names[cmd]);
+	printf("bytes read: %d \n", bytes_read);
+	int i;
+	for(i = 0; i < bytes_read; i++){
+		printfBetter("%c", buf[i]);
+	}
+
+	if(bytes_read != file_length){
+		return 0;
+	}
+
+	
 
 	return 1;
 }
@@ -210,7 +249,8 @@ void launch_tests(){
 	//TEST_OUTPUT("rtc test rate test", rtc_test_rate());
 	// launch your tests here
 
-	rtc_1_test();
-	//test_file_system();
+	//rtc_1_test();
+	test_open_files(0);
+	//test_read_directory();
 	return;
 }
