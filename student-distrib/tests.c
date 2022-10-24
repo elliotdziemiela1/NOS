@@ -115,22 +115,6 @@ int terminal_test(){
     }
 	return result;
 }
-/* RTC Test 
- * 
- * Checks if RTC works
- * Inputs: None
- * Outputs: PASS/FAIL
- * Side Effects: None
- * Coverage: RTC handling
- * Files: 
- */
-int rtc_test_rate(){
-	TEST_HEADER;
-	int32_t test_f = 2;
-	// rtc_write(2, buf, 4);
-	// set_frequency(test_f);
-	rtc_open(2);
-}
 
 
 // add more tests here
@@ -231,7 +215,8 @@ int rtc_1_test(){
     TEST_HEADER;
     int freq_pass;
     int buf_size;
-    rtc_open(2);
+	uint8_t something = 2;
+    rtc_open(&something);
     clear();
     setCursor(0,0);
     for(freq_pass = 2; freq_pass <= 1024; freq_pass *= 2){
@@ -247,6 +232,7 @@ int rtc_1_test(){
         clear();
         setCursor(0,0);
     }
+	return 0;
 }
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */

@@ -2,9 +2,10 @@
 
 #include "lib.h"
 
+void init_paging();
 
 // page table struct
-typedef struct page_table_entry_t {
+typedef struct __attribute__ ((packed)) {
     uint32_t present    : 1; // present
     uint32_t rw         : 1; // read/write
     uint32_t su         : 1; // supervisor/user
@@ -18,7 +19,7 @@ typedef struct page_table_entry_t {
     uint32_t g          : 1; // global
     uint32_t avl        : 3; // available
     uint32_t addr       :20; // page address
-} page_table_entry_t __attribute__ ((packed));
+} page_table_entry_t;
 
 
 // page dir 4 mb struct

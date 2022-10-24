@@ -1,6 +1,7 @@
 #include "../types.h"
 #include "terminal.h"
 #include "../lib.h"
+#include "keyboard.h"
 
 char buf[BUFFER_SIZE]; 
 int pos; // position in buffer to write next character (0 indexed)
@@ -31,7 +32,7 @@ uint32_t terminal_open(){
     return 0;
 }
 
-uint32_t terminal_write(uint8_t * in, int32_t nbytes){
+uint32_t terminal_write(char * in, int32_t nbytes){
     if (!opened || !in)
         return -1;
     int i=0;

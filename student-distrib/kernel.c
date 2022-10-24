@@ -13,6 +13,7 @@
 #include "./drivers/keyboard.h"
 #include "./drivers/rtc.h"
 #include "./drivers/terminal.h"
+#include "filesystem.h"
 
 #define RUN_TESTS
 
