@@ -2,6 +2,7 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "drivers/rtc.h"
+#include "filesystem.h"
 
 #define PASS 1
 #define FAIL 0
@@ -133,8 +134,42 @@ int rtc_test_rate(){
 
 
 // add more tests here
-
 /* Checkpoint 2 tests */
+
+int test_file_system(){
+	TEST_HEADER;
+	dentry_t cur_file;
+	read_dentry_by_name("frame0.txt", (dentry_t*) &cur_file);
+	uint32_t cur_inode = cur_file.inode_num;
+	uint8_t* buf;
+	uint32_t length = 120;
+	uint32_t offset = 0;
+
+	int32_t bytes_read = read_data(cur_inode, offset, buf, length);
+	bytes_read = 2;
+
+	int i;
+
+	// for(i = 0; i < bytes_read; i++){
+	// 	// printf("%c", buf[i]);
+	// 	printf("%d", bytes_read);
+	// }
+
+	//printf("%d", bytes_read);
+
+	return 1;
+}
+
+int test_read_directory(){
+	TEST_HEADER;
+	int32_t fd = 0;
+	int* buf = 0;
+	int32_t nbytes = 0;
+
+	read_directory(fd, (void*) buf, nbytes);
+
+	return 1;
+}
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -142,6 +177,15 @@ int rtc_test_rate(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("rtc test rate test", rtc_test_rate());
+	// Elliot: if you want to clear the screen, call lib::clear(). if you want to then reset the 
+	// cursor to the top left of the screen to start printing from there, call lib::setCursor(0,0)
+	// If you want to print to the screen, i recommend the functions I made printfBetter, putcBetter, 
+	// end putsBetter because they dont wrap around once the cursor hits the edge (they make a new line)
+	
+	//TEST_OUTPUT("rtc test rate test", rtc_test_rate());
 	// launch your tests here
+
+	//test_read_directory();
+	test_file_system();
+	return;
 }
