@@ -112,9 +112,18 @@ int test_file_system(){
 	uint32_t length = 120;
 	uint32_t offset = 0;
 
-	read_data(cur_inode, offset, buf, length);
+	int32_t bytes_read = read_data(cur_inode, offset, buf, length);
 
-	printf((int8_t*) buf);
+	int i;
+	for(i = 0; i < 80; i++){
+		putc('X');
+	}
+
+	for(i = 0; i < bytes_read; i++){
+		putc(buf[i]);
+	}
+
+	printf("%d", bytes_read);
 
 	return 1;
 }
@@ -125,6 +134,9 @@ int test_file_system(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("test_file_system", test_file_system());
+	//TEST_OUTPUT("test_file_system", test_file_system());
 	// launch your tests here
+
+	test_file_system();
+	return;
 }

@@ -36,7 +36,7 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
 }
 
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
-    uint32_t num_dir = boot_block -> num_directories;
+    uint32_t num_dir = boot_block -> num_inodes;
 
     //parameter validation
     if(index >= num_dir || index < 0 || dentry == NULL){
@@ -44,7 +44,7 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
     }
 
     //copy information from dentry in boot block into given dentry
-    strcpy((int8_t*) dentry -> file_name, (const int8_t*)boot_block -> direntries[index].file_name);
+    strcpy((int8_t*) dentry -> file_name, (const int8_t*) boot_block -> direntries[index].file_name);
     dentry -> file_type = boot_block -> direntries[index].file_name;
     dentry -> inode_num = index;
     return 0;
@@ -90,6 +90,28 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
     }
 
     return bytes_read;
+}
+
+int32_t read_file(int32_t fd, void* buf, int32_t nbytes);
+int32_t read_directory(int32_t fd, void* buf, int32_t nbytes);
+
+int32_t open_file(const uint32_t* filename){
+    return -1;
+}
+int32_t write_file(int32_t fd, void* buf, int32_t nbytes){
+    return -1;
+}
+int32_t close_file(int32_t fd){
+    return -1;
+}
+int32_t open_directory(const uint32_t* filename){
+    return -1;
+}
+int32_t write_directory(int32_t fd, void* buf, int32_t nbytes){
+    return -1;
+}
+int32_t close_directory(int32_t fd){
+    return -1;
 }
 
 
