@@ -31,13 +31,13 @@ char scanTableCapsLock[0x40] = {'\0','\0','1','2','3','4','5','6','7','8','9','0
     'B','N','M',',','.','/','\0','\0','\0',' '};
 
 
-char * buf; // the buffer to write characters to
-int length; // length of buf
-int pos; // position in buf to write to next (0 indexed)
-int reading; // flag that says whether or not keyboard is currently in a read
-int shift; // flag that says whether or not shift is being held
-int capsLock; // flag that says whether or not caps lock is on
-int ctrl; // flag that says whether or not ctrl is pressed
+static char * buf; // the buffer to write characters to
+static int length; // length of buf
+static int pos; // position in buf to write to next (0 indexed)
+static int reading; // flag that says whether or not keyboard is currently in a read
+static int shift; // flag that says whether or not shift is being held
+static int capsLock; // flag that says whether or not caps lock is on
+static int ctrl; // flag that says whether or not ctrl is pressed
 
 /* keyboard_init
  * 
@@ -98,8 +98,8 @@ void keyboard_handler(){
     if (reading){
         if (input == ENTER_CODE){
             reading = 0;
-            addToBuffer(pos,'\n');
-            putcBetter('\n');
+            addToBuffer(pos,'\0');
+            // putcBetter('\n');
         } else if (input == BACKSPACE_CODE){
             if (pos > 0){
                 addToBuffer(pos-1,' ');

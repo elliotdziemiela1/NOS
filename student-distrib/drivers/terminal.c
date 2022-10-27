@@ -3,9 +3,9 @@
 #include "../lib.h"
 #include "keyboard.h"
 
-volatile char buf[BUFFER_SIZE]; 
-int pos; // position in buffer to write next character (0 indexed)
-int opened; // flag for whether or not the terminal is currently opened.
+static volatile char buf[BUFFER_SIZE]; 
+static int pos; // position in buffer to write next character (0 indexed)
+static int opened; // flag for whether or not the terminal is currently opened.
 
 static void acceptNewCommand(){ // THIS CODE NEEDS TO BE CHANGED
     char path[11] = {'s','o','m','e','w','h','e','r','e',':','\0'};
@@ -44,6 +44,8 @@ uint32_t terminal_write(){
     //     ptr++;
     // }
     int ret = printfBetter(buf);
+    if (ret)
+        putcBetter('\n');
     return ret;
 }
 
@@ -59,6 +61,7 @@ uint32_t terminal_read(){
     if (!opened)
         return -1;
     int32_t bytesRead = gets(buf,BUFFER_SIZE-1);
+    putc('\n');
 
     return bytesRead;
 }
