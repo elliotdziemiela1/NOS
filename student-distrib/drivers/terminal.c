@@ -3,7 +3,7 @@
 #include "../lib.h"
 #include "keyboard.h"
 
-char buf[BUFFER_SIZE]; 
+volatile char buf[BUFFER_SIZE]; 
 int pos; // position in buffer to write next character (0 indexed)
 int opened; // flag for whether or not the terminal is currently opened.
 
