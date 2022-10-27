@@ -75,6 +75,12 @@ int32_t gets(char * buffer, int nbytes){
     return pos;
 }
 
+static void addToBuffer(int index, char c){
+    buf[index] = c;
+}
+
+
+
 
 /* keyboard_handler
  * 
@@ -92,10 +98,11 @@ void keyboard_handler(){
     if (reading){
         if (input == ENTER_CODE){
             reading = 0;
-            buf[pos] = '\n';
+            addToBuffer(pos,'\n');
+            putcBetter('\n');
         } else if (input == BACKSPACE_CODE){
             if (pos > 0){
-                buf[pos-1] = ' ';
+                addToBuffer(pos-1,' ');
                 pos--;
                 setCursor(getCursorX()-1,getCursorY());
                 putcBetter(' ');
@@ -118,13 +125,13 @@ void keyboard_handler(){
                     setCursor(0,0);
                 }
             } else if (shift){
-                buf[pos] = scanTableShift[input]; // add character to buffer we're currently writing to
+                addToBuffer(pos,scanTableShift[input]);// add character to buffer we're currently writing to
                 putcBetter(scanTableShift[input]);
             } else if (capsLock){
-                buf[pos] = scanTableCapsLock[input]; // add character to buffer we're currently writing to
+                addToBuffer(pos,scanTableCapsLock[input]);// add character to buffer we're currently writing to
                 putcBetter(scanTableCapsLock[input]);
             } else {
-                buf[pos] = scanTable[input]; // add character to buffer we're currently writing to
+                addToBuffer(pos,scanTable[input]);// add character to buffer we're currently writing to
                 putcBetter(scanTable[input]);
             }
             pos++;
