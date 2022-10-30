@@ -26,6 +26,7 @@ int flag;
  * Files: None
  */
 void rtc_init(){ // MAKE SURE TO INSTALL RTC HANDLER BEFORE CALLING THIS FUNCTION
+    insert_handler(RTC_IRQ, (int)&rtc_handler,0);
 
 
     outb(0x8B, RTC_INDEX_PORT);		// x8B: select register B, and disable NMI
@@ -42,7 +43,6 @@ void rtc_init(){ // MAKE SURE TO INSTALL RTC HANDLER BEFORE CALLING THIS FUNCTIO
     outb(0x8A, RTC_INDEX_PORT);		// set the index again (a read will reset the index to register D)
     outb((prev & 0xF0) | rate, RTC_INDEX_PORT+1);	// write the previous value ORed with 0x40. This turns on bit 6 of register B
 
-    insert_handler(RTC_IRQ, (int)&rtc_handler,0);
 }
 
 /* rtc_handler

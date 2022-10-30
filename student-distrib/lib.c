@@ -14,9 +14,10 @@ static char* video_mem = (char *)VIDEO;
 void verticalScroll(int lines){
     int i;
     for (i = 0; i < lines; i++){ // 2=ascii code+attribute byte
-        memcpy(video_mem, video_mem+NUM_COLS*2, NUM_COLS*NUM_ROWS*2); 
+        memmove(video_mem, video_mem+NUM_COLS*2, NUM_COLS*(NUM_ROWS-1)*2); 
         screen_y--;
     }
+    memset(video_mem+(NUM_COLS*(NUM_ROWS-1)*2), 0, NUM_COLS*2);
 }
 
 /* void setCursor(int x, int y)
@@ -37,13 +38,14 @@ int getCursorY(){
 /* void clear(void);
  * Inputs: void
  * Return Value: none
- * Function: Clears video memory */
+ * Function: Clears video memory and resets cursor to (0,0) */
 void clear(void) {
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
+    setCursor(0,0);
 }
 
 
@@ -335,8 +337,12 @@ int32_t putsBetter(int8_t* s) {
  * Return Value: void
  *  Function: Output a character to the console */
 void putcBetter(uint8_t c) {
+    while (screen_y >= NUM_ROWS)
+        verticalScroll(1);
     if(c == '\n' || c == '\r') {
         screen_y++;
+        // if (screen_y == NUM_ROWS)
+        //     verticalScroll(1);
         screen_x = 0;
     } else {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;

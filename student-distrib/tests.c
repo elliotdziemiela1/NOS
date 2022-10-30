@@ -114,8 +114,7 @@ int terminal_test(){
 	terminal_open();
     while (1){
         terminal_read();
-		char test[5] = {'f','i','l','e','\0'};
-		terminal_write(test, 5);
+		terminal_write();
     }
 	return result;
 }

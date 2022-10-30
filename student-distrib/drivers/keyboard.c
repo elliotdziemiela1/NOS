@@ -31,13 +31,13 @@ char scanTableCapsLock[0x40] = {'\0','\0','1','2','3','4','5','6','7','8','9','0
     'B','N','M',',','.','/','\0','\0','\0',' '};
 
 
-char * buf; // the buffer to write characters to
-int length; // length of buf
-int pos; // position in buf to write to next (0 indexed)
-int reading; // flag that says whether or not keyboard is currently in a read
-int shift; // flag that says whether or not shift is being held
-int capsLock; // flag that says whether or not caps lock is on
-int ctrl; // flag that says whether or not ctrl is pressed
+static char * buf; // the buffer to write characters to
+static int length; // length of buf
+static int pos; // position in buf to write to next (0 indexed)
+static int reading; // flag that says whether or not keyboard is currently in a read
+static int shift; // flag that says whether or not shift is being held
+static int capsLock; // flag that says whether or not caps lock is on
+static int ctrl; // flag that says whether or not ctrl is pressed
 
 /* keyboard_init
  * 
@@ -76,6 +76,12 @@ int32_t gets(char * buffer, int nbytes){
     return pos;
 }
 
+static void addToBuffer(int index, char c){
+    buf[index] = c;
+}
+
+
+
 
 /* keyboard_handler
  * 
@@ -91,12 +97,13 @@ void keyboard_handler(){
     uint8_t input = inb(KB_DATAPORT);
     disable_irq(KB_IRQ);
     if (reading){
-        if (input == ENTER_CODE){ // end while loop in gets
-            reading = 0; 
-            buf[pos] = '\n';
-        } else if (input == BACKSPACE_CODE){ // replace recently printed character with space
-            if (pos > 0){  // if there's anything to delete
-                buf[pos-1] = ' ';
+        if (input == ENTER_CODE){
+            reading = 0;
+            addToBuffer(pos,'\0');
+            // putcBetter('\n');
+        } else if (input == BACKSPACE_CODE){
+            if (pos > 0){
+                addToBuffer(pos-1,' ');
                 pos--;
                 setCursor(getCursorX()-1,getCursorY());
                 putcBetter(' ');
@@ -119,13 +126,13 @@ void keyboard_handler(){
                     setCursor(0,0);
                 }
             } else if (shift){
-                buf[pos] = scanTableShift[input]; // add character to buffer we're currently writing to
+                addToBuffer(pos,scanTableShift[input]);// add character to buffer we're currently writing to
                 putcBetter(scanTableShift[input]);
             } else if (capsLock){
-                buf[pos] = scanTableCapsLock[input]; // add character to buffer we're currently writing to
+                addToBuffer(pos,scanTableCapsLock[input]);// add character to buffer we're currently writing to
                 putcBetter(scanTableCapsLock[input]);
             } else {
-                buf[pos] = scanTable[input]; // add character to buffer we're currently writing to
+                addToBuffer(pos,scanTable[input]);// add character to buffer we're currently writing to
                 putcBetter(scanTable[input]);
             }
             pos++;
