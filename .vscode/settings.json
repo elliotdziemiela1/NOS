@@ -4,6 +4,11 @@
         "synch.h": "c",
         "types.h": "c",
         "keyboard.h": "c",
-        "lib.h": "c"
+        "lib.h": "c",
+        "terminal.h": "c",
+        "ece391syscall.h": "c",
+        "multiboot.h": "c",
+        "syscalls.h": "c",
+        "paging.h": "c"
     }
 }

@@ -14,6 +14,7 @@
 #include "./drivers/rtc.h"
 #include "./drivers/terminal.h"
 #include "filesystem.h"
+#include "syscalls.h"
 
 #define RUN_TESTS
 
