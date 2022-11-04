@@ -1,5 +1,6 @@
 #include "syscalls.h"
 #include "./drivers/keyboard.h"
+#include "./lib.h"
 
 #define JUNK 0
 
@@ -10,6 +11,7 @@ int32_t execute (const uint8_t* command){
     return 0;
 }
 int32_t write (int32_t fd, const void* buf, int32_t nbytes){
+    printf("REACHED WRITE");
     return 0;
 }
 int32_t open (const uint8_t* filename){

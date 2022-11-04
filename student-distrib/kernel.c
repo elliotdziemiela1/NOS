@@ -15,6 +15,7 @@
 #include "./drivers/terminal.h"
 #include "filesystem.h"
 #include "syscalls.h"
+#include "../syscalls/ece391syscall.h"
 
 #define RUN_TESTS
 

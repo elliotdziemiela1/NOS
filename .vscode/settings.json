@@ -9,6 +9,7 @@
         "ece391syscall.h": "c",
         "multiboot.h": "c",
         "syscalls.h": "c",
-        "paging.h": "c"
+        "paging.h": "c",
+        "ece391support.h": "c"
     }
 }

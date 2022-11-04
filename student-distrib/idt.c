@@ -19,7 +19,10 @@ void insert_handler(int irqNum, uint32_t ptr, int dpl){
 
 void dummyrtcHandler(){printf("rtc interrupt handler called");while(1){}}
 void dummykbHandler(){printf("keyboard interrupt handler called");while(1){};}
-void sysCallHandler(){printf("system call handler called");while(1){};}
+void sysCallHandler(){
+    printf("system call handler called");
+    sys_call_linkage();
+}
 void divZeroHandler(){printf("Exception: Divide Error");while(1){};}
 void resHandler(){printf("Exception: RESERVED");while(1){};}
 void nmiHandler(){printf("NMI Interrupt");while(1){};}
@@ -57,7 +60,7 @@ void init_idt(){
     SET_IDT_ENTRY(idt[0x21], &dummykbHandler, 0);
 
     // system calls
-    SET_IDT_ENTRY(idt[0x80], &sysCallHandler, 3);
+    SET_IDT_ENTRY(idt[0x80], sys_call_linkage, 3);
 
     // divide by 0 exception
     SET_IDT_ENTRY(idt[0x0], &divZeroHandler, 0);

@@ -8,6 +8,7 @@ void insert_handler(int irqNum, uint32_t ptr, int dpl); // REMEMBER TO CALL THIS
 void dummyrtcHandler();
 void dummykbHandler();
 void sysCallHandler();
+extern void sys_call_linkage();
 void divZeroHandler();
 void resHandler();
 void nmiHandler();

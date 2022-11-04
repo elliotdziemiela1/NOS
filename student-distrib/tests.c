@@ -275,7 +275,18 @@ int rtc_1_test(){
     }
 	return 0;
 }
+
+
 /* Checkpoint 3 tests */
+int syscall_test(){
+	TEST_HEADER;
+
+	int result = FAIL;
+	mytest();
+	result = PASS;
+	return result;
+}
+
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
 
@@ -287,7 +298,7 @@ void launch_tests(){
 	// If you want to print to the screen, i recommend the functions I made printfBetter, putcBetter, 
 	// end putsBetter because they dont wrap around once the cursor hits the edge (they make a new line)
 	
-	TEST_OUTPUT("rtc test rate test", terminal_test());
+	TEST_OUTPUT("SYSCALLS", syscall_test());
 	// launch your tests here
 
 	//rtc_1_test();
