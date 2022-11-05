@@ -37,7 +37,9 @@ typedef union four_mb {
 
         uint32_t g          : 1; // global
         uint32_t avl        : 3; // available
-        uint32_t addr       :20; // address
+        uint32_t addr       :20; // page address
+        // uint32_t addr       :10; // 4MB aligned physical address
+        // uint32_t reserved   :10;
     } __attribute__ ((packed));
 } four_mb;
 
@@ -57,7 +59,9 @@ typedef union four_kb {
 
         uint32_t g          : 1; // global
         uint32_t avl        : 3; // available
-        uint32_t addr       :20; // address
+        uint32_t addr       :20; // page address
+        // uint32_t addr       :10; // 4MB aligned physical address
+        // uint32_t reserved   :10;
     } __attribute__ ((packed));
 } four_kb;
 
@@ -71,3 +75,5 @@ typedef union page_directory_entry_t {
 
 extern void enablePaging();
 extern void loadPageDirectory (page_directory_entry_t *page_dir);
+
+uint32_t allocate_4MB_page(uint32_t vaddr, uint32_t physaddr);

@@ -44,7 +44,9 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
     for(i = 0; i < num_dir; i++){
         if(strncmp((int8_t*) fname, (int8_t*) (boot_block -> direntries[i].file_name), strlen((int8_t*) fname)) == 0){
             //copy information from dentry in boot block into given dentry
-            success_value = read_dentry_by_index((uint32_t) (boot_block -> direntries[i].inode_num), (dentry_t*) dentry);
+            // success_value = read_dentry_by_index((uint32_t) (boot_block -> direntries[i].inode_num), (dentry_t*) dentry);
+            success_value = read_dentry_by_index((uint32_t) i, (dentry_t*) dentry);
+            
             return success_value;
         }
     }

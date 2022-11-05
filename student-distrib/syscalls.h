@@ -1,7 +1,6 @@
 #pragma once
 #include "filesystem.h"
 
-
 //file opcodes (jump) table
 typedef struct fops_t{
     int32_t (*read)(int32_t fd, void* buf, int32_t nbytes);
@@ -21,7 +20,11 @@ typedef struct file_desc_t{
 
 typedef struct pcb_t{
     file_desc_t file_array[MAX_FILES];       //contains file descriptors for files (struct file_desc_t)
-
+    uint32_t pcb_id;
+    uint32_t parent_id;
+    uint32_t saved_esp;
+    uint32_t saved_ebp;
+    uint8_t active;
 } pcb_t;
 
 int32_t halt (uint8_t status);

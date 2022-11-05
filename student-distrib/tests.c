@@ -4,6 +4,8 @@
 #include "drivers/rtc.h"
 #include "drivers/terminal.h"
 #include "filesystem.h"
+#include "syscalls.h"
+#include "paging.h"
 
 #define PASS 1
 #define FAIL 0
@@ -275,9 +277,18 @@ int rtc_1_test(){
     }
 	return 0;
 }
-/* Checkpoint 3 tests */
-/* Checkpoint 4 tests */
-/* Checkpoint 5 tests */
+
+int test_system_calls(){
+	TEST_HEADER;
+
+	allocate_4MB_page(0x08048000, 0xc00000);
+	// char test[2] = {'l','s'};
+	// execute(test);
+
+	int32_t success = 1;
+
+	return success;
+}
 
 
 /* Test suite entry point */
@@ -287,7 +298,7 @@ void launch_tests(){
 	// If you want to print to the screen, i recommend the functions I made printfBetter, putcBetter, 
 	// end putsBetter because they dont wrap around once the cursor hits the edge (they make a new line)
 	
-	TEST_OUTPUT("rtc test rate test", terminal_test());
+	TEST_OUTPUT("rtc test rate test", test_system_calls());
 	// launch your tests here
 
 	//rtc_1_test();
