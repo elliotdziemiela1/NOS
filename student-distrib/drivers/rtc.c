@@ -97,6 +97,7 @@ int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
  * Files: None
  */    
 int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes){
+    printf("REACHED RTC_WRITE \n");
     //check if all values passed in are valid
     if(fd == 0 || fd == 1|| buf == NULL || nbytes != 4 ) {
 		return -1;
@@ -119,6 +120,7 @@ int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes){
  * Return value: -1 if fail and 0 if success
  */
 int32_t rtc_open(const uint8_t* filename){
+    printf("REACHED RTC_OPEN \n");
     if(filename == NULL){
         return -1;
     }

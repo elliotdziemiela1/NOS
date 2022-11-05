@@ -267,7 +267,7 @@ int32_t get_file_length(int32_t inode_num){
  * Return value: always -1 since file is read only
  * Files: None
  */
-int32_t write_file(int32_t fd, void* buf, int32_t nbytes){
+int32_t write_file(int32_t fd, const void* buf, int32_t nbytes){
     return -1;
 }
 
@@ -279,7 +279,7 @@ int32_t write_file(int32_t fd, void* buf, int32_t nbytes){
  * Return value: -1
  * Files: None
  */
-int32_t open_directory(const uint32_t* filename){
+int32_t open_directory(const uint8_t* filename){
     return -1;
 }
 
@@ -291,7 +291,7 @@ int32_t open_directory(const uint32_t* filename){
  * Return value: always -1 since file is read only
  * Files: None
  */
-int32_t write_directory(int32_t fd, void* buf, int32_t nbytes){
+int32_t write_directory(int32_t fd, const void* buf, int32_t nbytes){
     return -1;
 }
 

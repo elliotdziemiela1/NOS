@@ -4,6 +4,7 @@
 // test launcher
 void launch_tests();
 
-extern void mytest();
+extern void call_open();
+extern void call_write();
 
 #endif /* TESTS_H */

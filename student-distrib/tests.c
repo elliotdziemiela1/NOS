@@ -254,7 +254,7 @@ int test_open_files(uint8_t cmd){
  */
 int rtc_1_test(){
     TEST_HEADER;
-    int freq_pass;
+    int freq_pass = 2;
     int buf_size;
 	uint8_t something = 2;
     rtc_open(&something);
@@ -282,7 +282,12 @@ int syscall_test(){
 	TEST_HEADER;
 
 	int result = FAIL;
-	mytest();
+	uint8_t name = 'r';
+	int freq_pass;
+	clear();
+	setCursor(0,0);
+	call_open(&name);
+	call_write(1, (void*)&freq_pass, 4);
 	result = PASS;
 	return result;
 }
