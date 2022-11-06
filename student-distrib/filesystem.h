@@ -37,6 +37,11 @@ typedef struct inode{
 
 void initialize_filesystem(const uint32_t file_system_start_address);
 
+/* Initialize file system data structures */
+boot_block_t * boot_block;
+inode_t * inode_start;
+uint32_t first_data_block;
+
 //file_system_utility_functions
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry);
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry);

@@ -2,6 +2,18 @@
 
 #include "lib.h"
 
+#define VIDEO       0xB8000
+#define kernel_PDE 0x400000
+#define pte_size 4096
+#define add_shift 12
+#define num_pde 1024
+#define num_pte 1024
+#define FOURMB  4096*1024
+#define FOURKB 4096
+
+
+
+
 void init_paging();
 
 // page table struct
@@ -37,7 +49,9 @@ typedef union four_mb {
 
         uint32_t g          : 1; // global
         uint32_t avl        : 3; // available
-        uint32_t addr       :20; // address
+        uint32_t addr       :20; // page address
+        // uint32_t addr       :10; // 4MB aligned physical address
+        // uint32_t reserved   :10;
     } __attribute__ ((packed));
 } four_mb;
 
@@ -57,7 +71,9 @@ typedef union four_kb {
 
         uint32_t g          : 1; // global
         uint32_t avl        : 3; // available
-        uint32_t addr       :20; // address
+        uint32_t addr       :20; // page address
+        // uint32_t addr       :10; // 4MB aligned physical address
+        // uint32_t reserved   :10;
     } __attribute__ ((packed));
 } four_kb;
 
@@ -68,6 +84,12 @@ typedef union page_directory_entry_t {
     four_mb fourmb;
 } page_directory_entry_t;
 
+// create page directory (page_dir) and page table (video_mem)
+page_directory_entry_t page_dir[num_pde] __attribute__((aligned(pte_size)));
+page_table_entry_t video_mem[num_pte] __attribute__((aligned(pte_size)));
+
 
 extern void enablePaging();
 extern void loadPageDirectory (page_directory_entry_t *page_dir);
+
+uint32_t allocate_4MB_page(uint32_t page_directory_idx, uint32_t pid);

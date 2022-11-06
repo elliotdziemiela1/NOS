@@ -1,8 +1,5 @@
 #include "filesystem.h"
 
-boot_block_t * boot_block;
-inode_t * inode_start;
-uint32_t first_data_block;
 int32_t files[MAX_FILES] = {-1, -1, -1, -1, -1, -1, -1, -1};
 
 /* initialize_filesystem
@@ -45,6 +42,9 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
         if(strncmp((int8_t*) fname, (int8_t*) (boot_block -> direntries[i].file_name), strlen((int8_t*) fname)) == 0){
             //copy information from dentry in boot block into given dentry
             success_value = read_dentry_by_index((uint32_t) (boot_block -> direntries[i].inode_num), (dentry_t*) dentry);
+            strcpy((int8_t*) dentry -> file_name, (const int8_t*) boot_block -> direntries[i].file_name);
+            //success_value = read_dentry_by_index((uint32_t) i, (dentry_t*) dentry);
+            
             return success_value;
         }
     }
@@ -68,7 +68,6 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
     }
 
     //copy information from dentry in boot block into given dentry
-    strcpy((int8_t*) dentry -> file_name, (const int8_t*) boot_block -> direntries[index].file_name);
     dentry -> file_type = boot_block -> direntries[index].file_type;
     dentry -> inode_num = index;
     return 0;

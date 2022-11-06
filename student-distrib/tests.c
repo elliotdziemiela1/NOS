@@ -5,6 +5,7 @@
 #include "drivers/terminal.h"
 #include "filesystem.h"
 #include "syscalls.h"
+#include "paging.h"
 
 #define PASS 1
 #define FAIL 0
@@ -317,6 +318,17 @@ int syscall_test_rw(){
 
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
+int test_system_calls(){
+	TEST_HEADER;
+
+	allocate_4MB_page(2, 0);
+	// char test[2] = {'l','s'};
+	// execute(test);
+
+	int32_t success = 1;
+
+	return success;
+}
 
 
 /* Test suite entry point */
@@ -327,11 +339,13 @@ void launch_tests(){
 	// end putsBetter because they dont wrap around once the cursor hits the edge (they make a new line)
 	
 	TEST_OUTPUT("SYSCALLS", syscall_test_rw());
+	 TEST_OUTPUT("allocate memory test", test_system_calls);
 	// launch your tests here
 
 	//rtc_1_test();
-	//test_open_files(6);
+	// test_open_files(0);
 	// test_read_directory();
 	//test_read_data();
+	//test_system_calls();
 	return;
 }
