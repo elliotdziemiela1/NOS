@@ -81,13 +81,14 @@ int32_t halt (uint8_t status){
 // 7. Setup old stack & eip
 // 8. Goto usermode
 int32_t execute (const uint8_t* command){
+    printf("initing pcb \n");
     pcb_t* pcb = get_pcb(cur_pcb+1);
     init_pcb(pcb);
     return 0;
 }
 
 int32_t write (int32_t fd, const void* buf, int32_t nbytes){
-    printf("REACHED WRITE \n");
+    // printf("REACHED WRITE \n");
     pcb_t* pcb = get_pcb(cur_pcb);
 
     if(fd < 0 || fd > MAX_FILES){
@@ -95,7 +96,7 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
         return -1;
     }
     
-    printf("calling rtc write \n");
+    // printf("calling rtc write \n");
     return pcb->file_array[fd].fops_func.write(fd, buf, nbytes); 
 }
 
@@ -107,7 +108,6 @@ int32_t open (const uint8_t* filename){
         return -1;
     }
     
-    //needs to be in execute
     pcb_t* pcb = get_pcb(cur_pcb);
 
     // add file to fda
@@ -121,14 +121,32 @@ int32_t open (const uint8_t* filename){
         }
     }
 
+    printf("i = %d \n", i);
+
     dentry_t dentry;
     if(read_dentry_by_name(filename, &dentry) != 0){
         printf("Dentry fail \n");
         return -1;
     }
-
+    printf("setting fda \n");
     file_desc_t file;
     fops_t fop;
+
+    if(strncmp(filename, "rtc", strlen(filename)) == 0){
+        init_fop(&fop, 0);
+        file.fops_func = fop;
+        file.inode_num = 0;
+        file.file_position = i;
+        file.flags = 1;
+
+        pcb->file_array[i] = file;
+
+        printf("calling handler \n");
+        pcb->file_array[i].fops_func.open(filename); 
+
+        return i; 
+    }
+
     init_fop(&fop, dentry.file_type);
 
     file.fops_func = fop;
@@ -138,6 +156,7 @@ int32_t open (const uint8_t* filename){
 
     pcb->file_array[i] = file;
 
+    printf("calling handler \n");
     pcb->file_array[i].fops_func.open(filename); 
 
     return i; 
@@ -167,7 +186,6 @@ int32_t close (int32_t fd){
 // can refer to ece391hello.c for an example of a call to this function
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
     pcb_t* pcb = get_pcb(cur_pcb);
-    init_pcb(pcb);
     
     if(fd < 0 || fd > MAX_FILES){
         printf("Invalid fd \n");

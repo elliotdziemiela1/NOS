@@ -4,6 +4,7 @@
 #include "drivers/rtc.h"
 #include "drivers/terminal.h"
 #include "filesystem.h"
+#include "syscalls.h"
 
 #define PASS 1
 #define FAIL 0
@@ -278,16 +279,38 @@ int rtc_1_test(){
 
 
 /* Checkpoint 3 tests */
-int syscall_test(){
+int syscall_test_rw(){
 	TEST_HEADER;
 
 	int result = FAIL;
-	uint8_t name = 'r';
 	int freq_pass;
+	int buf_size;
 	clear();
 	setCursor(0,0);
-	call_open(&name);
-	call_write(1, (void*)&freq_pass, 4);
+
+	my_do_call(2);
+	my_do_call(5);
+	register int ret asm("eax");
+	int fd = ret;
+	printf("fd = %d \n", fd);
+	
+	clear();
+    setCursor(0,0);
+    for(freq_pass = 2; freq_pass <= 1024; freq_pass *= 2){ // 1024 is the highest working freq
+        write(fd, (void*)&freq_pass, 4);
+        buf_size = freq_pass;
+        while(buf_size > 0){
+            read(fd, (void*)&freq_pass, 4);
+            putc('1');
+            buf_size--;
+            if((freq_pass - buf_size) % 80 == 0) // 80 chars in one line of terminal
+                putc('\n');
+        }
+        clear();
+        setCursor(0,0);
+    }
+
+
 	result = PASS;
 	return result;
 }
@@ -303,7 +326,7 @@ void launch_tests(){
 	// If you want to print to the screen, i recommend the functions I made printfBetter, putcBetter, 
 	// end putsBetter because they dont wrap around once the cursor hits the edge (they make a new line)
 	
-	TEST_OUTPUT("SYSCALLS", syscall_test());
+	TEST_OUTPUT("SYSCALLS", syscall_test_rw());
 	// launch your tests here
 
 	//rtc_1_test();

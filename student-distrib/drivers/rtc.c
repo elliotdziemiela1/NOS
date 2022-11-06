@@ -97,7 +97,7 @@ int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
  * Files: None
  */    
 int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes){
-    printf("REACHED RTC_WRITE \n");
+    // printf("REACHED RTC_WRITE \n");
     //check if all values passed in are valid
     if(fd == 0 || fd == 1|| buf == NULL || nbytes != 4 ) {
 		return -1;

@@ -39,7 +39,6 @@ sys_call_linkage:
     popl %edi
     popl %esi
     popl %ebp
-    movl $1, %eax
     iret
 
 invalid:

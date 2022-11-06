@@ -17,3 +17,16 @@ call_write:   PUSHL	%EBX          ;\
 	INT	$0x80         ;\
 	POPL	%EBX          ;\
 	RET
+
+.GLOBL my_do_call                ;\
+my_do_call:   PUSHL	%EBX          ;\
+	MOVL	8(%ESP),%EAX  ;\
+	MOVL	$stringi,%EBX  ;\
+	MOVL	$0,%ECX ;\
+	MOVL	$0,%EDX ;\
+	INT	$0x80         ;\
+	POPL	%EBX          ;\
+	RET
+
+	stringi:
+	.string "rtc"
