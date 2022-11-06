@@ -1,7 +1,6 @@
 #pragma once
 #include "filesystem.h"
 
-#define PCB_MASK 0x007FE000
 
 //file opcodes (jump) table
 typedef struct fops_t{

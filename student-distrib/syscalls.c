@@ -1,6 +1,7 @@
 #include "syscalls.h"
 #include "./drivers/keyboard.h"
 #include "./drivers/rtc.h"
+#include "./drivers/terminal.h"
 #include "./lib.h"
 #include "filesystem.h"
 
@@ -10,7 +11,7 @@
 #define EIGHT_MB 0x0800000
 #define EIGHT_KB 0x0002000
 
-uint8_t num_of_pcbs = 0;
+uint8_t cur_pcb = 0;
 static volatile pcb_t pcb_array[MAX_PROCESSES];
 
 //table for different file operations
@@ -19,13 +20,12 @@ static volatile pcb_t pcb_array[MAX_PROCESSES];
 // fops_t fops_dir = {read_directory, write_directory, open_directory, close_directory};
 
 void init_pcb(pcb_t* pcb){
-    pcb -> pcb_id = num_of_pcbs;
+    cur_pcb++;
+    pcb -> pcb_id = cur_pcb;
     pcb -> parent_id = 0;
     pcb -> saved_esp = 0;
     pcb -> saved_ebp = 0;
     pcb -> active = 1;
-    
-    num_of_pcbs++;
 }
 
 uint32_t get_pcb(uint8_t num){
@@ -81,97 +81,79 @@ int32_t halt (uint8_t status){
 // 7. Setup old stack & eip
 // 8. Goto usermode
 int32_t execute (const uint8_t* command){
-    // if (strncmp(command, {'l','s'})){
-
-    // }
+    pcb_t* pcb = get_pcb(cur_pcb+1);
+    init_pcb(pcb);
     return 0;
 }
 
 int32_t write (int32_t fd, const void* buf, int32_t nbytes){
     printf("REACHED WRITE \n");
-    pcb_t* pcb = get_pcb(1);
+    pcb_t* pcb = get_pcb(cur_pcb);
 
-    // if(fd < 0 || fd > MAX_FILES || buf == NULL){
-    //     return -1;
-    // }
+    if(fd < 0 || fd > MAX_FILES){
+        printf("Invalid fd \n");
+        return -1;
+    }
     
     printf("calling rtc write \n");
-    return pcb->file_array[2].fops_func.write(fd, buf, nbytes); 
+    return pcb->file_array[fd].fops_func.write(fd, buf, nbytes); 
 }
 
 int32_t open (const uint8_t* filename){
     printf("REACHED OPEN \n");
-    pcb_t* pcb = get_pcb(1);
-    init_pcb(pcb);
+
+    if(filename == NULL){
+        printf("Filename empty! \n");
+        return -1;
+    }
+    
+    //needs to be in execute
+    pcb_t* pcb = get_pcb(cur_pcb);
 
     // add file to fda
-
-    file_desc_t file;
-
-    fops_t fop;
-    init_fop(&fop, 0);
-
-    file.fops_func = fop;
-    file.inode_num = 0;
-    file.file_position = 0;
-    file.flags = 1;
-
-    pcb->file_array[2] = file;
-
-
-    return pcb->file_array[2].fops_func.open(filename); 
-
-
-
-
-
-
-
-
-
-    /*
-
-    int idx;            //index for file descriptor array
-    dentry_t dentry;    //temp dentry
-
-    //check if index in fda is available to use
-    for(idx = 2; idx < MAX_FILES; idx++){          //start at index 2 because stdin and stdout
-        if(pcb->file_array[idx].flags == 0){
+    int i;
+    for(i = 2; i < MAX_FILES; i++){
+        if(pcb->file_array[i].flags != 1)
             break;
+        else if(i == MAX_FILES-1){
+            printf("No free file positions \n");
+            return -1;
         }
     }
 
-    //check if file exists 
+    dentry_t dentry;
     if(read_dentry_by_name(filename, &dentry) != 0){
+        printf("Dentry fail \n");
         return -1;
     }
 
-    //set each function in file descriptor array based on type (rtc or file or directory) 
-    if(dentry.file_type == 0){
-        pcb->file_array[idx].fops_func = fops_rtc;
-    }
+    file_desc_t file;
+    fops_t fop;
+    init_fop(&fop, dentry.file_type);
 
-    if(dentry.file_type == 1){
-        pcb->file_array[idx].fops_func = fops_dir;
-    }
+    file.fops_func = fop;
+    file.inode_num = dentry.inode_num;
+    file.file_position = i;
+    file.flags = 1;
 
-    if(dentry.file_type == 2){
-        pcb->file_array[idx].fops_func = fops_file;
-    }
+    pcb->file_array[i] = file;
 
-    //set file descriptor 
-    pcb->file_array[idx].inode_num = dentry.inode_num;
-    pcb->file_array[idx].file_position = 0;
-    pcb->file_array[idx].flags = 1;
-    return idx;
-    */
+    pcb->file_array[i].fops_func.open(filename); 
+
+    return i; 
 }
 
 int32_t close (int32_t fd){
-    pcb_t* pcb = get_pcb(1);
-    init_pcb(pcb);
+    pcb_t* pcb = get_pcb(cur_pcb);
 
-    return 0;
+    if(fd < 0 || fd > MAX_FILES){
+        printf("Invalid fd \n");
+        return -1;
+    }
+
+    pcb->file_array[fd].flags = 0;
+
+    return pcb->file_array[fd].fops_func.close(fd);
 }
 
 /* read
@@ -184,25 +166,15 @@ int32_t close (int32_t fd){
  * */
 // can refer to ece391hello.c for an example of a call to this function
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
-    pcb_t* pcb = get_pcb(1);
+    pcb_t* pcb = get_pcb(cur_pcb);
     init_pcb(pcb);
     
-    if(fd < 0 || fd > MAX_FILES || buf == NULL){
+    if(fd < 0 || fd > MAX_FILES){
+        printf("Invalid fd \n");
         return -1;
     }
-
-    // if (fd == 0){
-    //     return gets(buf,nbytes);
-    // }
     
     return pcb->file_array[fd].fops_func.read(fd, buf, nbytes); 
-
-    // if (fd != 0){
-    //     // Should call linkage wrapper function here
-    //     return pcb->file_array[fd].fop_func.read(fd, buf, nbytes); 
-    // } else { // else read from keyboard which doesn't have a fd
-    //     return gets(buf,nbytes);
-    // }
 }
 
 
