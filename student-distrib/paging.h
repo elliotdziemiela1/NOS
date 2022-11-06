@@ -2,6 +2,18 @@
 
 #include "lib.h"
 
+#define VIDEO       0xB8000
+#define kernel_PDE 0x400000
+#define pte_size 4096
+#define add_shift 12
+#define num_pde 1024
+#define num_pte 1024
+#define FOURMB  4096*1024
+#define FOURKB 4096
+
+
+
+
 void init_paging();
 
 // page table struct
@@ -72,8 +84,12 @@ typedef union page_directory_entry_t {
     four_mb fourmb;
 } page_directory_entry_t;
 
+// create page directory (page_dir) and page table (video_mem)
+page_directory_entry_t page_dir[num_pde] __attribute__((aligned(pte_size)));
+page_table_entry_t video_mem[num_pte] __attribute__((aligned(pte_size)));
+
 
 extern void enablePaging();
 extern void loadPageDirectory (page_directory_entry_t *page_dir);
 
-uint32_t allocate_4MB_page(uint32_t vaddr, uint32_t physaddr);
+uint32_t allocate_4MB_page(uint32_t page_directory_idx, uint32_t pid);

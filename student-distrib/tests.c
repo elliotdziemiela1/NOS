@@ -281,7 +281,7 @@ int rtc_1_test(){
 int test_system_calls(){
 	TEST_HEADER;
 
-	allocate_4MB_page(0x08048000, 0xc00000);
+	allocate_4MB_page(2, 0);
 	// char test[2] = {'l','s'};
 	// execute(test);
 
@@ -298,12 +298,13 @@ void launch_tests(){
 	// If you want to print to the screen, i recommend the functions I made printfBetter, putcBetter, 
 	// end putsBetter because they dont wrap around once the cursor hits the edge (they make a new line)
 	
-	TEST_OUTPUT("rtc test rate test", test_system_calls());
+	 TEST_OUTPUT("allocate memory test", test_system_calls);
 	// launch your tests here
 
 	//rtc_1_test();
-	//test_open_files(6);
+	// test_open_files(0);
 	// test_read_directory();
 	//test_read_data();
+	//test_system_calls();
 	return;
 }

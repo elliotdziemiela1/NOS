@@ -1,13 +1,5 @@
 #include "paging.h"
 
-#define VIDEO       0xB8000
-#define kernel_PDE 0x400000
-#define pte_size 4096
-#define add_shift 12
-#define num_pde 1024
-#define num_pte 1024
-#define FOURMB  4096*1024
-
 // notes:
 // - first 10 bits of virtual address are index into page_dir array
 // - next 10 bits are index into PDEs page_table array
@@ -16,9 +8,7 @@
 static int numUsedPDES = 0; // the number of used PDES. Also can refer to
 // the index to insert the next PDE/4MB page.
 
-// create page directory (page_dir) and page table (video_mem)
-page_directory_entry_t page_dir[num_pde] __attribute__((aligned(pte_size)));
-page_table_entry_t video_mem[num_pte] __attribute__((aligned(pte_size)));
+
 
 /* init_paging
  * 
@@ -73,9 +63,10 @@ void init_paging(){
     }
 
     // init 4 kb
-    page_dir[0].fourkb.addr = (int)(video_mem) >> add_shift;// masks top 10 bits of addr
+    page_dir[0].fourkb.addr = (int)(video_mem) >> add_shift; // masks top 10 bits of addr
     page_dir[0].fourkb.present = 1;// marks as present
     page_dir[0].fourkb.su = 1; // marks as supervisor
+
 
     // init 4 mb kernel page
     page_dir[1].fourmb.addr = (pte_size * num_pde) >> add_shift;// masks top 10 bits of addr
@@ -88,20 +79,28 @@ void init_paging(){
     enablePaging();
 }
 
+uint32_t allocate_4MB_page(uint32_t page_directory_idx, uint32_t pid){
+    page_dir[page_directory_idx].fourmb.addr = (kernel_PDE >> 22) + pid;
+    page_dir[page_directory_idx].fourmb.present = 1;// marks as present
+    page_dir[page_directory_idx].fourmb.rw = 1; // allows writing as well
+    page_dir[page_directory_idx].fourmb.ps = 1; // sets page size
+    return 0;
+}
+
 /* allocate_4MB_page()
  * 
  * Inputs: vaddr - virtual address to allocate 4MB page
  * Return Value: SUCCESS=0, FAIL=-1;
  */
-uint32_t allocate_4MB_page(uint32_t vaddr, uint32_t physaddr){
-    if (vaddr % FOURMB != 0 || physaddr % FOURMB != 0) // if vaddr isn't divisiable by 4096 (4MB)
-        return -1;
-    if (page_dir[vaddr/FOURMB].fourmb.present) // if 4MB page already exists at vaddr
-        return -1;
-    page_dir[vaddr/FOURMB].fourmb.addr = physaddr >> add_shift;
-    page_dir[vaddr/FOURMB].fourmb.present = 1;
-    page_dir[vaddr/FOURMB].fourmb.rw = 1;
-    page_dir[vaddr/FOURMB].fourmb.ps = 1;
+// uint32_t allocate_4MB_page(uint32_t vaddr, uint32_t physaddr){
+//     if (vaddr % FOURMB != 0 || physaddr % FOURMB != 0) // if vaddr isn't divisiable by 4096 (4MB)
+//         return -1;
+//     if (page_dir[vaddr/FOURMB].fourmb.present) // if 4MB page already exists at vaddr
+//         return -1;
+//     page_dir[vaddr/FOURMB].fourmb.addr = physaddr >> add_shift;
+//     page_dir[vaddr/FOURMB].fourmb.present = 1;
+//     page_dir[vaddr/FOURMB].fourmb.rw = 1;
+//     page_dir[vaddr/FOURMB].fourmb.ps = 1;
 
-    return 0;
-}   
+//     return 0;
+// }   
