@@ -8,6 +8,7 @@
 #include "x86_desc.h"
 
 
+
 #define JUNK 0
 #define MAX_PROCESSES 10 // arbitrary number of the maximum processes we'll allow
 #define EIGHT_MB 0x0800000
@@ -30,25 +31,8 @@ uint32_t current_pid = 0;
 uint32_t parent_pid = 0;
 uint32_t pid_array[MAX_PIDS];
 
-//table for different file operations
-// fops_t fops_rtc = {rtc_read, rtc_write, rtc_open, rtc_close};
-// fops_t fops_file = {read_file, write_file, open_file, close_file};
-// fops_t fops_dir = {read_directory, write_directory, open_directory, close_directory};
+uint8_t user_eip[4];
 
-void init_pcb(pcb_t* pcb){
-    pcb -> pcb_id = current_pid;
-    pcb -> parent_id = parent_pid;
-    register uint32_t  s_esp asm("esp");
-    register uint32_t  s_ebp asm("ebp");
-    pcb -> saved_esp = s_esp;
-    pcb -> saved_ebp = s_ebp;
-    pcb -> active = 1;
-}
-
-uint32_t get_pcb(uint8_t num){
-    uint32_t addr = EIGHT_MB - EIGHT_KB*(num+1);
-    return addr;
-}
 
 void init_fop(fops_t* fop, uint8_t num){
     if(num == 0){ // rtc
@@ -74,6 +58,55 @@ void init_fop(fops_t* fop, uint8_t num){
         fop->close = close_directory;
         return;
     }
+
+    if(num == 3){ // std_in
+        fop->read = terminal_read;
+        fop->write = NULL;
+        fop->open = NULL;
+        fop->close = NULL;
+        return;
+    }
+
+    if(num == 4){ // std_out
+        fop->read = NULL;
+        fop->write = terminal_write;
+        fop->open = NULL;
+        fop->close = NULL;
+        return;
+    }
+}
+
+void init_pcb(pcb_t* pcb){
+    pcb -> pcb_id = current_pid;
+    pcb -> parent_id = parent_pid;
+    register uint32_t  s_esp asm("esp");
+    register uint32_t  s_ebp asm("ebp");
+    pcb -> saved_esp = s_esp;
+    pcb -> saved_ebp = s_ebp;
+    pcb -> active = 1;
+
+    // setting stdin
+    file_desc_t file;
+    fops_t fop;
+    init_fop(&fop, 3);
+    file.fops_func = fop;
+    file.inode_num = 0;
+    file.file_position = 0;
+    file.flags = 1;
+    pcb->file_array[0] = file; 
+
+    // setting stdout
+    init_fop(&fop, 4);
+    file.fops_func = fop;
+    file.inode_num = 0;
+    file.file_position = 1;
+    file.flags = 1;
+    pcb->file_array[1] = file; 
+}
+
+uint32_t get_pcb(uint8_t num){
+    uint32_t addr = EIGHT_MB - EIGHT_KB*(num+1);
+    return addr;
 }
 
 int32_t halt (uint8_t status){
@@ -104,15 +137,14 @@ int32_t halt (uint8_t status){
 //      This information is stored as a 4-byte unsigned integer in bytes 24-27 of the executable, 
 //      and the value of it falls somewhere near 0x08048000 
 int32_t execute (const uint8_t* command){
-    printf("Reached exec \n");
+    // printf("Reached exec \n");
     /* Initialize Variables */
     dentry_t dentry;
     int inode;
-    uint8_t * data_buffer;
+    uint8_t data_buffer[4];
     int pid_filled;
     uint32_t physical_address;
     uint8_t user_eip_buf[4];
-    int32_t user_eip;
     int32_t user_esp;
 
     /* Confirm file validity */
@@ -127,7 +159,7 @@ int32_t execute (const uint8_t* command){
     }
 
     parent_pid = current_pid;
-    printf("Setting up paging \n");
+    // printf("Setting up paging \n");
     /* Set up paging */
     int i;
     for(i = 0; i < MAX_PIDS; i++){ //currently only 3 PIDs
@@ -144,16 +176,23 @@ int32_t execute (const uint8_t* command){
         return -1;
     }
 
-    printf("setting physical addr \n");
+    // printf("setting physical addr \n");
     physical_address = (2 + current_pid) * FOURMB; //you want to skip the first page which houses the kernel
     page_dir[32].fourmb.addr = physical_address / FOURKB;
     page_dir[32].fourmb.present = 1; // marks as present
     page_dir[32].fourmb.rw = 1; // allows writing as well
     page_dir[32].fourmb.ps = 1; // sets page size
+    page_dir[32].fourmb.su = 1; // sets supervisor bit
 
+    // printf("flushing tlb \n");
     //need to flush the TLB here 
-    flush_tlb();
+    //flush_tlb();
+    asm volatile("\
+    mov %cr3, %eax    ;\
+    mov %eax, %cr3    ;\
+    ");
 
+    // printf("load file into physical memory \n");
     /* Load the file into physical memory */
     inode_t * prog_inode_ptr = (inode_t *)(inode_start + inode);
     uint8_t * img_addr = PROG_IMG_VIRTUAL_ADDR;
@@ -161,51 +200,57 @@ int32_t execute (const uint8_t* command){
 
     /* Prepare for the context switch */
     
+    // printf("parse user EIP \n");
     //Parse User EIP
     read_data(dentry.inode_num, 24, user_eip, 4);
-    user_eip = 0;
-    for(i = 3; i >= 0; i--){
-        user_eip += user_eip_buf[i];
-        user_eip << 4;
-    }
+    // for(i = 3; i >= 0; i--){
+    //     user_eip += user_eip_buf[i];
+    //     user_eip << 8;
+    // }
     
+    // printf("parse user ESP \n");
     //Parse User ESP
-    user_esp = 0x8000000 + 0x400000 - 4;
+    user_esp = 0x083FFFFC;
+
+    // printf("changing tss \n");
 
     // tss
     tss.ss0 = KERNEL_DS;
     tss.esp0 = EIGHT_MB - EIGHT_KB*(current_pid+1) - 4;
 
+    // printf("creating PCB \n");
     /* Create PCB and Open File Descriptor*/
-    printf("Creating pcb \n");
+    // printf("Creating pcb \n");
     pcb_t* pcb_ptr = get_pcb(current_pid);
     init_pcb(pcb_ptr);
 
+    // printf("setting interrupts \n");
     //switching to user mode
-    sti();
 
-    asm volatile ("\
-    andl $0x00FF, %%ebx ;\
-    movw %%bx, %%ds     ;\
-    pushl %%ebx         ;\
-    pushl %%edx         ;\
-    pushfl              ;\
-    popl %%edx          ;\
-    orl $0x0200, %%edx  ;\
-    pushl %%edx         ;\
-    pushl %%eax         ;\
-    iret                ;\
-    "
-    :
-    : "a"(user_eip), "b"(USER_DS), "c"(USER_CS), "d"(user_esp)
-    : "memory"
-    );
+    // printf("context switch \n");
+    // asm volatile ("\
+    // andl $0x00FF, %%eax ;\
+    // movw %%ax, %%dx     ;\
+    // pushl %%eax         ;\
+    // pushl %%edx         ;\
+    // pushfl              ;\
+    // popl %%eax          ;\
+    // orl $0x0200, %%eax  ;\
+    // pushl %%eax         ;\
+    // pushl %%ecx         ;\
+    // pushl %%ebx         ;\
+    // iret                ;\
+    // "
+    // :
+    // : "a"(USER_DS), "b"(user_eip), "c"(USER_CS), "d"(user_esp)
+    // : "memory"
+    // );
+    user_switch();
 
     return 0;
 }
 
 int32_t write (int32_t fd, const void* buf, int32_t nbytes){
-    // printf("REACHED WRITE \n");
     pcb_t* pcb = get_pcb(current_pid);
 
     if(fd < 0 || fd > MAX_FILES){
@@ -218,7 +263,7 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
 }
 
 int32_t open (const uint8_t* filename){
-    printf("Reached open \n");
+    printf("Reached system open \n");
 
     if(filename == NULL){
         printf("Filename empty! \n");
@@ -245,7 +290,6 @@ int32_t open (const uint8_t* filename){
         printf("Dentry fail \n");
         return -1;
     }
-    printf("setting fda \n");
     file_desc_t file;
     fops_t fop;
 
@@ -258,7 +302,6 @@ int32_t open (const uint8_t* filename){
 
         pcb->file_array[i] = file;
 
-        printf("calling handler \n");
         pcb->file_array[i].fops_func.open(filename); 
 
         return i; 
@@ -273,13 +316,13 @@ int32_t open (const uint8_t* filename){
 
     pcb->file_array[i] = file;
 
-    printf("calling handler \n");
     pcb->file_array[i].fops_func.open(filename); 
 
     return i; 
 }
 
 int32_t close (int32_t fd){
+    printf("Reached system close");
     pcb_t* pcb = get_pcb(current_pid);
 
     if(fd < 0 || fd > MAX_FILES){
@@ -302,7 +345,7 @@ int32_t close (int32_t fd){
  * */
 // can refer to ece391hello.c for an example of a call to this function
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
-    printf("Reached read \n");
+    printf("Reached system read \n");
     pcb_t* pcb = get_pcb(current_pid);
     
     if(fd < 0 || fd > MAX_FILES){

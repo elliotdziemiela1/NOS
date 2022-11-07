@@ -42,8 +42,6 @@ void init_paging(){
     uint32_t idx = VIDEO >> add_shift; // masks top 20 bits of addr
     video_mem[idx].present = 1; // marks as present
 
-
-
     // page directory setup
     for(i = 0; i < num_pde; i++){
         // init 4 kb
@@ -66,7 +64,6 @@ void init_paging(){
     page_dir[0].fourkb.addr = (int)(video_mem) >> add_shift; // masks top 10 bits of addr
     page_dir[0].fourkb.present = 1;// marks as present
     page_dir[0].fourkb.su = 1; // marks as supervisor
-
 
     // init 4 mb kernel page
     page_dir[1].fourmb.addr = (pte_size * num_pde) >> add_shift;// masks top 10 bits of addr

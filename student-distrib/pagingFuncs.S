@@ -27,8 +27,8 @@ mov %ebp, %esp
 pop %ebp
 ret
 
-.text
-.globl flush_tlb
-flush_tlb:
-mov %cr3, %eax
-mov %eax, %cr3
+# .text
+# .globl flush_tlb
+# flush_tlb:
+# mov %cr3, %eax
+# mov %eax, %cr3

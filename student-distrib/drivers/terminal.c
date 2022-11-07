@@ -54,15 +54,15 @@ uint32_t terminal_close(){
  * Return Value: returns the number of bytes/chars written to the screen
  * Function: writes the characters from buffer to the screen
  * */
-uint32_t terminal_write(){
-    if (!opened)
-        return -1;
+uint32_t terminal_write(int32_t fd, const void* buf1, int32_t nbytes){
+    // if (!opened)
+    //     return -1;
     // char * ptr = buf;
     // while (ptr != (buf+BUFFER_SIZE)){
     //     putcBetter(*ptr);
     //     ptr++;
     // }
-    int ret = printfBetter(buf);
+    int ret = printfBetter(buf1);
     if (ret)
         putcBetter('\n');
     return ret;
@@ -74,7 +74,7 @@ uint32_t terminal_write(){
  * Function: reads a string from the keyboard and writes to the terminal buffer
  *           as well as printing to the screen in gets.
  * */
-uint32_t terminal_read(){
+uint32_t terminal_read(int32_t fd, void* buf, int32_t nbytes){
     acceptNewCommand();
     if (!opened) // if we have not yet opened the terminal, do nothing
         return -1;

@@ -109,17 +109,17 @@ int rtc_test(){
  * repeatedly calls terminal read then calls terminal write with a test character array
  * Return: returns PASS.
  */
-int terminal_test(){
-	TEST_HEADER;
+// int terminal_test(){
+// 	TEST_HEADER;
 
-	int result = PASS;
-	terminal_open();
-    while (1){
-        terminal_read();
-		terminal_write();
-    }
-	return result;
-}
+// 	int result = PASS;
+// 	terminal_open();
+//     while (1){
+//         terminal_read();
+// 		terminal_write();
+//     }
+// 	return result;
+// }
 
 
 // add more tests here
@@ -323,7 +323,7 @@ int execute_test(){
 	clear();
 	setCursor(0,0);
 	
-	execute("frame0.txt");
+	execute("shell");
 
     // int fd = open(command);
     // uint8_t buffer[60000];
