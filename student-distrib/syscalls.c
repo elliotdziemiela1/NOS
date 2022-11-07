@@ -66,14 +66,14 @@ void init_fop(fops_t* fop, uint8_t num){
 
     if(num == 3){ // std_in
         fop->read = terminal_read;
-        fop->write = NULL;
+        fop->write = dummy_write;
         fop->open = NULL;
         fop->close = NULL;
         return;
     }
 
     if(num == 4){ // std_out
-        fop->read = NULL;
+        fop->read = dummy_read;
         fop->write = terminal_write;
         fop->open = NULL;
         fop->close = NULL;
@@ -280,6 +280,11 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
         return -1;
     }
     pcb_t* pcb = (pcb_t*) get_pcb(current_pid);
+
+    if(pcb->file_array[fd].flags != 1){
+        printf("Can't close unopened \n");
+        return -1;
+    }
     
     // printf("calling rtc write \n");
     return pcb->file_array[fd].fops_func.write(fd, buf, nbytes); 
@@ -351,6 +356,7 @@ int32_t close (int32_t fd){
 
     pcb_t* pcb = (pcb_t*) get_pcb(current_pid);
     if(pcb->file_array[fd].flags != 1){
+        printf("Can't close unopened \n");
         return -1;
     }
 
@@ -375,7 +381,20 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes){
     }
     // printf("Reached system read \n");
     pcb_t* pcb = (pcb_t*) get_pcb(current_pid);
+
+    if(pcb->file_array[fd].flags != 1){
+        printf("Can't close unopened \n");
+        return -1;
+    }
     // printf("Received new pcb \n");
     
     return pcb->file_array[fd].fops_func.read(fd, buf, nbytes); 
+}
+
+int32_t dummy_read (int32_t fd, void* buf, int32_t nbytes){
+    return -1;
+}
+
+int32_t dummy_write (int32_t fd, const void* buf, int32_t nbytes){
+    return -1;
 }

@@ -42,4 +42,6 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes);
 int32_t open (const uint8_t* filename);
 int32_t close (int32_t fd);
 extern void user_switch();
+int32_t dummy_read (int32_t fd, void* buf, int32_t nbytes);
+int32_t dummy_write (int32_t fd, const void* buf, int32_t nbytes);
 // extern void flush_tlb();
