@@ -316,6 +316,26 @@ int syscall_test_rw(){
 	return result;
 }
 
+int execute_test(){
+	TEST_HEADER;
+
+	int result = FAIL;
+	clear();
+	setCursor(0,0);
+	
+	execute("frame0.txt");
+
+    // int fd = open(command);
+    // uint8_t buffer[60000];
+    // int num = read(fd, buffer, sizeof(uint32_t));
+    // for(i = 0; i < num; i++){
+    //     printfBetter("%c", buffer[i]);
+    // }
+
+	result = PASS;
+	return result;
+}
+
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
 int test_system_calls(){
@@ -338,7 +358,7 @@ void launch_tests(){
 	// If you want to print to the screen, i recommend the functions I made printfBetter, putcBetter, 
 	// end putsBetter because they dont wrap around once the cursor hits the edge (they make a new line)
 	
-	TEST_OUTPUT("SYSCALLS", syscall_test_rw());
+	TEST_OUTPUT("SYSCALLS", execute_test());
 	 TEST_OUTPUT("allocate memory test", test_system_calls);
 	// launch your tests here
 

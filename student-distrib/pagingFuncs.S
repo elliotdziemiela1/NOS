@@ -30,7 +30,6 @@ ret
 
 .text
 .globl flush_tlb
-.align 4
 flush_tlb:
-mov    %cr3, %eax
-mov    %eax, %cr3  
+mov %cr3, %eax
+mov %eax, %cr3

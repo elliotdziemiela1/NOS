@@ -5,6 +5,7 @@
 #include "./lib.h"
 #include "filesystem.h"
 #include "paging.h"
+#include "x86_desc.h"
 
 
 #define JUNK 0
@@ -162,6 +163,9 @@ int32_t execute (const uint8_t* command){
     uint8_t * data_buffer;
     int pid_filled;
     uint32_t physical_address;
+    uint8_t user_eip_buf[4];
+    int32_t user_eip;
+    int32_t user_esp;
 
     /* Confirm file validity */
     if (read_dentry_by_name(command, &dentry) == -1) return -1;
@@ -199,6 +203,7 @@ int32_t execute (const uint8_t* command){
     page_dir[32].fourmb.ps = 1; // sets page size
 
     //need to flush the TLB here 
+    flush_tlb();
 
     /* Load the file into physical memory */
     inode_t * prog_inode_ptr = (inode_t *)(inode_start + inode);
@@ -219,6 +224,49 @@ int32_t execute (const uint8_t* command){
     }
 
 
+    /* Prepare for the context switch */
+    
+    //Parse User EIP
+    read_data(dentry.inode_num, 24, user_eip, 4);
+    user_eip = 0;
+    for(i = 3; i >= 0; i--){
+        user_eip += user_eip_buf[i];
+        user_eip << 4;
+    }
+    
+    //Parse User ESP
+    user_esp = 0x8000000 + 0x400000 - 4;
+
+    // tss
+    tss.ss0 = KERNEL_DS;
+    tss.esp0 = EIGHT_MB - EIGHT_KB*(current_pid+1) - 4;
+
+    /* Create PCB and Open File Descriptor*/
+    printf("Creating pcb \n");
+    pcb_t* pcb_ptr = get_pcb(current_pid);
+    init_pcb(pcb_ptr);
+
+    //switching to user mode
+    sti();
+
+    asm volatile ("\
+    andl $0x00FF, %%ebx ;\
+    movw %%bx, %%ds     ;\
+    pushl %%ebx         ;\
+    pushl %%edx         ;\
+    pushfl              ;\
+    popl %%edx          ;\
+    orl $0x0200, %%edx  ;\
+    pushl %%edx         ;\
+    pushl %%eax         ;\
+    iret                ;\
+    "
+    :
+    : "a"(user_eip), "b"(USER_DS), "c"(USER_CS), "d"(user_esp)
+    : "memory"
+    );
+
+    return 0;
 }
 
 int32_t write (int32_t fd, const void* buf, int32_t nbytes){
