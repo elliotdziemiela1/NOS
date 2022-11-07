@@ -32,3 +32,19 @@
    Symptom: Rewrites on the same line
    Time to fix: 45 min
    Action dont to fix problem: Created a new putc function that goes to next line
+
+3.3:
+8. Problem: Getting a page fault whenever trying to copy program data to page at 128MB
+   Symptom: We weren't allocatting a page at 128MB and weren't setting the present bit
+   Time to fix: 20 min
+   Action done to fix problem: Allocated the page
+
+9. Problem: syserr test 4 failed
+   Symptom: test was failing for helloo and shel
+   Time to fix: 10 minutes
+   Action done to fix problem: we needed to check string length when checking file validity in Dentry
+
+10.Problem: Progams were not running as expected
+   Symptom: We were loading program images at 128MB instead of slightly after, rendering the entry point inaccurate
+   Time to fix: 30 min
+   Action done to fix problem: Loaded program images at 0x08048000 instead
