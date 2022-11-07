@@ -27,18 +27,29 @@
 #define MB_4 0x400000
 // addresses of program images to (first program at 8MB physical, second program at 12MB physical)
 
-int32_t current_pid = -1;
-int32_t parent_pid = -1;
-uint32_t pid_array[MAX_PIDS] = { 0 };
-uint32_t inode_array[MAX_PIDS]= { 0 };
+int32_t current_pid = -1; // -1 means no current process
+int32_t parent_pid = -1; // -1 means no parent process
+uint32_t pid_array[MAX_PIDS] = { 0 }; // array of flags telling us which PIDS are availible
+uint32_t inode_array[MAX_PIDS]= { 0 }; // array of inodes of the executible files indexed in order
+// of PIDS
 
-uint8_t user_eip[4];
+uint8_t user_eip[4]; // buffer holding the entry point for the program.
 
+/* uint32_t get_ebp;
+ * Inputs: - pid= process id to get ebp of
+ * Return Value: returns the ebp of the process with id pid
+ * */
 uint32_t get_ebp(uint8_t pid){
     uint32_t addr = EIGHT_MB - EIGHT_KB*(pid);
     return addr;
 }
 
+/* void init_fop;
+ * Inputs: - fop= pointer to file operations structure we want to initialize
+ *         - num= corresponds to the type of file to init fops to
+ * Return Value: none
+ * Function: initializes the fop structure depending on which file type it is given by num.
+ * */
 void init_fop(fops_t* fop, uint8_t num){
     if(num == 0){ // rtc
         fop->read = rtc_read;
@@ -81,16 +92,22 @@ void init_fop(fops_t* fop, uint8_t num){
     }
 }
 
+/* void init_pcb;
+ * Inputs: - pcb= pointer to pcb stuct to initialize
+ * Return Value: void
+ * Function: initializes pcb members. Initializes first 2 entries of file array with 
+ *  stdin and stdout
+ * */
 void init_pcb(pcb_t* pcb){
     pcb -> pcb_id = current_pid;
     pcb -> parent_id = parent_pid;
     register uint32_t  s_esp asm("esp");
     register uint32_t  s_ebp asm("ebp");
-    pcb -> saved_esp = s_esp;
-    pcb -> saved_ebp = s_ebp;
-    pcb -> active = 1;
+    pcb -> saved_esp = s_esp; // saves current esp
+    pcb -> saved_ebp = s_ebp; // saves current ebp
+    pcb -> active = 1; // sets active
 
-    // setting stdin
+    // setting stdin file
     file_desc_t file;
     fops_t fop;
     init_fop(&fop, 3);
@@ -100,7 +117,7 @@ void init_pcb(pcb_t* pcb){
     file.flags = 1;
     pcb->file_array[0] = file; 
 
-    // setting stdout
+    // setting stdout file
     init_fop(&fop, 4);
     file.fops_func = fop;
     file.inode_num = 0;
@@ -109,12 +126,21 @@ void init_pcb(pcb_t* pcb){
     pcb->file_array[1] = file; 
 }
 
+/* uint32_t get_pcb;
+ * Inputs: - pid= process id to get pcb of
+ * Return Value: pointer to pcb of process
+ * */
 uint32_t get_pcb(uint8_t pid){
-    uint32_t addr = EIGHT_MB - EIGHT_KB*(pid+1);
+    uint32_t addr = EIGHT_MB - EIGHT_KB*(pid+1); // +1 since PCB starts at top of 8kB chunk
     return addr;
 }
 
-//terminates a process, returning the specified value to its parent process
+/* uint32_t halt;
+ * Inputs: - status= status upon which halt was called
+ * Return Value: returns the status upon which the halt was called
+ * Function: terminates a process, returning the specified value to its parent process. 
+ *  resets ebp and esp to parent's, and changes current and parrent PIDs and corresponding arrays.
+ * */
 int32_t halt (uint8_t status){
 
     pcb_t* cur_pcb = (pcb_t*) get_pcb(current_pid);
@@ -174,24 +200,8 @@ int32_t halt (uint8_t status){
  * Return Value: -1 if program cannot be executed, else 256 if the program dies by an
  *  exception, or a value in the range 0 to 255 if the program executes a halt system call, 
  *  in which case the value returned is that given by the program’s call to halt.
- *  Function: 
+ * Function: 
  * */
-// 1. Paging Helpers  ( optional, but very helpful )
-//  Map Virtual & Physical Memory (optional, needed for CP5)
-//  Unmap  Virtual & Physical Memory (optional, needed for CP5)
-// 2 Parse cmd
-// 3.File Checks
-// 4. Create new PCB
-// 5. Setup memory (aka paging)
-// 6. Read exe data
-// 7. Setup old stack & eip
-// 8. Goto usermode
-// NOTES:
-//  -   executible files will be in filesystem, we just need to check them.
-//  -   bit of information that you need to execute programs is the entry point into the
-//      program, i.e., the virtual address of the first instruction that should be executed. 
-//      This information is stored as a 4-byte unsigned integer in bytes 24-27 of the executable, 
-//      and the value of it falls somewhere near 0x08048000 
 int32_t execute (const uint8_t* command){
     // printf("Reached exec \n");
     /* Initialize Variables */
