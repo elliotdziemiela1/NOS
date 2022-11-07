@@ -5,7 +5,6 @@
 // - next 10 bits are index into PDEs page_table array
 // - next 12 bits are offset into page selected from PTE
 
-static int numUsedPDES = 0; // the number of used PDES. Also can refer to
 // the index to insert the next PDE/4MB page.
 
 

@@ -325,13 +325,6 @@ int execute_test(){
 	
 	execute("shell");
 
-    // int fd = open(command);
-    // uint8_t buffer[60000];
-    // int num = read(fd, buffer, sizeof(uint32_t));
-    // for(i = 0; i < num; i++){
-    //     printfBetter("%c", buffer[i]);
-    // }
-
 	result = PASS;
 	return result;
 }

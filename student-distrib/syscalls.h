@@ -26,6 +26,7 @@ typedef struct pcb_t{
     uint32_t parent_id;
     uint32_t saved_esp;
     uint32_t saved_ebp;
+    uint32_t saved_eip;
     uint8_t active      :1;
     // uint8_t active;
 } pcb_t;

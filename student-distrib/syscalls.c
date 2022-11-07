@@ -23,7 +23,7 @@
 #define MAGIC_2 0x4c
 #define MAGIC_3 0x46
 #define PROG_IMG_VIRTUAL_ADDR 0x08048000 // 128MB:virtual address we need to map physical
-#define MAX_PIDS 3
+#define MAX_PIDS 6
 #define MB_4 0x400000
 // addresses of program images to (first program at 8MB physical, second program at 12MB physical)
 
@@ -49,18 +49,18 @@ void init_fop(fops_t* fop, uint8_t num){
     }
 
     if(num == 1){ // directory
-        fop->read = read_file;
-        fop->write = write_file;
-        fop->open = open_file;
-        fop->close = close_file;
-        return;
-    }
-
-    if(num == 2){ // file
         fop->read = read_directory;
         fop->write = write_directory;
         fop->open = open_directory;
         fop->close = close_directory;
+        return;
+    }
+
+    if(num == 2){ // file
+        fop->read = read_file;
+        fop->write = write_file;
+        fop->open = open_file;
+        fop->close = close_file;
         return;
     }
 
@@ -116,8 +116,6 @@ uint32_t get_pcb(uint8_t pid){
 
 //terminates a process, returning the specified value to its parent process
 int32_t halt (uint8_t status){
-    //stop interrupts
-    cli();
 
     pcb_t* cur_pcb = get_pcb(current_pid);
     int32_t old_esp = cur_pcb->saved_esp;
@@ -155,19 +153,20 @@ int32_t halt (uint8_t status){
         cur_pcb->file_array[i].fops_func.close; // GDB not going into this
     }
 
-    sti();
+    read_data(inode_array[current_pid], 24, user_eip, 4); // changes eip to parent program
     // restore esp and ebp
     asm volatile ("                 \n\
             movl    %1, %%esp  #restore esp     \n\
             movl    %2, %%ebp  #restore ebp     \n\
-            movl    $0, %%eax  #clear eax     \n\
-            movb    %0, %%al   #set return value     \n\
-            ret                     \n\
+            # movl    $0, %%eax  #clear eax     \n\
+            # movb    %0, %%al   #set return value     \n\
+            # ret                     \n\
             "
             :
             : "r"(status), "r"(old_esp), "r"(old_ebp)
     );
-    
+    user_switch();
+    return 0;
 }
 
 /* int32_t execute (const uint8_t* command);
@@ -199,9 +198,7 @@ int32_t execute (const uint8_t* command){
     dentry_t dentry;
     int inode;
     uint8_t data_buffer[4];
-    int pid_filled;
     uint32_t physical_address;
-    uint8_t user_eip_buf[4];
     int32_t user_esp;
 
     /* Confirm file validity */
@@ -240,9 +237,7 @@ int32_t execute (const uint8_t* command){
     page_dir[32].fourmb.ps = 1; // sets page size
     page_dir[32].fourmb.su = 1; // sets supervisor bit
 
-    // printf("flushing tlb \n");
     //need to flush the TLB here 
-    //flush_tlb();
     asm volatile("\
     mov %cr3, %eax    ;\
     mov %eax, %cr3    ;\
@@ -258,51 +253,21 @@ int32_t execute (const uint8_t* command){
 
     /* Prepare for the context switch */
     
-    // printf("parse user EIP \n");
     //Parse User EIP
     read_data(dentry.inode_num, 24, user_eip, 4);
-    // for(i = 3; i >= 0; i--){
-    //     user_eip += user_eip_buf[i];
-    //     user_eip << 8;
-    // }
     
     // printf("parse user ESP \n");
     //Parse User ESP
     user_esp = 0x083FFFFC;
 
-    // printf("changing tss \n");
 
     // tss
     tss.ss0 = KERNEL_DS;
     tss.esp0 = EIGHT_MB - EIGHT_KB*(current_pid+1) - 4;
 
-    // printf("creating PCB \n");
-    /* Create PCB and Open File Descriptor*/
-    // printf("Creating pcb \n");
     pcb_t* pcb_ptr = get_pcb(current_pid);
     init_pcb(pcb_ptr);
 
-    // printf("setting interrupts \n");
-    //switching to user mode
-
-    // printf("context switch \n");
-    // asm volatile ("\
-    // andl $0x00FF, %%eax ;\
-    // movw %%ax, %%dx     ;\
-    // pushl %%eax         ;\
-    // pushl %%edx         ;\
-    // pushfl              ;\
-    // popl %%eax          ;\
-    // orl $0x0200, %%eax  ;\
-    // pushl %%eax         ;\
-    // pushl %%ecx         ;\
-    // pushl %%ebx         ;\
-    // iret                ;\
-    // "
-    // :
-    // : "a"(USER_DS), "b"(user_eip), "c"(USER_CS), "d"(user_esp)
-    // : "memory"
-    // );
     user_switch();
 
     return 0;
