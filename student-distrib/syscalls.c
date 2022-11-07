@@ -77,11 +77,6 @@ void init_fop(fops_t* fop, uint8_t num){
     }
 }
 
-/*
-Restore parent data
-Restore parent paging
-Close any relevant FDs
-Jump to execute return*/
 int32_t halt (uint8_t status){
     //stop interrupts
     cli();

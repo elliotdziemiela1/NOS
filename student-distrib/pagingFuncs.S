@@ -32,5 +32,5 @@ ret
 .globl flush_tlb
 .align 4
 flush_tlb:
-mov    %cr3, %eax              # put PDBR(cr3) to EBX
+mov    %cr3, %eax
 mov    %eax, %cr3  
