@@ -5,6 +5,7 @@
 #include "./lib.h"
 #include "filesystem.h"
 #include "paging.h"
+#include "x86_desc.h"
 
 
 #define JUNK 0
@@ -37,8 +38,10 @@ uint32_t pid_array[MAX_PIDS];
 void init_pcb(pcb_t* pcb){
     pcb -> pcb_id = current_pid;
     pcb -> parent_id = parent_pid;
-    pcb -> saved_esp = 0;
-    pcb -> saved_ebp = 0;
+    register uint32_t  s_esp asm("esp");
+    register uint32_t  s_ebp asm("ebp");
+    pcb -> saved_esp = s_esp;
+    pcb -> saved_ebp = s_ebp;
     pcb -> active = 1;
 }
 
@@ -108,6 +111,9 @@ int32_t execute (const uint8_t* command){
     uint8_t * data_buffer;
     int pid_filled;
     uint32_t physical_address;
+    uint8_t user_eip_buf[4];
+    int32_t user_eip;
+    int32_t user_esp;
 
     /* Confirm file validity */
     if (read_dentry_by_name(command, &dentry) == -1) return -1;
@@ -116,9 +122,9 @@ int32_t execute (const uint8_t* command){
     if(read_data(inode, 0, data_buffer, sizeof(uint32_t)) == -1) return -1;
 
     /* Check if file is an executable */
-    // if(data_buffer[0] != MAGIC_0 || data_buffer[1] != MAGIC_1 || data_buffer[2] != MAGIC_2 || data_buffer[3] != MAGIC_3){
-    //     return -1;
-    // }
+    if(data_buffer[0] != MAGIC_0 || data_buffer[1] != MAGIC_1 || data_buffer[2] != MAGIC_2 || data_buffer[3] != MAGIC_3){
+        return -1;
+    }
 
     parent_pid = current_pid;
     printf("Setting up paging \n");
@@ -146,26 +152,56 @@ int32_t execute (const uint8_t* command){
     page_dir[32].fourmb.ps = 1; // sets page size
 
     //need to flush the TLB here 
+    flush_tlb();
 
     /* Load the file into physical memory */
     inode_t * prog_inode_ptr = (inode_t *)(inode_start + inode);
     uint8_t * img_addr = PROG_IMG_VIRTUAL_ADDR;
     read_data(inode, 0, img_addr, prog_inode_ptr -> file_size);
 
-    /* Create PCB and Open File Descriptor*/
+    /* Prepare for the context switch */
+    
+    //Parse User EIP
+    read_data(dentry.inode_num, 24, user_eip, 4);
+    user_eip = 0;
+    for(i = 3; i >= 0; i--){
+        user_eip += user_eip_buf[i];
+        user_eip << 4;
+    }
+    
+    //Parse User ESP
+    user_esp = 0x8000000 + 0x400000 - 4;
 
-    printf("trying to open file \n");
+    // tss
+    tss.ss0 = KERNEL_DS;
+    tss.esp0 = EIGHT_MB - EIGHT_KB*(current_pid+1) - 4;
+
+    /* Create PCB and Open File Descriptor*/
+    printf("Creating pcb \n");
     pcb_t* pcb_ptr = get_pcb(current_pid);
     init_pcb(pcb_ptr);
 
-    int fd = open(command);
-    uint8_t buffer[60000];
-    int num = read(fd, buffer, sizeof(uint32_t));
-    for(i = 0; i < num; i++){
-        printfBetter("%c", buffer[i]);
-    }
+    //switching to user mode
+    sti();
 
+    asm volatile ("\
+    andl $0x00FF, %%ebx ;\
+    movw %%bx, %%ds     ;\
+    pushl %%ebx         ;\
+    pushl %%edx         ;\
+    pushfl              ;\
+    popl %%edx          ;\
+    orl $0x0200, %%edx  ;\
+    pushl %%edx         ;\
+    pushl %%eax         ;\
+    iret                ;\
+    "
+    :
+    : "a"(user_eip), "b"(USER_DS), "c"(USER_CS), "d"(user_esp)
+    : "memory"
+    );
 
+    return 0;
 }
 
 int32_t write (int32_t fd, const void* buf, int32_t nbytes){
