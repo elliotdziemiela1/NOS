@@ -77,18 +77,30 @@ void init_fop(fops_t* fop, uint8_t num){
     }
 }
 
+//terminates a process, returning the specified value to its parent process
 int32_t halt (uint8_t status){
     //stop interrupts
     cli();
     int i;
 
     pcb_t* cur_pcb = get_pcb(current_pid);
+
+    //check if exception
+
+    //check if program finished
+
+/*Halting the base shell should either not let the user halt at all, 
+or after halting must re-spawn a new base shell. */
     
-    //restore parent data
+    //restore parent data; return control to the parent task
+    pcb_t* parent_pcb = get_pcb(cur_pcb->parent_id);
+    parent_pid = parent_pcb->parent_id;
+    current_pid = cur_pcb->parent_id;
+    pid_array[curr_pcb->pcb_pid] = 0;
 
     //restore parent paging
-
-    //flush tlb
+    
+    //flush tlb; takes place after change in paging structure
     flush_tlb();
 
     //close any relevant PDs
@@ -101,7 +113,7 @@ int32_t halt (uint8_t status){
     sti();
 
     //jump to execute return - based on execute
-
+    asm 
     return status;
 }
 
