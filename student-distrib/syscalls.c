@@ -6,7 +6,6 @@
 #include "filesystem.h"
 #include "paging.h"
 
-
 #define JUNK 0
 #define MAX_PROCESSES 10 // arbitrary number of the maximum processes we'll allow
 #define EIGHT_MB 0x0800000
@@ -78,8 +77,43 @@ void init_fop(fops_t* fop, uint8_t num){
     }
 }
 
+/*
+Restore parent data
+Restore parent paging
+Close any relevant FDs
+Jump to execute return*/
 int32_t halt (uint8_t status){
-    return 0;
+    //stop interrupts
+    cli();
+    int i;
+
+    //get current pcb pointer
+    pcb_t* cur_pcb = get_pcb(current_pid);
+    
+    //restore parent data
+
+    //update pid values
+    pcb_t* parent_pcb = get_pcb(cur_pcb->parent_id);
+    parent_pid = parent_pcb->parent_id;
+    current_pid = cur_pcb->parent_id;
+    pid_array[curr_pcb->pcb_pid] = 0;
+
+    //restore parent paging
+
+    //flush tlb
+    flush_tlb();
+
+    //close any relevant PDs
+    for(i = 0; i<MAX_FILES; i++){
+        cur_pcb->file_array[i].flag = 0;
+    }
+
+    //enable interrupts again
+    sti();
+
+    //jump to execute return - based on execute
+
+    return status;
 }
 
 /* int32_t execute (const uint8_t* command);
@@ -172,17 +206,8 @@ int32_t execute (const uint8_t* command){
 
     /* Create PCB and Open File Descriptor*/
     
+}
 
-}
-int32_t write (int32_t fd, const void* buf, int32_t nbytes){
-    return 0;
-}
-int32_t open (const uint8_t* filename){
-    return 0;
-}
-int32_t close (int32_t fd){
-    return 0;
-}
 
 int32_t write (int32_t fd, const void* buf, int32_t nbytes){
     // printf("REACHED WRITE \n");

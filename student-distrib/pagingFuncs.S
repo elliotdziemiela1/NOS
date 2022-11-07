@@ -23,6 +23,14 @@ mov %eax, %cr4
 mov %cr0, %eax
 or $0x80000001, %eax
 mov %eax, %cr0
+#flush tlb here too?
 mov %ebp, %esp
 pop %ebp
 ret
+
+.text
+.globl flush_tlb
+.align 4
+flush_tlb:
+mov    %cr3, %eax              # put PDBR(cr3) to EBX
+mov    %eax, %cr3  
