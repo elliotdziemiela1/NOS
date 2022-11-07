@@ -27,25 +27,12 @@
 #define MB_4 0x400000
 // addresses of program images to (first program at 8MB physical, second program at 12MB physical)
 
-uint32_t current_pid = -1;
-uint32_t parent_pid = -1;
+int32_t current_pid = -1;
+int32_t parent_pid = -1;
 uint32_t pid_array[MAX_PIDS] = { 0 };
 uint32_t inode_array[MAX_PIDS]= { 0 };
 
 uint8_t user_eip[4];
-
-void init_pcb(pcb_t* pcb){
-    pcb -> pcb_id = current_pid;
-    pcb -> parent_id = parent_pid;
-    pcb -> saved_esp = 0;
-    pcb -> saved_ebp = 0;
-    pcb -> active = 1;
-}
-
-uint32_t get_pcb(uint8_t pid){
-    uint32_t addr = EIGHT_MB - EIGHT_KB*(pid+1);
-    return addr;
-}
 
 uint32_t get_ebp(uint8_t pid){
     uint32_t addr = EIGHT_MB - EIGHT_KB*(pid);
@@ -122,8 +109,8 @@ void init_pcb(pcb_t* pcb){
     pcb->file_array[1] = file; 
 }
 
-uint32_t get_pcb(uint8_t num){
-    uint32_t addr = EIGHT_MB - EIGHT_KB*(num+1);
+uint32_t get_pcb(uint8_t pid){
+    uint32_t addr = EIGHT_MB - EIGHT_KB*(pid+1);
     return addr;
 }
 
@@ -136,14 +123,15 @@ int32_t halt (uint8_t status){
     int32_t old_esp = cur_pcb->saved_esp;
     int32_t old_ebp = cur_pcb->saved_ebp;
 
-    //check if exception and check if program finished
+    pid_array[current_pid] = 0;
 
-    if (parent_pid == -1) // if we have only 1 running process or none at all
-        return -1; //failure
-    
+    if (parent_pid == -1){ // if we have only 1 running process or none at all
+        current_pid = -1;
+        execute("shell"); // set flag to restart shell at end
+    }
+
     // change current and parent pid variables, and set current pid array value to 0
     pcb_t* parent_pcb = get_pcb(parent_pid);
-    pid_array[current_pid] = 0;
     current_pid = parent_pid;
     parent_pid = parent_pcb->parent_id;
 
@@ -151,7 +139,10 @@ int32_t halt (uint8_t status){
     uint32_t physical_address = (2 + current_pid) * FOURMB; //you want to skip the first page which houses the kernel
     page_dir[32].fourmb.addr = physical_address / FOURKB;
     //flush tlb; takes place after change in paging structure
-    flush_tlb();
+    asm volatile("\
+    mov %cr3, %eax    ;\
+    mov %eax, %cr3    ;\
+    ");
     /* Load the file into physical memory */
     inode_t * prog_inode_ptr = (inode_t *)(inode_start + inode_array[current_pid]); // somehow need to get parent inode
     uint8_t * img_addr = PROG_IMG_VIRTUAL_ADDR;
@@ -161,7 +152,7 @@ int32_t halt (uint8_t status){
     //close any relevant FDs
     int i;
     for(i = 0; i<MAX_FILES; i++){
-        cur_pcb->file_array[i].fops_func.close;
+        cur_pcb->file_array[i].fops_func.close; // GDB not going into this
     }
 
     sti();
@@ -175,8 +166,8 @@ int32_t halt (uint8_t status){
             "
             :
             : "r"(status), "r"(old_esp), "r"(old_ebp)
-            : 
     );
+    
 }
 
 /* int32_t execute (const uint8_t* command);
@@ -265,18 +256,6 @@ int32_t execute (const uint8_t* command){
 
     /* Create PCB and Open File Descriptor*/
 
-    printf("trying to open file \n");
-    pcb_t* pcb_ptr = get_pcb(current_pid);
-    init_pcb(pcb_ptr);
-
-    int fd = open(command);
-    uint8_t buffer[60000];
-    int num = read(fd, buffer, sizeof(uint32_t));
-    for(i = 0; i < num; i++){
-        printfBetter("%c", buffer[i]);
-    }
-
-
     /* Prepare for the context switch */
     
     // printf("parse user EIP \n");
@@ -333,7 +312,7 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
     pcb_t* pcb = get_pcb(current_pid);
 
     if(fd < 0 || fd > MAX_FILES){
-        printf("Invalid fd \n");
+        // printf("Invalid fd \n");
         return -1;
     }
     
@@ -342,7 +321,7 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
 }
 
 int32_t open (const uint8_t* filename){
-    printf("Reached system open \n");
+    // printf("Reached system open \n");
 
     if(filename == NULL){
         printf("Filename empty! \n");
@@ -365,7 +344,7 @@ int32_t open (const uint8_t* filename){
     printf("i = %d \n", i);
 
     dentry_t dentry;
-    if(read_dentry_by_name(filename, &dentry) != 0){
+    if(read_dentry_by_name(filename, &dentry) == 0){ // 0 is failure
         printf("Dentry fail \n");
         return -1;
     }
@@ -401,7 +380,7 @@ int32_t open (const uint8_t* filename){
 }
 
 int32_t close (int32_t fd){
-    printf("Reached system close");
+    // printf("Reached system close");
     pcb_t* pcb = get_pcb(current_pid);
 
     if(fd < 0 || fd > MAX_FILES){
@@ -425,9 +404,9 @@ int32_t close (int32_t fd){
 // can refer to ece391hello.c for an example of a call to this function
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
     sti();
-    printf("Reached system read \n");
+    // printf("Reached system read \n");
     pcb_t* pcb = get_pcb(current_pid);
-    printf("Received new pcb \n");
+    // printf("Received new pcb \n");
     if(fd < 0 || fd > MAX_FILES){
         printf("Invalid fd \n");
         return -1;

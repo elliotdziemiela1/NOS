@@ -323,7 +323,7 @@ int execute_test(){
 	clear();
 	setCursor(0,0);
 	
-	execute("hello");
+	execute("shell");
 
     // int fd = open(command);
     // uint8_t buffer[60000];

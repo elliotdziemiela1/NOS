@@ -15,12 +15,11 @@ sys_call_linkage:
     pushl %ebp
     pushl %esi
     pushl %edi
+    pushfl
     #pushing arguments to the stack
     pushl %edx #1st Argument
     pushl %ecx #2nd Argument
     pushl %ebx #3rd Argument
-
-    pushfl
 
     #parameter validation
     cmpl $PARAM_MIN, %eax
@@ -35,10 +34,10 @@ sys_call_linkage:
     call *jump_table(, %eax, 4)
 
     #teardown stack
-    popfl
     popl %ebx
     popl %ecx
     popl %edx
+    popfl
     popl %edi
     popl %esi
     popl %ebp
@@ -46,10 +45,10 @@ sys_call_linkage:
 
 invalid:
     #teardown stack
-    popfl
     popl %ebx
     popl %ecx
     popl %edx
+    popfl
     popl %edi
     popl %esi
     popl %ebp

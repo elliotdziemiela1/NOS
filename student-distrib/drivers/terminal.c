@@ -5,7 +5,7 @@
 
 static volatile char buf[BUFFER_SIZE]; 
 static int pos; // position in buffer to write next character (0 indexed)
-static int opened; // flag for whether or not the terminal is currently opened.
+// static int opened; // flag for whether or not the terminal is currently opened.
 
 /* acceptNewCommand()
  * Inputs: none
@@ -20,14 +20,10 @@ static void acceptNewCommand(){ // THIS CODE NEEDS TO BE CHANGED
     for (i = 0; i < BUFFER_SIZE-1; i++){
         buf[i] = ' ';
     }
-
     buf[BUFFER_SIZE-1] = '\n'; // signifies end of buffer
-
     pos = 0;
 
-    printfBetter(path);
-    // printfBetter(buf);
-    // setCursor(pos, getCursorY()-2);
+    // printfBetter(path);
 }
 
 /* terminal_open
@@ -39,14 +35,14 @@ static void acceptNewCommand(){ // THIS CODE NEEDS TO BE CHANGED
  */
 uint32_t terminal_open(){
     clear();
-    opened = 1;
-    return 0;
+    // opened = 1;
+    return -1;
 }
 
 uint32_t terminal_close(){
     clear();
-    opened = 0;
-    return 0;
+    // opened = 0;
+    return -1;
 }
 
 /* uint32_t terminal_write()
@@ -63,8 +59,8 @@ uint32_t terminal_write(int32_t fd, const void* buf1, int32_t nbytes){
     //     ptr++;
     // }
     int ret = printfBetter(buf1);
-    if (ret)
-        putcBetter('\n');
+    // if (ret)
+    //     putcBetter('\n');
     return ret;
 }
 
@@ -76,11 +72,11 @@ uint32_t terminal_write(int32_t fd, const void* buf1, int32_t nbytes){
  * */
 uint32_t terminal_read(int32_t fd, void* buf, int32_t nbytes){
     acceptNewCommand();
-    if (!opened) // if we have not yet opened the terminal, do nothing
-        return -1;
+    // if (!opened) // if we have not yet opened the terminal, do nothing
+    //     return -1;
     int32_t bytesRead = gets(buf,BUFFER_SIZE-1);
     putcBetter('\n');
-    printf("ali test 1");
+    // printf("ali test 1");
     return bytesRead;
 }
 
