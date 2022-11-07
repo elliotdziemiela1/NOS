@@ -345,9 +345,10 @@ int32_t close (int32_t fd){
  * */
 // can refer to ece391hello.c for an example of a call to this function
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
+    sti();
     printf("Reached system read \n");
     pcb_t* pcb = get_pcb(current_pid);
-    
+    printf("Received new pcb \n");
     if(fd < 0 || fd > MAX_FILES){
         printf("Invalid fd \n");
         return -1;

@@ -323,7 +323,7 @@ int execute_test(){
 	clear();
 	setCursor(0,0);
 	
-	execute("shell");
+	execute("hello");
 
     // int fd = open(command);
     // uint8_t buffer[60000];
@@ -359,7 +359,7 @@ void launch_tests(){
 	// end putsBetter because they dont wrap around once the cursor hits the edge (they make a new line)
 	
 	TEST_OUTPUT("SYSCALLS", execute_test());
-	 TEST_OUTPUT("allocate memory test", test_system_calls);
+	//TEST_OUTPUT("allocate memory test", test_system_calls);
 	// launch your tests here
 
 	//rtc_1_test();

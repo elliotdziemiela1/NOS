@@ -80,7 +80,7 @@ uint32_t terminal_read(int32_t fd, void* buf, int32_t nbytes){
         return -1;
     int32_t bytesRead = gets(buf,BUFFER_SIZE-1);
     putcBetter('\n');
-
+    printf("ali test 1");
     return bytesRead;
 }
 
