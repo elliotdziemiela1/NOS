@@ -82,16 +82,9 @@ int32_t halt (uint8_t status){
     cli();
     int i;
 
-    //get current pcb pointer
     pcb_t* cur_pcb = get_pcb(current_pid);
     
     //restore parent data
-
-    //update pid values
-    pcb_t* parent_pcb = get_pcb(cur_pcb->parent_id);
-    parent_pid = parent_pcb->parent_id;
-    current_pid = cur_pcb->parent_id;
-    pid_array[curr_pcb->pcb_pid] = 0;
 
     //restore parent paging
 
@@ -101,6 +94,7 @@ int32_t halt (uint8_t status){
     //close any relevant PDs
     for(i = 0; i<MAX_FILES; i++){
         cur_pcb->file_array[i].flag = 0;
+        cur_pcb->file_array[i].fops_func.close;
     }
 
     //enable interrupts again
