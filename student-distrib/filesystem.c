@@ -34,12 +34,13 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
     //check edge case of the file name that's greater than 32 characters
 
     //parameter validation
-    if(fname == NULL || strlen((int8_t *) fname) > FILENAME_LENGTH){
+    if(fname == NULL || strlen((int8_t *) fname) > FILENAME_LENGTH || strlen((int8_t *) fname) == 0){
         return -1;
     }
     
     for(i = 0; i < num_dir; i++){
-        if(strncmp((int8_t*) fname, (int8_t*) (boot_block -> direntries[i].file_name), strlen((int8_t*) fname)) == 0){
+        if(strncmp((int8_t*) fname, (int8_t*) (boot_block -> direntries[i].file_name), strlen((int8_t*) fname)) == 0 && 
+        (strlen((int8_t*) fname) == strlen((int8_t*) (boot_block -> direntries[i].file_name)))){
             //copy information from dentry in boot block into given dentry
             success_value = read_dentry_by_index((uint32_t) (boot_block -> direntries[i].inode_num), (dentry_t*) dentry);
             strcpy((int8_t*) dentry -> file_name, (const int8_t*) boot_block -> direntries[i].file_name);
@@ -232,18 +233,18 @@ int32_t open_file(const uint8_t* filename){
  * Return value: 0 if successul, -1 otherwise
  * Files: None
  */
-int32_t close_file(const uint8_t* filename){
-    int i;
-    dentry_t dentry;
-    read_dentry_by_name(filename, (dentry_t*) &dentry);
-    int32_t inode_num = dentry.inode_num;
-    for(i = FILE_START_IDX; i < MAX_FILES; i++){
-        if(inode_num == files[i]){
-            files[i] = -1;
-            return 0;
-        }
-    }
-    return -1;
+int32_t close_file(int32_t filename){
+    //int i;
+    // dentry_t dentry;
+    // read_dentry_by_name(filename, (dentry_t*) &dentry);
+    // int32_t inode_num = dentry.inode_num;
+    // for(i = FILE_START_IDX; i < MAX_FILES; i++){
+    //     if(inode_num == files[i]){
+    //         files[i] = -1;
+    //         return 0;
+    //     }
+    // }
+    return 0;
 }
 
 /* get_file_length

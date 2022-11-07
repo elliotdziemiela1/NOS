@@ -64,7 +64,7 @@ jump_table:
     .long read #3
     .long write #4
     .long open #5
-    # .long close #6
+    .long close #6
     # .long getargs #7
     # .long vidmap #8
     # .long set_handler #9

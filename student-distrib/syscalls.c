@@ -117,7 +117,7 @@ uint32_t get_pcb(uint8_t pid){
 //terminates a process, returning the specified value to its parent process
 int32_t halt (uint8_t status){
 
-    pcb_t* cur_pcb = get_pcb(current_pid);
+    pcb_t* cur_pcb = (pcb_t*) get_pcb(current_pid);
     int32_t old_esp = cur_pcb->saved_esp;
     int32_t old_ebp = cur_pcb->saved_ebp;
 
@@ -125,11 +125,11 @@ int32_t halt (uint8_t status){
 
     if (parent_pid == -1){ // if we have only 1 running process or none at all
         current_pid = -1;
-        execute("shell"); // set flag to restart shell at end
+        execute((const uint8_t*)"shell"); // set flag to restart shell at end
     }
 
     // change current and parent pid variables, and set current pid array value to 0
-    pcb_t* parent_pcb = get_pcb(parent_pid);
+    pcb_t* parent_pcb = (pcb_t*) get_pcb(parent_pid);
     current_pid = parent_pid;
     parent_pid = parent_pcb->parent_id;
 
@@ -143,14 +143,14 @@ int32_t halt (uint8_t status){
     ");
     /* Load the file into physical memory */
     inode_t * prog_inode_ptr = (inode_t *)(inode_start + inode_array[current_pid]); // somehow need to get parent inode
-    uint8_t * img_addr = PROG_IMG_VIRTUAL_ADDR;
+    uint8_t * img_addr = (uint8_t*) PROG_IMG_VIRTUAL_ADDR;
     read_data(inode_array[current_pid], 0, img_addr, prog_inode_ptr -> file_size);
     
 
     //close any relevant FDs
-    int i;
+    int i, temp;
     for(i = 0; i<MAX_FILES; i++){
-        cur_pcb->file_array[i].fops_func.close; // GDB not going into this
+        temp = (int) cur_pcb->file_array[i].fops_func.close; // GDB not going into this
     }
 
     read_data(inode_array[current_pid], 24, user_eip, 4); // changes eip to parent program
@@ -208,9 +208,9 @@ int32_t execute (const uint8_t* command){
     if(read_data(inode, 0, data_buffer, sizeof(uint32_t)) == -1) return -1;
 
     /* Check if file is an executable */
-    // if(data_buffer[0] != MAGIC_0 || data_buffer[1] != MAGIC_1 || data_buffer[2] != MAGIC_2 || data_buffer[3] != MAGIC_3){
-    //     return -1;
-    // }
+    if(data_buffer[0] != MAGIC_0 || data_buffer[1] != MAGIC_1 || data_buffer[2] != MAGIC_2 || data_buffer[3] != MAGIC_3){
+        return -1;
+    }
 
     parent_pid = current_pid;
     // printf("Setting up paging \n");
@@ -246,7 +246,7 @@ int32_t execute (const uint8_t* command){
     // printf("load file into physical memory \n");
     /* Load the file into physical memory */
     inode_t * prog_inode_ptr = (inode_t *)(inode_start + inode);
-    uint8_t * img_addr = PROG_IMG_VIRTUAL_ADDR;
+    uint8_t * img_addr = (uint8_t*) PROG_IMG_VIRTUAL_ADDR;
     read_data(inode, 0, img_addr, prog_inode_ptr -> file_size);
 
     /* Create PCB and Open File Descriptor*/
@@ -265,7 +265,7 @@ int32_t execute (const uint8_t* command){
     tss.ss0 = KERNEL_DS;
     tss.esp0 = EIGHT_MB - EIGHT_KB*(current_pid+1) - 4;
 
-    pcb_t* pcb_ptr = get_pcb(current_pid);
+    pcb_t* pcb_ptr = (pcb_t*) get_pcb(current_pid);
     init_pcb(pcb_ptr);
 
     user_switch();
@@ -274,12 +274,12 @@ int32_t execute (const uint8_t* command){
 }
 
 int32_t write (int32_t fd, const void* buf, int32_t nbytes){
-    pcb_t* pcb = get_pcb(current_pid);
 
     if(fd < 0 || fd > MAX_FILES){
-        // printf("Invalid fd \n");
+        printf("Invalid fd \n");
         return -1;
     }
+    pcb_t* pcb = (pcb_t*) get_pcb(current_pid);
     
     // printf("calling rtc write \n");
     return pcb->file_array[fd].fops_func.write(fd, buf, nbytes); 
@@ -292,8 +292,12 @@ int32_t open (const uint8_t* filename){
         printf("Filename empty! \n");
         return -1;
     }
+    dentry_t dentry;
+    if(read_dentry_by_name(filename, &dentry) == -1){ // -1 is failure
+        return -1;
+    }
     
-    pcb_t* pcb = get_pcb(current_pid);
+    pcb_t* pcb = (pcb_t*) get_pcb(current_pid);
 
     // add file to fda
     int i;
@@ -306,17 +310,10 @@ int32_t open (const uint8_t* filename){
         }
     }
 
-    printf("i = %d \n", i);
-
-    dentry_t dentry;
-    if(read_dentry_by_name(filename, &dentry) == 0){ // 0 is failure
-        printf("Dentry fail \n");
-        return -1;
-    }
     file_desc_t file;
     fops_t fop;
 
-    if(strncmp(filename, "rtc", strlen(filename)) == 0){
+    if(strncmp((const int8_t *) filename, "rtc", strlen( (const int8_t *)filename)) == 0){
         init_fop(&fop, 0);
         file.fops_func = fop;
         file.inode_num = 0;
@@ -345,15 +342,17 @@ int32_t open (const uint8_t* filename){
 }
 
 int32_t close (int32_t fd){
-    // printf("Reached system close");
-    pcb_t* pcb = get_pcb(current_pid);
-
-    if(fd < 0 || fd > MAX_FILES){
+    if(fd < 2 || fd > MAX_FILES){
         printf("Invalid fd \n");
         return -1;
     }
 
-    pcb->file_array[fd].flags = 0;
+
+
+    pcb_t* pcb = (pcb_t*) get_pcb(current_pid);
+    if(pcb->file_array[fd].flags != 1){
+        return -1;
+    }
 
     return pcb->file_array[fd].fops_func.close(fd);
 }
@@ -368,14 +367,15 @@ int32_t close (int32_t fd){
  * */
 // can refer to ece391hello.c for an example of a call to this function
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
+    //printf("fd = %d \n",fd);
     sti();
-    // printf("Reached system read \n");
-    pcb_t* pcb = get_pcb(current_pid);
-    // printf("Received new pcb \n");
     if(fd < 0 || fd > MAX_FILES){
         printf("Invalid fd \n");
         return -1;
     }
+    // printf("Reached system read \n");
+    pcb_t* pcb = (pcb_t*) get_pcb(current_pid);
+    // printf("Received new pcb \n");
     
     return pcb->file_array[fd].fops_func.read(fd, buf, nbytes); 
 }

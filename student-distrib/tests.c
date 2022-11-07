@@ -195,55 +195,55 @@ int test_read_directory(){
  * Coverage: RTC handling
  * Files: 
  */
-int test_open_files(uint8_t cmd){
-	TEST_HEADER;
-	int8_t* file_names[7] = {"frame0.txt", "frame1.txt", "hello", "created.txt", 
-		"testprint", "verylargetextwithverylongname.txt", "verylargetextwithverylongname.tx"};
-	open_file((const uint8_t*) file_names[0]);
-	open_file((const uint8_t*) file_names[1]);
-	open_file((const uint8_t*) file_names[2]);
-	open_file((const uint8_t*) file_names[3]);
-	open_file((const uint8_t*) file_names[4]);
-	open_file((const uint8_t*) file_names[5]);
-	open_file((const uint8_t*) file_names[6]);
-	dentry_t dentry;
+// int test_open_files(uint8_t cmd){
+// 	TEST_HEADER;
+// 	int8_t* file_names[7] = {"frame0.txt", "frame1.txt", "hello", "created.txt", 
+// 		"testprint", "verylargetextwithverylongname.txt", "verylargetextwithverylongname.tx"};
+// 	open_file((const uint8_t*) file_names[0]);
+// 	open_file((const uint8_t*) file_names[1]);
+// 	open_file((const uint8_t*) file_names[2]);
+// 	open_file((const uint8_t*) file_names[3]);
+// 	open_file((const uint8_t*) file_names[4]);
+// 	open_file((const uint8_t*) file_names[5]);
+// 	open_file((const uint8_t*) file_names[6]);
+// 	dentry_t dentry;
 
-	int32_t result = read_dentry_by_name((const uint8_t*) file_names[cmd], (dentry_t*) &dentry);
+// 	int32_t result = read_dentry_by_name((const uint8_t*) file_names[cmd], (dentry_t*) &dentry);
 
-	//if read_dentry came back unsuccessful terminate
-	if(result == -1){
-		return result;
-	}
+// 	//if read_dentry came back unsuccessful terminate
+// 	if(result == -1){
+// 		return result;
+// 	}
 
-	int32_t inode_num = dentry.inode_num;
-	int32_t file_length = get_file_length(inode_num);
-	int8_t buf[37000]; // 37000 is max file size
+// 	int32_t inode_num = dentry.inode_num;
+// 	int32_t file_length = get_file_length(inode_num);
+// 	int8_t buf[37000]; // 37000 is max file size
 
-	int32_t bytes_read = read_file(inode_num, buf, file_length);
-	clear();
-	setCursor(0, 0);
-	printf("file read: %s \n", file_names[cmd]);
-	printf("bytes read: %d \n", bytes_read);
-	int i;
-	for(i = 0; i < bytes_read; i++){
-		printfBetter("%c", buf[i]);
-	}
+// 	int32_t bytes_read = read_file(inode_num, buf, file_length);
+// 	clear();
+// 	setCursor(0, 0);
+// 	printf("file read: %s \n", file_names[cmd]);
+// 	printf("bytes read: %d \n", bytes_read);
+// 	int i;
+// 	for(i = 0; i < bytes_read; i++){
+// 		printfBetter("%c", buf[i]);
+// 	}
 
-	if(bytes_read != file_length){
-		return 0;
-	}
+// 	if(bytes_read != file_length){
+// 		return 0;
+// 	}
 
-	close_file((const uint8_t*) file_names[0]);
-	close_file((const uint8_t*) file_names[1]);
-	close_file((const uint8_t*) file_names[2]);
-	close_file((const uint8_t*) file_names[3]);
-	close_file((const uint8_t*) file_names[4]);
-	close_file((const uint8_t*) file_names[5]); 
-	close_file((const uint8_t*) file_names[6]);
+// 	close_file((const uint8_t*) file_names[0]);
+// 	close_file((const uint8_t*) file_names[1]);
+// 	close_file((const uint8_t*) file_names[2]);
+// 	close_file((const uint8_t*) file_names[3]);
+// 	close_file((const uint8_t*) file_names[4]);
+// 	close_file((const uint8_t*) file_names[5]); 
+// 	close_file((const uint8_t*) file_names[6]);
 
 
-	return 1;
-}
+// 	return 1;
+// }
 
 
 /* RTC Test 
@@ -323,7 +323,7 @@ int execute_test(){
 	clear();
 	setCursor(0,0);
 	
-	execute("shell");
+	execute((const uint8_t *) "shell");
 
 	result = PASS;
 	return result;

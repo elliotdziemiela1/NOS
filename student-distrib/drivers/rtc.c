@@ -120,7 +120,6 @@ int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes){
  * Return value: -1 if fail and 0 if success
  */
 int32_t rtc_open(const uint8_t* filename){
-    printf("REACHED RTC_OPEN \n");
     if(filename == NULL){
         return -1;
     }
