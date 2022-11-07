@@ -25,6 +25,10 @@
 #define PROG_IMG_VIRTUAL_ADDR 0x08048000 // 128MB:virtual address we need to map physical
 #define MAX_PIDS 6
 #define MB_4 0x400000
+
+#define MB_128_PAGE 32
+#define ELF_SIZE 4
+#define PROG_IMG_START_BYTE 24
 // addresses of program images to (first program at 8MB physical, second program at 12MB physical)
 
 int32_t current_pid = -1; // -1 means no current process
@@ -33,7 +37,7 @@ uint32_t pid_array[MAX_PIDS] = { 0 }; // array of flags telling us which PIDS ar
 uint32_t inode_array[MAX_PIDS]= { 0 }; // array of inodes of the executible files indexed in order
 // of PIDS
 
-uint8_t user_eip[4]; // buffer holding the entry point for the program.
+uint8_t user_eip[ELF_SIZE]; // buffer holding the entry point for the program.
 
 /* uint32_t get_ebp;
  * Inputs: - pid= process id to get ebp of
@@ -161,7 +165,7 @@ int32_t halt (uint8_t status){
 
     //restore parent paging
     uint32_t physical_address = (2 + current_pid) * FOURMB; //you want to skip the first page which houses the kernel
-    page_dir[32].fourmb.addr = physical_address / FOURKB;
+    page_dir[MB_128_PAGE].fourmb.addr = physical_address / FOURKB;
     //flush tlb; takes place after change in paging structure
     asm volatile("\
     mov %cr3, %eax    ;\
@@ -179,7 +183,7 @@ int32_t halt (uint8_t status){
         temp = (int) cur_pcb->file_array[i].fops_func.close; // GDB not going into this
     }
 
-    read_data(inode_array[current_pid], 24, user_eip, 4); // changes eip to parent program
+    read_data(inode_array[current_pid], 24, user_eip, ELF_SIZE); // changes eip to parent program
     // restore esp and ebp
     asm volatile ("                 \n\
             movl    %1, %%esp  #restore esp     \n\
@@ -196,7 +200,7 @@ int32_t halt (uint8_t status){
 }
 
 /* int32_t execute (const uint8_t* command);
- * Inputs: - command = 
+ * Inputs: - command = filename string
  * Return Value: -1 if program cannot be executed, else 256 if the program dies by an
  *  exception, or a value in the range 0 to 255 if the program executes a halt system call, 
  *  in which case the value returned is that given by the program’s call to halt.
@@ -207,7 +211,7 @@ int32_t execute (const uint8_t* command){
     /* Initialize Variables */
     dentry_t dentry;
     int inode;
-    uint8_t data_buffer[4];
+    uint8_t data_buffer[ELF_SIZE];
     uint32_t physical_address;
     int32_t user_esp;
 
@@ -218,7 +222,7 @@ int32_t execute (const uint8_t* command){
     if(read_data(inode, 0, data_buffer, sizeof(uint32_t)) == -1) return -1;
 
     /* Check if file is an executable */
-    if(data_buffer[0] != MAGIC_0 || data_buffer[1] != MAGIC_1 || data_buffer[2] != MAGIC_2 || data_buffer[3] != MAGIC_3){
+    if(data_buffer[0] != MAGIC_0 || data_buffer[1] != MAGIC_1 || data_buffer[2] != MAGIC_2 || data_buffer[3] != MAGIC_3){ //checks each specific byte
         return -1;
     }
 
@@ -241,11 +245,11 @@ int32_t execute (const uint8_t* command){
 
     // printf("setting physical addr \n");
     physical_address = (2 + current_pid) * FOURMB; //you want to skip the first page which houses the kernel
-    page_dir[32].fourmb.addr = physical_address / FOURKB;
-    page_dir[32].fourmb.present = 1; // marks as present
-    page_dir[32].fourmb.rw = 1; // allows writing as well
-    page_dir[32].fourmb.ps = 1; // sets page size
-    page_dir[32].fourmb.su = 1; // sets supervisor bit
+    page_dir[MB_128_PAGE].fourmb.addr = physical_address / FOURKB;
+    page_dir[MB_128_PAGE].fourmb.present = 1; // marks as present
+    page_dir[MB_128_PAGE].fourmb.rw = 1; // allows writing as well
+    page_dir[MB_128_PAGE].fourmb.ps = 1; // sets page size
+    page_dir[MB_128_PAGE].fourmb.su = 1; // sets supervisor bit
 
     //need to flush the TLB here 
     asm volatile("\
@@ -264,16 +268,16 @@ int32_t execute (const uint8_t* command){
     /* Prepare for the context switch */
     
     //Parse User EIP
-    read_data(dentry.inode_num, 24, user_eip, 4);
+    read_data(dentry.inode_num, PROG_IMG_START_BYTE, user_eip, ELF_SIZE);
     
     // printf("parse user ESP \n");
     //Parse User ESP
-    user_esp = 0x083FFFFC;
+    user_esp = 0x083FFFFC; //this is the user esp
 
 
     // tss
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = EIGHT_MB - EIGHT_KB*(current_pid+1) - 4;
+    tss.esp0 = EIGHT_MB - EIGHT_KB*(current_pid+1) - 4; //we subtract 4 cause we don't want the top of the page
 
     pcb_t* pcb_ptr = (pcb_t*) get_pcb(current_pid);
     init_pcb(pcb_ptr);
@@ -283,6 +287,11 @@ int32_t execute (const uint8_t* command){
     return 0;
 }
 
+/* int32_t write (int32_t fd, const void* buf, int32_t nbytes);
+ * Inputs: - fd = file descriptor number, buf = buffer, nbytes = number of bytes written
+ * Return Value: -1 if program cannot be executed else value of corresponding file operation
+ * Function: writes to the buffer
+ * */
 int32_t write (int32_t fd, const void* buf, int32_t nbytes){
 
     if(fd < 0 || fd > MAX_FILES){
@@ -300,6 +309,11 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
     return pcb->file_array[fd].fops_func.write(fd, buf, nbytes); 
 }
 
+/* int32_t open (const uint8_t* filename);
+ * Inputs: - filename - string that has filename to be opened
+ * Return Value: -1 if program cannot be executed else value of corresponding file operation
+ * Function: opens file 
+ * */
 int32_t open (const uint8_t* filename){
     // printf("Reached system open \n");
 
@@ -356,6 +370,11 @@ int32_t open (const uint8_t* filename){
     return i; 
 }
 
+/* int32_t open (int32_t fd);
+ * Inputs: - fd - file descirptor number for pcb
+ * Return Value: -1 if program cannot be executed else value of corresponding file operation
+ * Function: closes file 
+ * */
 int32_t close (int32_t fd){
     if(fd < 2 || fd > MAX_FILES){
         printf("Invalid fd \n");

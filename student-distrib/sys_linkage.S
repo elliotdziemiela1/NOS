@@ -11,15 +11,16 @@
 # extern write #4
 # extern open #5
 
+# this is the system call linkage function for system calls
 sys_call_linkage:
     pushl %ebp
     pushl %esi
     pushl %edi
     pushfl
     #pushing arguments to the stack
-    pushl %edx #1st Argument
-    pushl %ecx #2nd Argument
-    pushl %ebx #3rd Argument
+    pushl %edx # 1st Argument
+    pushl %ecx # 2nd Argument
+    pushl %ebx # 3rd Argument
 
     #parameter validation
     cmpl $PARAM_MIN, %eax
