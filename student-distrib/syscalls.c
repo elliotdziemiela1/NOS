@@ -29,6 +29,8 @@
 #define MB_128_PAGE 32
 #define ELF_SIZE 4
 #define PROG_IMG_START_BYTE 24
+
+#define ARG_LEN 128
 // addresses of program images to (first program at 8MB physical, second program at 12MB physical)
 
 int32_t current_pid = -1; // -1 means no current process
@@ -427,3 +429,31 @@ int32_t dummy_read (int32_t fd, void* buf, int32_t nbytes){
 int32_t dummy_write (int32_t fd, const void* buf, int32_t nbytes){
     return -1;
 }
+
+int32_t getargs (uint8_t* buf, int32_t nbytes){
+    // int i;
+    pcb_t* pcb_ptr = (pcb_t*) get_pcb(current_pid)
+
+    //check if buffer is null and if argument fits in buffer
+    if(buf == NULL || (strlen(pcb_ptr->args) > nbytes)){
+        return -1;
+    }
+    
+    //check if args exist
+    if(pcb_ptr->args[0] == '\0'){
+        return -1;
+    }
+    // for(i = 0; i < nbytes; i++){
+    //     buf[i] = pcb_ptr->args[i];
+    // }
+
+    //fill buffer with arg (kernel to user)
+    strncpy((int8_t*)buf, (int8_t*)pcb_ptr->args, nbytes);
+
+    return 0;
+}
+
+int32_t vidmap (uint8_t** screen_start){
+    
+}
+
