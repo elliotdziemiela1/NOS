@@ -7,8 +7,6 @@
 #include "paging.h"
 #include "x86_desc.h"
 
-
-
 #define JUNK 0
 #define MAX_PROCESSES 10 // arbitrary number of the maximum processes we'll allow
 #define EIGHT_MB 0x0800000
@@ -31,6 +29,9 @@
 #define PROG_IMG_START_BYTE 24
 
 #define ARG_LEN 128
+
+page_table_entry_t video_page[num_pte] __attribute__((aligned(pte_size)));
+
 // addresses of program images to (first program at 8MB physical, second program at 12MB physical)
 
 int32_t current_pid = -1; // -1 means no current process
@@ -216,6 +217,11 @@ int32_t execute (const uint8_t* command){
     uint8_t data_buffer[ELF_SIZE];
     uint32_t physical_address;
     int32_t user_esp;
+    uint8_t args[ARG_LEN]; //store args extracted from command parameter
+    uint8_t filename[FILENAME_LEN]; //store file name extracted from command parameter
+
+    //parse command and store args in args[]
+    parse_command(command, args, filename);
 
     /* Confirm file validity */
     if (read_dentry_by_name(command, &dentry) == -1) return -1;
@@ -276,7 +282,6 @@ int32_t execute (const uint8_t* command){
     //Parse User ESP
     user_esp = 0x083FFFFC; //this is the user esp
 
-
     // tss
     tss.ss0 = KERNEL_DS;
     tss.esp0 = EIGHT_MB - EIGHT_KB*(current_pid+1) - 4; //we subtract 4 cause we don't want the top of the page
@@ -284,10 +289,43 @@ int32_t execute (const uint8_t* command){
     pcb_t* pcb_ptr = (pcb_t*) get_pcb(current_pid);
     init_pcb(pcb_ptr);
 
+    //store arg in pcb
+    strncpy((uint8_t*)(pcb_ptr->args), (uint8_t*)args, ARG_LEN);
+
     user_switch();
 
     return 0;
 }
+
+//command = execute paramter consisting of filename and args
+//args = array to store args from parameter
+//filename = array to store filename (first word) from paramter + NULL char
+int32_t parse_command(const uint8_t* command, uint8_t* args, uint8_t* filename){
+    //extract filename
+    int i = 0; //counter for filename and command
+    int name_end; 
+    while(command[i] != ' ' && command[i] != '\0'){
+        filename[i] = command[i];
+        i++;
+    }
+
+    if(command[i] == ' '){
+        filename[i] = '\0';     //terminate command
+        i++;
+        name_end = i;           
+    }
+
+    //extract args
+    while(command[i] != '\0'){
+        if(i - name_end < ARG_LEN){
+            args[i-name_end] = command[i];
+            i++;
+        }
+    }
+    args[i - name_end] = '\0';
+
+}
+
 
 /* int32_t write (int32_t fd, const void* buf, int32_t nbytes);
  * Inputs: - fd = file descriptor number, buf = buffer, nbytes = number of bytes written
@@ -454,6 +492,44 @@ int32_t getargs (uint8_t* buf, int32_t nbytes){
 }
 
 int32_t vidmap (uint8_t** screen_start){
-    
+    if(screen_start == NULL){
+        return -1;
+    }
+
+    //check if address falls in address range (128 MB to 132 MB)
+    if((int) screen_start < (FOURMB * 32) || (int) screen_start >= (FOURMB*32) + FOURMB){
+        return -1;
+    }
+
+    //make page table similar to the one already in paging files? 
+    int i;
+    for(i = 0; i < num_pte; i++){
+        video_table[i].addr = i;
+        video_table[i].present = 1;
+        video_table[i].su = 1;      //1 for user
+        video_table[i].rw = 1;
+
+        video_table[i].pat = 0;
+        video_table[i].g = 0;
+
+        video_table[i].dirty = 0;
+        video_table[i].a = 0;
+
+        video_table[i].pcd = 0;
+        video_table[i].pwt = 0;
+    }
+
+    //set pointer of start of video mem address to 132 MB
+    *screen_start = (uint8_t)((FOURMB*32) + FOURMB); 
+
+    return 0;
+}
+
+int32_t set_handler (int32_t signum, void* handler_address);{
+    return -1;
+}
+
+int32_t sigreturn (void){
+    return -1;
 }
 

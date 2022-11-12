@@ -48,3 +48,7 @@ int32_t dummy_write (int32_t fd, const void* buf, int32_t nbytes);
 // extern void flush_tlb();
 int32_t getargs (uint8_t* buf, int32_t nbytes);
 int32_t vidmap (uint8_t** screen_start);
+int32_t parse_command(const uint8_t* command, uint8_t* args, uint8_t* filename);
+
+int32_t set_handler (int32_t signum, void* handler_address);
+int32_t sigreturn (void);
