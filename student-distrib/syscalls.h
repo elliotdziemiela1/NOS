@@ -2,6 +2,8 @@
 #include "filesystem.h"
 #include "switch_to_user.h"
 
+#define ARG_LEN 128
+
 //file opcodes (jump) table
 typedef struct fops_t{
     int32_t (*read)(int32_t fd, void* buf, int32_t nbytes);
@@ -28,7 +30,7 @@ typedef struct pcb_t{
     uint32_t saved_ebp;
     uint32_t saved_eip;
     uint8_t active      :1;
-    uint32_t args[ARG_LEN];
+    uint8_t args[ARG_LEN];
     // uint8_t active;
 } pcb_t;
 
@@ -48,7 +50,7 @@ int32_t dummy_write (int32_t fd, const void* buf, int32_t nbytes);
 // extern void flush_tlb();
 int32_t getargs (uint8_t* buf, int32_t nbytes);
 int32_t vidmap (uint8_t** screen_start);
-int32_t parse_command(const uint8_t* command, uint8_t* args, uint8_t* filename);
+void parse_command(const uint8_t* command, uint8_t* args, uint8_t* filename);
 
 int32_t set_handler (int32_t signum, void* handler_address);
 int32_t sigreturn (void);

@@ -330,6 +330,22 @@ int execute_test(){
 }
 
 /* Checkpoint 4 tests */
+int getargs_test{
+	TEST_HEADER;
+
+	int result = FALSE;
+	
+	const uint8_t* command = 'cat frame1.txt';
+	uint8_t args[128];
+	uint8_t filename[128];
+	parse_command(command, args, filename);
+
+	result = TRUE;
+
+	return result;
+
+}
+
 /* Checkpoint 5 tests */
 int test_system_calls(){
 	TEST_HEADER;

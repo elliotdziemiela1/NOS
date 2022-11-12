@@ -28,8 +28,6 @@
 #define ELF_SIZE 4
 #define PROG_IMG_START_BYTE 24
 
-#define ARG_LEN 128
-
 page_table_entry_t video_page[num_pte] __attribute__((aligned(pte_size)));
 
 // addresses of program images to (first program at 8MB physical, second program at 12MB physical)
@@ -218,7 +216,7 @@ int32_t execute (const uint8_t* command){
     uint32_t physical_address;
     int32_t user_esp;
     uint8_t args[ARG_LEN]; //store args extracted from command parameter
-    uint8_t filename[FILENAME_LEN]; //store file name extracted from command parameter
+    uint8_t filename[ARG_LEN]; //store file name extracted from command parameter
 
     //parse command and store args in args[]
     parse_command(command, args, filename);
@@ -290,17 +288,18 @@ int32_t execute (const uint8_t* command){
     init_pcb(pcb_ptr);
 
     //store arg in pcb
-    strncpy((uint8_t*)(pcb_ptr->args), (uint8_t*)args, ARG_LEN);
+    strncpy((int8_t*)(pcb_ptr->args), (int8_t*)args, ARG_LEN);
 
     user_switch();
 
     return 0;
 }
 
+//need to account for leading spaces
 //command = execute paramter consisting of filename and args
 //args = array to store args from parameter
 //filename = array to store filename (first word) from paramter + NULL char
-int32_t parse_command(const uint8_t* command, uint8_t* args, uint8_t* filename){
+void parse_command(const uint8_t* command, uint8_t* args, uint8_t* filename){
     //extract filename
     int i = 0; //counter for filename and command
     int name_end; 
@@ -322,7 +321,7 @@ int32_t parse_command(const uint8_t* command, uint8_t* args, uint8_t* filename){
             i++;
         }
     }
-    args[i - name_end] = '\0';
+    // args[i - name_end] = '\0';
 
 }
 
@@ -470,10 +469,10 @@ int32_t dummy_write (int32_t fd, const void* buf, int32_t nbytes){
 
 int32_t getargs (uint8_t* buf, int32_t nbytes){
     // int i;
-    pcb_t* pcb_ptr = (pcb_t*) get_pcb(current_pid)
+    pcb_t* pcb_ptr = (pcb_t*) get_pcb(current_pid);
 
     //check if buffer is null and if argument fits in buffer
-    if(buf == NULL || (strlen(pcb_ptr->args) > nbytes)){
+    if(buf == NULL || (strlen((int8_t*)pcb_ptr->args) > nbytes)){
         return -1;
     }
     
@@ -504,19 +503,19 @@ int32_t vidmap (uint8_t** screen_start){
     //make page table similar to the one already in paging files? 
     int i;
     for(i = 0; i < num_pte; i++){
-        video_table[i].addr = i;
-        video_table[i].present = 1;
-        video_table[i].su = 1;      //1 for user
-        video_table[i].rw = 1;
+        video_page[i].addr = i;
+        video_page[i].present = 1;
+        video_page[i].su = 1;      //1 for user
+        video_page[i].rw = 1;
 
-        video_table[i].pat = 0;
-        video_table[i].g = 0;
+        video_page[i].pat = 0;
+        video_page[i].g = 0;
 
-        video_table[i].dirty = 0;
-        video_table[i].a = 0;
+        video_page[i].dirty = 0;
+        video_page[i].a = 0;
 
-        video_table[i].pcd = 0;
-        video_table[i].pwt = 0;
+        video_page[i].pcd = 0;
+        video_page[i].pwt = 0;
     }
 
     //set pointer of start of video mem address to 132 MB
@@ -525,7 +524,7 @@ int32_t vidmap (uint8_t** screen_start){
     return 0;
 }
 
-int32_t set_handler (int32_t signum, void* handler_address);{
+int32_t set_handler (int32_t signum, void* handler_address){
     return -1;
 }
 
