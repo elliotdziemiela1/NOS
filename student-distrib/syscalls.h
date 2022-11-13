@@ -3,6 +3,8 @@
 #include "switch_to_user.h"
 
 #define ARG_LEN 128
+#define NONFILE      0x2 // fd flag that says it's not a traditonal file
+#define OPEN      0x1
 
 //file opcodes (jump) table
 typedef struct fops_t{
@@ -18,7 +20,7 @@ typedef struct file_desc_t{
     fops_t fops_func;
     //index node number for the file
     int32_t inode_num;
-    int32_t file_position;
+    int32_t file_position; // position in file of read
     int32_t flags;
 } file_desc_t;
 

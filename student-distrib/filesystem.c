@@ -42,8 +42,9 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
         if(strncmp((int8_t*) fname, (int8_t*) (boot_block -> direntries[i].file_name), strlen((int8_t*) fname)) == 0 && 
         (strlen((int8_t*) fname) == strlen((int8_t*) (boot_block -> direntries[i].file_name)))){
             //copy information from dentry in boot block into given dentry
-            success_value = read_dentry_by_index((uint32_t) (boot_block -> direntries[i].inode_num), (dentry_t*) dentry);
+            success_value = read_dentry_by_index(i, (dentry_t*) dentry);
             strcpy((int8_t*) dentry -> file_name, (const int8_t*) boot_block -> direntries[i].file_name);
+            dentry -> inode_num = boot_block -> direntries[i].inode_num;
             //success_value = read_dentry_by_index((uint32_t) i, (dentry_t*) dentry);
             
             return success_value;
@@ -55,7 +56,7 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
 /* read_dentry_by_idx
  * 
  * Parses file system by idx for specfic dentry
- * Inputs: index -- inode num of the dentry we want
+ * Inputs: index -- index num of the dentry we want
  * Outputs: dentry - dentry we found
  * Return value: 0 if succesful, -1 otherwise
  * Files: None
@@ -70,7 +71,6 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
 
     //copy information from dentry in boot block into given dentry
     dentry -> file_type = boot_block -> direntries[index].file_type;
-    dentry -> inode_num = index;
     return 0;
 }
 

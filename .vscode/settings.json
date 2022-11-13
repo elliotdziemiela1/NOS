@@ -10,6 +10,8 @@
         "multiboot.h": "c",
         "syscalls.h": "c",
         "paging.h": "c",
-        "ece391support.h": "c"
+        "ece391support.h": "c",
+        "switch_to_user.h": "c",
+        "filesystem.h": "c"
     }
 }

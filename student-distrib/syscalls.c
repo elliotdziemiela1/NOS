@@ -120,15 +120,17 @@ void init_pcb(pcb_t* pcb){
     file.fops_func = fop;
     file.inode_num = 0;
     file.file_position = 0;
-    file.flags = 1;
+    file.flags = OPEN;
+    file.flags |= NONFILE;
     pcb->file_array[0] = file; 
 
     // setting stdout file
     init_fop(&fop, 4);
     file.fops_func = fop;
     file.inode_num = 0;
-    file.file_position = 1;
-    file.flags = 1;
+    file.file_position = 0;
+    file.flags = OPEN;
+    file.flags |= NONFILE;
     pcb->file_array[1] = file; 
 }
 
@@ -341,7 +343,7 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
     }
     pcb_t* pcb = (pcb_t*) get_pcb(current_pid);
 
-    if(pcb->file_array[fd].flags != 1){
+    if(!(pcb->file_array[fd].flags & OPEN)){
         printf("Can't close unopened \n");
         return -1;
     }
@@ -372,7 +374,7 @@ int32_t open (const uint8_t* filename){
     // add file to fda
     int i;
     for(i = 2; i < MAX_FILES; i++){
-        if(pcb->file_array[i].flags != 1)
+        if(!(pcb->file_array[i].flags & OPEN))
             break;
         else if(i == MAX_FILES-1){
             printf("No free file positions \n");
@@ -387,8 +389,9 @@ int32_t open (const uint8_t* filename){
         init_fop(&fop, 0);
         file.fops_func = fop;
         file.inode_num = 0;
-        file.file_position = i;
-        file.flags = 1;
+        file.file_position = 0;
+        file.flags = OPEN;
+        file.flags |= NONFILE;
 
         pcb->file_array[i] = file;
 
@@ -401,8 +404,10 @@ int32_t open (const uint8_t* filename){
 
     file.fops_func = fop;
     file.inode_num = dentry.inode_num;
-    file.file_position = i;
-    file.flags = 1;
+    file.file_position = 0;
+    file.flags = OPEN;
+    if (dentry.file_type != 2)
+        file.flags |= NONFILE;
 
     pcb->file_array[i] = file;
 
@@ -425,11 +430,11 @@ int32_t close (int32_t fd){
 
 
     pcb_t* pcb = (pcb_t*) get_pcb(current_pid);
-    if(pcb->file_array[fd].flags != 1){
+    if(!(pcb->file_array[fd].flags & OPEN)){
         printf("Can't close unopened \n");
         return -1;
     }
-
+    pcb->file_array[fd].flags ^= OPEN; // closes file
     return pcb->file_array[fd].fops_func.close(fd);
 }
 
@@ -451,14 +456,18 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes){
     }
     // printf("Reached system read \n");
     pcb_t* pcb = (pcb_t*) get_pcb(current_pid);
-
-    if(pcb->file_array[fd].flags != 1){
-        printf("Can't close unopened \n");
-        return -1;
-    }
-    // printf("Received new pcb \n");
     
-    return pcb->file_array[fd].fops_func.read(fd, buf, nbytes); 
+    if(!(pcb->file_array[fd].flags & OPEN)) // not opened
+        return -1;
+    if (pcb->file_array[fd].flags & NONFILE){
+        return pcb->file_array[fd].fops_func.read(pcb->file_array[fd].inode_num, buf, nbytes);
+    } else {
+        if(pcb->file_array[fd].file_position >= inode_start[pcb->file_array[fd].inode_num].file_size) // if read past end
+            return 0;
+        int32_t ret = pcb->file_array[fd].fops_func.read(pcb->file_array[fd].inode_num, buf, nbytes);
+        pcb->file_array[fd].file_position += ret;
+        return ret;
+    }
 }
 
 int32_t dummy_read (int32_t fd, void* buf, int32_t nbytes){
