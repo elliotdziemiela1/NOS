@@ -111,6 +111,7 @@ void init_pcb(pcb_t* pcb){
     pcb -> saved_esp = s_esp; // saves current esp
     pcb -> saved_ebp = s_ebp; // saves current ebp
     pcb -> active = 1; // sets active
+    pcb -> args[0] = '\n';
 
     // setting stdin file
     file_desc_t file;
@@ -212,17 +213,17 @@ int32_t execute (const uint8_t* command){
     /* Initialize Variables */
     dentry_t dentry;
     int inode;
-    uint8_t data_buffer[ELF_SIZE];
+    uint8_t data_buffer[ELF_SIZE] = { '\0' };
     uint32_t physical_address;
     int32_t user_esp;
-    uint8_t args[ARG_LEN]; //store args extracted from command parameter
-    uint8_t filename[ARG_LEN]; //store file name extracted from command parameter
+    uint8_t args[ARG_LEN] = { '\0' }; //store args extracted from command parameter
+    uint8_t filename[ARG_LEN] = { '\0' }; //store file name extracted from command parameter
 
     //parse command and store args in args[]
     parse_command(command, args, filename);
 
     /* Confirm file validity */
-    if (read_dentry_by_name(command, &dentry) == -1) return -1;
+    if (read_dentry_by_name(filename, &dentry) == -1) return -1;
     
     inode = dentry.inode_num;
     if(read_data(inode, 0, data_buffer, sizeof(uint32_t)) == -1) return -1;
@@ -288,6 +289,7 @@ int32_t execute (const uint8_t* command){
     init_pcb(pcb_ptr);
 
     //store arg in pcb
+    // strncpy((int8_t*)(pcb_ptr->args), (int8_t*)args, ARG_LEN);
     strncpy((int8_t*)(pcb_ptr->args), (int8_t*)args, ARG_LEN);
 
     user_switch();

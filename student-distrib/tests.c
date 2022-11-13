@@ -362,12 +362,8 @@ int test_system_calls(){
 
 /* Test suite entry point */
 void launch_tests(){
-	// Elliot: if you want to clear the screen, call lib::clear(). if you want to then reset the 
-	// cursor to the top left of the screen to start printing from there, call lib::setCursor(0,0)
-	// If you want to print to the screen, i recommend the functions I made printfBetter, putcBetter, 
-	// end putsBetter because they dont wrap around once the cursor hits the edge (they make a new line)
 	
-	TEST_OUTPUT("SYSCALLS", getargs_test());
+	TEST_OUTPUT("SYSCALLS", execute_test());
 	//TEST_OUTPUT("allocate memory test", test_system_calls);
 	// launch your tests here
 
