@@ -10,6 +10,11 @@
 # extern read #3
 # extern write #4
 # extern open #5
+# extern close #6
+# extern getargs #7
+# extern vidmap #8
+# extern set_handler #9
+# extern sigreturn #10
 
 # this is the system call linkage function for system calls
 sys_call_linkage:
@@ -66,7 +71,7 @@ jump_table:
     .long write #4
     .long open #5
     .long close #6
-    # .long getargs #7
-    # .long vidmap #8
-    # .long set_handler #9
-    # .long sigreturn #10
+    .long getargs #7
+    .long vidmap #8
+    .long set_handler #9
+    .long sigreturn #10

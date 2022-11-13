@@ -500,23 +500,23 @@ int32_t vidmap (uint8_t** screen_start){
         return -1;
     }
 
-    //make page table similar to the one already in paging files? 
-    int i;
-    for(i = 0; i < num_pte; i++){
-        video_page[i].addr = i;
-        video_page[i].present = 1;
-        video_page[i].su = 1;      //1 for user
-        video_page[i].rw = 1;
+    // //make page table similar to the one already in paging files? 
+    // int i;
+    // for(i = 0; i < num_pte; i++){
+    //     video_page[i].addr = i;
+    //     video_page[i].present = 1;
+    //     video_page[i].su = 1;      //1 for user
+    //     video_page[i].rw = 1;
 
-        video_page[i].pat = 0;
-        video_page[i].g = 0;
+    //     video_page[i].pat = 0;
+    //     video_page[i].g = 0;
 
-        video_page[i].dirty = 0;
-        video_page[i].a = 0;
+    //     video_page[i].dirty = 0;
+    //     video_page[i].a = 0;
 
-        video_page[i].pcd = 0;
-        video_page[i].pwt = 0;
-    }
+    //     video_page[i].pcd = 0;
+    //     video_page[i].pwt = 0;
+    // }
 
     //set pointer of start of video mem address to 132 MB
     *screen_start = (uint8_t)((FOURMB*32) + FOURMB); 

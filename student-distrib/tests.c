@@ -330,20 +330,20 @@ int execute_test(){
 }
 
 /* Checkpoint 4 tests */
-int getargs_test{
+int getargs_test(){
 	TEST_HEADER;
 
-	int result = FALSE;
+	int result = FAIL;
 	
-	const uint8_t* command = 'cat frame1.txt';
-	uint8_t args[128];
-	uint8_t filename[128];
-	parse_command(command, args, filename);
+	clear();
+	setCursor(0,0);
+	uint8_t* buf; 
+	int32_t nbytes = 128;
+	
+	execute((const uint8_t *) "cat frame1.txt");
 
-	result = TRUE;
-
+	result = PASS;
 	return result;
-
 }
 
 /* Checkpoint 5 tests */
@@ -367,7 +367,7 @@ void launch_tests(){
 	// If you want to print to the screen, i recommend the functions I made printfBetter, putcBetter, 
 	// end putsBetter because they dont wrap around once the cursor hits the edge (they make a new line)
 	
-	TEST_OUTPUT("SYSCALLS", execute_test());
+	TEST_OUTPUT("SYSCALLS", getargs_test());
 	//TEST_OUTPUT("allocate memory test", test_system_calls);
 	// launch your tests here
 
