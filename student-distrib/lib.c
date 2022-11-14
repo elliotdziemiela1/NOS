@@ -6,6 +6,7 @@
 static int screen_x; // x coordiante of the cursor
 static int screen_y; // y coordiante of the cursor
 static char* video_mem = (char *)VIDEO;
+uint16_t ATTRIB = 0x7;
 
 /* void verticalScroll(int lines)
  * Inputs: lines - the number of lines to scroll vram up
@@ -173,6 +174,12 @@ format_char_switch:
         buf++;
     }
     return (buf - format);
+}
+
+int32_t printfmatrix(int8_t *format, ...) {
+    ATTRIB = 0x0A;
+    printf(format);
+    ATTRIB = 0x7;
 }
 
 /* int32_t puts(int8_t* s);

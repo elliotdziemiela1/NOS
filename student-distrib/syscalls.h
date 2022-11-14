@@ -44,4 +44,7 @@ int32_t close (int32_t fd);
 extern void user_switch();
 int32_t dummy_read (int32_t fd, void* buf, int32_t nbytes);
 int32_t dummy_write (int32_t fd, const void* buf, int32_t nbytes);
+void matrix_func ();
+void do_matrix (char* charray);
+char* update_chars(char* charray);
 // extern void flush_tlb();

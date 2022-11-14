@@ -207,13 +207,18 @@ int32_t halt (uint8_t status){
  * Function: 
  * */
 int32_t execute (const uint8_t* command){
-    // printf("Reached exec \n");
+    // printf(command);
     /* Initialize Variables */
     dentry_t dentry;
     int inode;
     uint8_t data_buffer[ELF_SIZE];
     uint32_t physical_address;
     int32_t user_esp;
+
+    if(strncmp((const int8_t *)command, (const int8_t *)"matrix", strlen( (const int8_t *)"matrix")) == 0){
+        matrix_func();
+        return 0;
+    }
 
     /* Confirm file validity */
     if (read_dentry_by_name(command, &dentry) == -1) return -1;
@@ -426,4 +431,56 @@ int32_t dummy_read (int32_t fd, void* buf, int32_t nbytes){
 
 int32_t dummy_write (int32_t fd, const void* buf, int32_t nbytes){
     return -1;
+}
+
+void matrix_func(){
+	int freq_pass = 2                                          ;
+	int buf_size;
+	clear();
+	setCursor(0,0);
+
+	my_do_call(2);
+	my_do_call(5);
+	register int ret asm("eax");
+	int fd = ret;
+	
+	write(fd, (void*)&freq_pass, 4);
+    int i;
+    char* charray = "Y3& V K9 $0H7H& L &^: ))4NJK ; QP &9G  ($C L PS A94B#@ B 0o }=+&^";
+    //for(i = 0; i < 20; i++){
+    clear();
+    while(1){
+        // read(fd, (void*)&freq_pass, 4);
+        do_matrix(charray);
+        // charray = update_chars((char*) charray);
+        read(fd, (void*)&freq_pass, 4);
+    }
+}
+
+void do_matrix(char* charray){
+    clear();
+    int i;
+    for(i = 0; i < 20; i++){
+        printfmatrix(charray);
+        printf("\n");
+        charray = update_chars((char*) charray);
+    }
+    printf("\n \n");
+}
+
+char* update_chars(char* charray){
+    int i;
+    int len = strlen(charray);
+    char ret[len];
+    for (i = 0; i < len; i++){
+        if(charray[i] != ' ')
+            ret[i] = (charray[i]+6);
+        else
+            ret[i] = (charray[i]);
+    }
+    return ret;
+}
+
+char* update_buf(char* buf){
+    
 }
