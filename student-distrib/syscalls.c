@@ -221,6 +221,10 @@ int32_t execute (const uint8_t* command){
     uint8_t args[ARG_LEN] = { '\0' }; //store args extracted from command parameter
     uint8_t filename[ARG_LEN] = { '\0' }; //store file name extracted from command parameter
 
+    //there aren't any pids available
+    if(current_pid == MAX_PIDS - 1){
+        return -1;
+    }
     //parse command and store args in args[]
     parse_command(command, args, filename);
 
@@ -245,10 +249,6 @@ int32_t execute (const uint8_t* command){
             current_pid = i;
             break;
         }
-    }
-    //there aren't any pids available
-    if(i == MAX_PIDS){
-        return -1;
     }
     inode_array[current_pid] = inode;
 
