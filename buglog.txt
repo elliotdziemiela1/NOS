@@ -48,3 +48,19 @@
    Symptom: We were loading program images at 128MB instead of slightly after, rendering the entry point inaccurate
    Time to fix: 30 min
    Action done to fix problem: Loaded program images at 0x08048000 instead
+
+3.4:
+11.Problem: cat stuck in infinite loop
+   Symptom: Never returning 0 from read, not keeping track of position in file
+   Time to fix: 10 min
+   Action done to fix problem: added a position member to file descriptors that updates the file pos with every read
+
+12.Problem: programs not executing in shell
+   Symptom: buffers used to seperate file from args were not being cleared
+   Time to fix: 30 min
+   Action done to fix problem: clear these buffers with every call to execute
+
+13.Problem: Open not working with correct parameter
+   Symptom: We were using the inode number of a dentry to read it by index
+   Time to fix: 10 min
+   Action done to fix problem: Use index instead of inode
