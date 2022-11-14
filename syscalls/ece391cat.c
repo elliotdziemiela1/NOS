@@ -7,7 +7,6 @@ int main ()
 {
     int32_t fd, cnt;
     uint8_t buf[1024];
-
     if (0 != ece391_getargs (buf, 1024)) {
         ece391_fdputs (1, (uint8_t*)"could not read arguments\n");
 	return 3;
