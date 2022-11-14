@@ -95,6 +95,14 @@ void init_fop(fops_t* fop, uint8_t num){
         fop->close = NULL;
         return;
     }
+
+    if(num == 5){ // executible
+        fop->read = NULL;
+        fop->write = NULL;
+        fop->open = NULL;
+        fop->close = NULL;
+        return;
+    }
 }
 
 /* void init_pcb;
@@ -121,7 +129,7 @@ void init_pcb(pcb_t* pcb){
     file.inode_num = 0;
     file.file_position = 0;
     file.flags = OPEN;
-    file.flags |= NONFILE;
+    file.flags |= NONREADABLE;
     pcb->file_array[0] = file; 
 
     // setting stdout file
@@ -130,7 +138,7 @@ void init_pcb(pcb_t* pcb){
     file.inode_num = 0;
     file.file_position = 0;
     file.flags = OPEN;
-    file.flags |= NONFILE;
+    file.flags |= NONREADABLE;
     pcb->file_array[1] = file; 
 }
 
@@ -391,7 +399,7 @@ int32_t open (const uint8_t* filename){
         file.inode_num = 0;
         file.file_position = 0;
         file.flags = OPEN;
-        file.flags |= NONFILE;
+        file.flags |= NONREADABLE;
 
         pcb->file_array[i] = file;
 
@@ -406,8 +414,17 @@ int32_t open (const uint8_t* filename){
     file.inode_num = dentry.inode_num;
     file.file_position = 0;
     file.flags = OPEN;
-    if (dentry.file_type != 2)
-        file.flags |= NONFILE;
+
+    uint8_t data_buffer[ELF_SIZE] = { '\0' };
+    read_data(dentry.inode_num, 0, data_buffer, sizeof(uint32_t));
+
+    if (dentry.file_type != 2){ // if nonfile
+        file.flags |= NONREADABLE;
+    } else if (data_buffer[0] == MAGIC_0 && data_buffer[1] == MAGIC_1 &&
+     data_buffer[2] == MAGIC_2 && data_buffer[3] == MAGIC_3){ // if executible
+        file.flags |= NONREADABLE;
+        init_fop(&fop, 5); // 5 for executible
+    }
 
     pcb->file_array[i] = file;
 
@@ -448,6 +465,7 @@ int32_t close (int32_t fd){
  * */
 // can refer to ece391hello.c for an example of a call to this function
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
+    // printf("Reached open \n");
     //printf("fd = %d \n",fd);
     sti();
     if(fd < 0 || fd > MAX_FILES){
@@ -458,10 +476,13 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes){
     pcb_t* pcb = (pcb_t*) get_pcb(current_pid);
     
     if(!(pcb->file_array[fd].flags & OPEN)) // not opened
+        // printf("finished open \n");
         return -1;
-    if (pcb->file_array[fd].flags & NONFILE){
+    if (pcb->file_array[fd].flags & NONREADABLE){
+        // printf("finished open \n");
         return pcb->file_array[fd].fops_func.read(pcb->file_array[fd].inode_num, buf, nbytes);
     } else {
+        // printf("finished open \n");
         if(pcb->file_array[fd].file_position >= inode_start[pcb->file_array[fd].inode_num].file_size) // if read past end
             return 0;
         int32_t ret = pcb->file_array[fd].fops_func.read(pcb->file_array[fd].inode_num, buf, nbytes);

@@ -3,7 +3,7 @@
 #include "switch_to_user.h"
 
 #define ARG_LEN 128
-#define NONFILE      0x2 // fd flag that says it's not a traditonal file
+#define NONREADABLE      0x2 // fd flag that says it's not a file readable by cat
 #define OPEN      0x1
 
 //file opcodes (jump) table
