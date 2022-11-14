@@ -122,7 +122,7 @@ void init_pcb(pcb_t* pcb){
     // setting stdin file
     file_desc_t file;
     fops_t fop;
-    init_fop(&fop, 3);
+    init_fop(&fop, 3); // 3 for stdin
     file.fops_func = fop;
     file.inode_num = 0;
     file.file_position = 0;
@@ -131,7 +131,7 @@ void init_pcb(pcb_t* pcb){
     pcb->file_array[0] = file; 
 
     // setting stdout file
-    init_fop(&fop, 4);
+    init_fop(&fop, 4); // 4 for stdout
     file.fops_func = fop;
     file.inode_num = 0;
     file.file_position = 0;
@@ -174,7 +174,7 @@ int32_t halt (uint8_t status){
     parent_pid = parent_pcb->parent_id;
 
     //restore parent paging
-    uint32_t physical_address = (2 + current_pid) * FOURMB; //you want to skip the first page which houses the kernel
+    uint32_t physical_address = (2 + current_pid) * FOURMB; //2:you want to skip the first page which houses the kernel
     page_dir[MB_128_PAGE].fourmb.addr = physical_address / FOURKB;
     //flush tlb; takes place after change in paging structure
     asm volatile("\
@@ -259,7 +259,7 @@ int32_t execute (const uint8_t* command){
     inode_array[current_pid] = inode;
 
     // printf("setting physical addr \n");
-    physical_address = (2 + current_pid) * FOURMB; //you want to skip the first page which houses the kernel
+    physical_address = (2 + current_pid) * FOURMB; //2:you want to skip the first page which houses the kernel
     page_dir[MB_128_PAGE].fourmb.addr = physical_address / FOURKB;
     page_dir[MB_128_PAGE].fourmb.present = 1; // marks as present
     page_dir[MB_128_PAGE].fourmb.rw = 1; // allows writing as well
@@ -536,8 +536,8 @@ int32_t vidmap (uint8_t** screen_start){
         return -1;
     }
 
-    //check if address falls in address range (128 MB to 132 MB)
-    if((int) screen_start < (FOURMB * 32) || (int) screen_start > FOURMB * 33){
+    //check if address falls in address range (128 MB (4*32) to 132 MB (4*33))
+    if((int) screen_start < (FOURMB * 32) || (int) screen_start > FOURMB * 33){ 
         return -1;
     }
 
@@ -552,7 +552,7 @@ int32_t vidmap (uint8_t** screen_start){
     video_mem[0].su = 1;
     video_mem[0].rw = 1;
 
-    video_mem[0].addr = 0xb8000 / 4096;
+    video_mem[0].addr = 0xb8000 / 4096; // 0xb8000 = starting address of page. 4096 = 4kb
 
     //need to flush the TLB here 
     asm volatile("\
@@ -560,7 +560,7 @@ int32_t vidmap (uint8_t** screen_start){
     mov %eax, %cr3    ;\
     ");
 
-    //set pointer of start of video mem address to 132 MB
+    //set pointer of start of video mem address to 132 MB (4*33)
     *screen_start = (uint8_t *)((FOURMB*33)); 
 
     return 0;
