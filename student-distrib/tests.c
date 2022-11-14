@@ -330,21 +330,21 @@ int execute_test(){
 }
 
 /* Checkpoint 4 tests */
-int getargs_test(){
-	TEST_HEADER;
+// int getargs_test(){
+// 	TEST_HEADER;
 
-	int result = FAIL;
+// 	int result = FAIL;
 	
-	clear();
-	setCursor(0,0);
-	uint8_t* buf; 
-	int32_t nbytes = 128;
+// 	clear();
+// 	setCursor(0,0);
+// 	uint8_t* buf; 
+// 	int32_t nbytes = 128;
 	
-	execute((const uint8_t *) "cat frame1.txt");
+// 	execute((const uint8_t *) "cat frame1.txt");
 
-	result = PASS;
-	return result;
-}
+// 	result = PASS;
+// 	return result;
+// }
 
 /* Checkpoint 5 tests */
 int test_system_calls(){

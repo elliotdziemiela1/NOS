@@ -21,7 +21,7 @@
 #define MAGIC_2 0x4c
 #define MAGIC_3 0x46
 #define PROG_IMG_VIRTUAL_ADDR 0x08048000 // 128MB:virtual address we need to map physical
-#define MAX_PIDS 6
+#define MAX_PIDS 3
 #define MB_4 0x400000
 
 #define MB_128_PAGE 32
@@ -466,10 +466,10 @@ int32_t close (int32_t fd){
 // can refer to ece391hello.c for an example of a call to this function
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
     // printf("Reached open \n");
-    //printf("fd = %d \n",fd);
+    //printf("fd = %d \n",fd); 
     sti();
     if(fd < 0 || fd > MAX_FILES){
-        printf("Invalid fd \n");
+        printf("Invalid fd %d \n", fd);
         return -1;
     }
     // printf("Reached system read \n");
@@ -570,7 +570,7 @@ int32_t vidmap (uint8_t** screen_start){
     ");
 
     //set pointer of start of video mem address to 132 MB
-    *screen_start = (uint32_t *)((FOURMB*33)); 
+    *screen_start = (uint8_t *)((FOURMB*33)); 
 
     return 0;
 }
