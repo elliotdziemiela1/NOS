@@ -28,8 +28,6 @@
 #define ELF_SIZE 4
 #define PROG_IMG_START_BYTE 24
 
-page_table_entry_t video_page[num_pte] __attribute__((aligned(pte_size)));
-
 // addresses of program images to (first program at 8MB physical, second program at 12MB physical)
 
 int32_t current_pid = -1; // -1 means no current process
@@ -499,6 +497,12 @@ int32_t dummy_write (int32_t fd, const void* buf, int32_t nbytes){
     return -1;
 }
 
+/* getargs
+ * Inputs: - buf= buffer we want to fill with arguments
+ *         - nbytes= number of bytes to fill buf with
+ * Return Value: 0 upon success -1 with unsuccess
+ * Function: this will parse the arguments in the pcb and copies the bytes from the argument into the buffer
+ * */
 int32_t getargs (uint8_t* buf, int32_t nbytes){
     // int i;
     pcb_t* pcb_ptr = (pcb_t*) get_pcb(current_pid);
@@ -522,6 +526,11 @@ int32_t getargs (uint8_t* buf, int32_t nbytes){
     return 0;
 }
 
+/* vidmap
+ * Inputs:- screen start= starting location of video memory
+ * Return Value: 0 upon success -1 with unsuccess
+ * Function: maps text mode video memory into user space at screen start
+ * */
 int32_t vidmap (uint8_t** screen_start){
     if(screen_start == NULL){
         return -1;
@@ -531,24 +540,6 @@ int32_t vidmap (uint8_t** screen_start){
     if((int) screen_start < (FOURMB * 32) || (int) screen_start > FOURMB * 33){
         return -1;
     }
-
-    // //make page table similar to the one already in paging files? 
-    // int i;
-    // for(i = 0; i < num_pte; i++){
-    //     video_page[i].addr = i;
-    //     video_page[i].present = 1;
-    //     video_page[i].su = 1;      //1 for user
-    //     video_page[i].rw = 1;
-
-    //     video_page[i].pat = 0;
-    //     video_page[i].g = 0;
-
-    //     video_page[i].dirty = 0;
-    //     video_page[i].a = 0;
-
-    //     video_page[i].pcd = 0;
-    //     video_page[i].pwt = 0;
-    // }
 
     //page_dir[34].fourmb.size = 0;
     page_dir[33].fourmb.ps = 0;
@@ -575,10 +566,21 @@ int32_t vidmap (uint8_t** screen_start){
     return 0;
 }
 
+/* set handler
+ * Inputs:- signum = which signal's handler to change
+ *          handler address = points to user level function to be when the signal is recieved
+ * Return Value: 0 upon success -1 with unsuccess
+ * Function: changes default action when signal is recieved
+ * */
 int32_t set_handler (int32_t signum, void* handler_address){
     return -1;
 }
 
+/* sigreturn
+ * Inputs:- screen start= starting location of video memory
+ * Return Value: hardware context's EAX value
+ * Function: copy hardware context that was on user level stack back onto processor
+ * */
 int32_t sigreturn (void){
     return -1;
 }
