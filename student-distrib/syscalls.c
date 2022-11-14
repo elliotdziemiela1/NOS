@@ -507,7 +507,7 @@ int32_t vidmap (uint8_t** screen_start){
     }
 
     //check if address falls in address range (128 MB to 132 MB)
-    if((int) screen_start < (FOURMB * 32) || (int) screen_start >= (FOURMB*32) + FOURMB){
+    if((int) screen_start < (FOURMB * 32) || (int) screen_start > FOURMB * 33){
         return -1;
     }
 
@@ -529,8 +529,27 @@ int32_t vidmap (uint8_t** screen_start){
     //     video_page[i].pwt = 0;
     // }
 
+    //page_dir[34].fourmb.size = 0;
+    page_dir[33].fourmb.ps = 0;
+    page_dir[33].fourmb.present = 1;
+    page_dir[33].fourmb.rw = 1; 
+    page_dir[33].fourmb.su = 1;
+
+
+    video_mem[0].present = 1;
+    video_mem[0].su = 1;
+    video_mem[0].rw = 1;
+
+    video_mem[0].addr = 0xb8000 / 4096;
+
+    //need to flush the TLB here 
+    asm volatile("\
+    mov %cr3, %eax    ;\
+    mov %eax, %cr3    ;\
+    ");
+
     //set pointer of start of video mem address to 132 MB
-    *screen_start = (uint8_t)((FOURMB*32) + FOURMB); 
+    *screen_start = (uint32_t *)((FOURMB*33)); 
 
     return 0;
 }
