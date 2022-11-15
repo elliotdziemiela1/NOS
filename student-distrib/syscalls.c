@@ -138,6 +138,11 @@ void init_pcb(pcb_t* pcb){
     file.flags = OPEN;
     file.flags |= NONREADABLE;
     pcb->file_array[1] = file; 
+
+    int i;
+    for(i = 2; i < MAX_FILES; i++){
+        pcb->file_array[i].flags = 0;
+    }
 }
 
 /* uint32_t get_pcb;
