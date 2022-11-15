@@ -49,6 +49,8 @@ int32_t close (int32_t fd);
 extern void user_switch();
 int32_t dummy_read (int32_t fd, void* buf, int32_t nbytes);
 int32_t dummy_write (int32_t fd, const void* buf, int32_t nbytes);
+int32_t dummy_open (int32_t fd, const void* buf, int32_t nbytes);
+int32_t dummy_close (int32_t fd, const void* buf, int32_t nbytes);
 // extern void flush_tlb();
 int32_t getargs (uint8_t* buf, int32_t nbytes);
 int32_t vidmap (uint8_t** screen_start);

@@ -95,10 +95,10 @@ void init_fop(fops_t* fop, uint8_t num){
     }
 
     if(num == 5){ // executible
-        fop->read = NULL;
-        fop->write = NULL;
-        fop->open = NULL;
-        fop->close = NULL;
+        fop->read = dummy_read;
+        fop->write = dummy_write;
+        fop->open = dummy_open;
+        fop->close = dummy_close;
         return;
     }
 }
@@ -217,7 +217,7 @@ int32_t halt (uint8_t status){
  * Function: 
  * */
 int32_t execute (const uint8_t* command){
-    // printf("Reached exec \n");
+    // printfBetter("Reached exec \n");
     /* Initialize Variables */
     dentry_t dentry;
     int inode;
@@ -246,7 +246,7 @@ int32_t execute (const uint8_t* command){
     }
 
     parent_pid = current_pid;
-    // printf("Setting up paging \n");
+    // printfBetter("Setting up paging \n");
     /* Set up paging */
     int i;
     for(i = 0; i < MAX_PIDS; i++){ //currently only 3 PIDs
@@ -258,7 +258,7 @@ int32_t execute (const uint8_t* command){
     }
     inode_array[current_pid] = inode;
 
-    // printf("setting physical addr \n");
+    // printfBetter("setting physical addr \n");
     physical_address = (2 + current_pid) * FOURMB; //2:you want to skip the first page which houses the kernel
     page_dir[MB_128_PAGE].fourmb.addr = physical_address / FOURKB;
     page_dir[MB_128_PAGE].fourmb.present = 1; // marks as present
@@ -272,7 +272,7 @@ int32_t execute (const uint8_t* command){
     mov %eax, %cr3    ;\
     ");
 
-    // printf("load file into physical memory \n");
+    // printfBetter("load file into physical memory \n");
     /* Load the file into physical memory */
     inode_t * prog_inode_ptr = (inode_t *)(inode_start + inode);
     uint8_t * img_addr = (uint8_t*) PROG_IMG_VIRTUAL_ADDR;
@@ -285,7 +285,7 @@ int32_t execute (const uint8_t* command){
     //Parse User EIP
     read_data(dentry.inode_num, PROG_IMG_START_BYTE, user_eip, ELF_SIZE);
     
-    // printf("parse user ESP \n");
+    // printfBetter("parse user ESP \n");
     //Parse User ESP
     user_esp = 0x083FFFFC; //this is the user esp
 
@@ -344,17 +344,17 @@ void parse_command(const uint8_t* command, uint8_t* args, uint8_t* filename){
 int32_t write (int32_t fd, const void* buf, int32_t nbytes){
 
     if(fd < 0 || fd > MAX_FILES){
-        printf("Invalid fd \n");
+        printfBetter("Invalid fd \n");
         return -1;
     }
     pcb_t* pcb = (pcb_t*) get_pcb(current_pid);
 
     if(!(pcb->file_array[fd].flags & OPEN)){
-        printf("Can't close unopened \n");
+        printfBetter("Can't close unopened \n");
         return -1;
     }
     
-    // printf("calling rtc write \n");
+    // printfBetter("calling rtc write \n");
     return pcb->file_array[fd].fops_func.write(fd, buf, nbytes); 
 }
 
@@ -364,10 +364,10 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
  * Function: opens file 
  * */
 int32_t open (const uint8_t* filename){
-    // printf("Reached system open \n");
+    // printfBetter("Reached system open \n");
 
     if(filename == NULL){
-        printf("Filename empty! \n");
+        printfBetter("Filename empty! \n");
         return -1;
     }
     dentry_t dentry;
@@ -383,7 +383,7 @@ int32_t open (const uint8_t* filename){
         if(!(pcb->file_array[i].flags & OPEN))
             break;
         else if(i == MAX_FILES-1){
-            printf("No free file positions \n");
+            printfBetter("No free file positions \n");
             return -1;
         }
     }
@@ -406,9 +406,7 @@ int32_t open (const uint8_t* filename){
         return i; 
     }
 
-    init_fop(&fop, dentry.file_type);
 
-    file.fops_func = fop;
     file.inode_num = dentry.inode_num;
     file.file_position = 0;
     file.flags = OPEN;
@@ -416,6 +414,7 @@ int32_t open (const uint8_t* filename){
     uint8_t data_buffer[ELF_SIZE] = { '\0' };
     read_data(dentry.inode_num, 0, data_buffer, sizeof(uint32_t));
 
+    init_fop(&fop, dentry.file_type);
     if (dentry.file_type != 2){ // if nonfile
         file.flags |= NONREADABLE;
     } else if (data_buffer[0] == MAGIC_0 && data_buffer[1] == MAGIC_1 &&
@@ -423,6 +422,7 @@ int32_t open (const uint8_t* filename){
         file.flags |= NONREADABLE;
         init_fop(&fop, 5); // 5 for executible
     }
+    file.fops_func = fop;
 
     pcb->file_array[i] = file;
 
@@ -438,7 +438,7 @@ int32_t open (const uint8_t* filename){
  * */
 int32_t close (int32_t fd){
     if(fd < 2 || fd > MAX_FILES){
-        printf("Invalid fd \n");
+        printfBetter("Invalid fd \n");
         return -1;
     }
 
@@ -446,7 +446,7 @@ int32_t close (int32_t fd){
 
     pcb_t* pcb = (pcb_t*) get_pcb(current_pid);
     if(!(pcb->file_array[fd].flags & OPEN)){
-        printf("Can't close unopened \n");
+        printfBetter("Can't close unopened \n");
         return -1;
     }
     pcb->file_array[fd].flags ^= OPEN; // closes file
@@ -463,24 +463,24 @@ int32_t close (int32_t fd){
  * */
 // can refer to ece391hello.c for an example of a call to this function
 int32_t read (int32_t fd, void* buf, int32_t nbytes){
-    // printf("Reached open \n");
-    //printf("fd = %d \n",fd); 
+    // printfBetter("Reached open \n");
+    //printfBetter("fd = %d \n",fd); 
     sti();
     if(fd < 0 || fd > MAX_FILES){
-        printf("Invalid fd %d \n", fd);
+        printfBetter("Invalid fd %d \n", fd);
         return -1;
     }
-    // printf("Reached system read \n");
+    // printfBetter("Reached system read \n");
     pcb_t* pcb = (pcb_t*) get_pcb(current_pid);
     
     if(!(pcb->file_array[fd].flags & OPEN)) // not opened
-        // printf("finished open \n");
+        // printfBetter("finished open \n");
         return -1;
     if (pcb->file_array[fd].flags & NONREADABLE){
-        // printf("finished open \n");
+        // printfBetter("finished open \n");
         return pcb->file_array[fd].fops_func.read(pcb->file_array[fd].inode_num, buf, nbytes);
     } else {
-        // printf("finished open \n");
+        // printfBetter("finished open \n");
         if(pcb->file_array[fd].file_position >= inode_start[pcb->file_array[fd].inode_num].file_size) // if read past end
             return 0;
         int32_t ret = pcb->file_array[fd].fops_func.read(pcb->file_array[fd].inode_num, buf, nbytes);
@@ -494,6 +494,16 @@ int32_t dummy_read (int32_t fd, void* buf, int32_t nbytes){
 }
 
 int32_t dummy_write (int32_t fd, const void* buf, int32_t nbytes){
+    return -1;
+}
+
+int32_t dummy_open (int32_t fd, const void* buf, int32_t nbytes){
+    printfBetter("Dummy Open Hit");
+    return -1;
+}
+
+int32_t dummy_close (int32_t fd, const void* buf, int32_t nbytes){
+    printfBetter("Dummy Close Hit");
     return -1;
 }
 

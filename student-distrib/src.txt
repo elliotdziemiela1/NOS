@@ -1,0 +1,2 @@
+add-symbol-file ../syscalls/cat.exe 0x8048094
+target remote 10.0.2.2:1234
