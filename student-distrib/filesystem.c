@@ -143,8 +143,7 @@ int32_t read_file(int32_t fd, void* buf, int32_t nbytes){
     //checks if the file is open in the first place
     for(i = FILE_START_IDX; i < MAX_FILES; i++){
         if(fd == files[i]){
-            int32_t file_length = inode_start[fd].file_size;
-            int32_t bytes_read = read_data(fd, 0, (uint8_t *) buf, file_length);
+            int32_t bytes_read = read_data(fd, 0, (uint8_t *) buf, nbytes);
             return bytes_read;
         }
     }
