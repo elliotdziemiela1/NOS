@@ -32,6 +32,7 @@
 
 int32_t current_pid = -1; // -1 means no current process
 int32_t parent_pid = -1; // -1 means no parent process
+
 uint32_t pid_array[MAX_PIDS] = { 0 }; // array of flags telling us which PIDS are availible
 uint32_t inode_array[MAX_PIDS]= { 0 }; // array of inodes of the executible files indexed in order
 // of PIDS
@@ -151,6 +152,11 @@ void init_pcb(pcb_t* pcb){
  * */
 uint32_t get_pcb(uint8_t pid){
     uint32_t addr = EIGHT_MB - EIGHT_KB*(pid+1); // +1 since PCB starts at top of 8kB chunk
+    return addr;
+}
+
+uint32_t get_current_pcb(){
+    uint32_t addr = EIGHT_MB - EIGHT_KB*(current_pid+1); // +1 since PCB starts at top of 8kB chunk
     return addr;
 }
 
@@ -488,7 +494,7 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes){
         // printfBetter("finished open \n");
         if(pcb->file_array[fd].file_position >= inode_start[pcb->file_array[fd].inode_num].file_size) // if read past end
             return 0;
-        int32_t ret = pcb->file_array[fd].fops_func.read(pcb->file_array[fd].inode_num, buf, nbytes);
+        int32_t ret = pcb->file_array[fd].fops_func.read(fd, buf, nbytes);
         pcb->file_array[fd].file_position += ret;
         return ret;
     }

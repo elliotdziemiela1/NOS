@@ -1,4 +1,5 @@
 #include "filesystem.h"
+#include "syscalls.h"
 
 int32_t files[MAX_FILES] = {-1, -1, -1, -1, -1, -1, -1, -1};
 
@@ -132,22 +133,16 @@ int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t lengt
 /* read_file
  * 
  * Reads a file if the file has been opened and puts contents in buffer
- * Inputs: fd -- inode index
+ * Inputs: fd -- file descriptor
  *         nbytes -- unused
  * Outputs: buf -- output buffer
  * Return value: number of bytes read from the file
  * Files: None
  */
 int32_t read_file(int32_t fd, void* buf, int32_t nbytes){
-    int i;
-    //checks if the file is open in the first place
-    for(i = FILE_START_IDX; i < MAX_FILES; i++){
-        if(fd == files[i]){
-            int32_t bytes_read = read_data(fd, 0, (uint8_t *) buf, nbytes);
-            return bytes_read;
-        }
-    }
-    return -1; //file isn't opened
+    file_desc_t fileDesc = (((pcb_t*)get_current_pcb())->file_array[fd]);
+    int32_t bytes_read = read_data(fileDesc.inode_num, fileDesc.file_position, (uint8_t *) buf, nbytes);
+    return bytes_read;
 }
 
 /* read_directory
