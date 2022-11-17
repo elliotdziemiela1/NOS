@@ -24,7 +24,7 @@ void init_paging(){
     for(i = 0; i < num_pte; i++){
         video_mem[i].addr = i;
         video_mem[i].present = 0;
-        video_mem[i].su = 0;
+        video_mem[i].su = 0; // sets to supervisor
         video_mem[i].rw = 1;
 
         video_mem[i].pat = 0;
@@ -36,6 +36,21 @@ void init_paging(){
         video_mem[i].pcd = 0;
         video_mem[i].pwt = 0;
     }
+    for(i = 0; i < num_pte; i++){
+        video_mem_map[i].addr = i;
+        video_mem_map[i].present = 0;
+        video_mem_map[i].su = 0; 
+        video_mem_map[i].rw = 1;
+
+        video_mem_map[i].pat = 0;
+        video_mem_map[i].g = 0;
+
+        video_mem_map[i].dirty = 0;
+        video_mem_map[i].a = 0;
+
+        video_mem_map[i].pcd = 0;
+        video_mem_map[i].pwt = 0;
+    }
 
     // set video memory
     uint32_t idx = VIDEO >> add_shift; // masks top 20 bits of addr
@@ -46,7 +61,7 @@ void init_paging(){
         // init 4 kb
         page_dir[i].fourkb.addr = 0x0000;
         page_dir[i].fourkb.present = 0;
-        page_dir[i].fourkb.su = 0;
+        page_dir[i].fourkb.su = 0; // sets to kernel
         page_dir[i].fourkb.rw = 1;
 
         page_dir[i].fourkb.g = 0;
@@ -62,7 +77,7 @@ void init_paging(){
     // init 4 kb
     page_dir[0].fourkb.addr = (int)(video_mem) >> add_shift; // masks top 10 bits of addr
     page_dir[0].fourkb.present = 1;// marks as present
-    page_dir[0].fourkb.su = 1; // marks as supervisor
+    page_dir[0].fourkb.su = 1; // marks as user
 
     // init 4 mb kernel page
     page_dir[1].fourmb.addr = (pte_size * num_pde) >> add_shift;// masks top 10 bits of addr

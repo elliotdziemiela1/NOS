@@ -87,7 +87,7 @@ typedef union page_directory_entry_t {
 // create page directory (page_dir) and page table (video_mem)
 page_directory_entry_t page_dir[num_pde] __attribute__((aligned(pte_size)));
 page_table_entry_t video_mem[num_pte] __attribute__((aligned(pte_size)));
-
+page_table_entry_t video_mem_map[num_pte] __attribute__((aligned(pte_size)));
 
 extern void enablePaging();
 extern void loadPageDirectory (page_directory_entry_t *page_dir);

@@ -269,7 +269,7 @@ int32_t execute (const uint8_t* command){
     page_dir[MB_128_PAGE].fourmb.present = 1; // marks as present
     page_dir[MB_128_PAGE].fourmb.rw = 1; // allows writing as well
     page_dir[MB_128_PAGE].fourmb.ps = 1; // sets page size
-    page_dir[MB_128_PAGE].fourmb.su = 1; // sets supervisor bit
+    page_dir[MB_128_PAGE].fourmb.su = 1; // sets to user
 
     //need to flush the TLB here 
     asm volatile("\
@@ -556,18 +556,16 @@ int32_t vidmap (uint8_t** screen_start){
         return -1;
     }
 
-    //page_dir[34].fourmb.size = 0;
-    page_dir[33].fourmb.ps = 0;
-    page_dir[33].fourmb.present = 1;
-    page_dir[33].fourmb.rw = 1; 
-    page_dir[33].fourmb.su = 1;
 
+    // set video memory map
+    video_mem_map[0].present = 1; // marks as present
+    video_mem_map[0].su = 1; // sets to user
+    video_mem_map[0].addr = VIDEO >> add_shift;
 
-    video_mem[0].present = 1;
-    video_mem[0].su = 1;
-    video_mem[0].rw = 1;
-
-    video_mem[0].addr = 0xb8000 / 4096; // 0xb8000 = starting address of page. 4096 = 4kb
+    // init 4 kb
+    page_dir[33].fourkb.addr = (int)(video_mem_map) >> add_shift; // masks top 10 bits of addr
+    page_dir[33].fourkb.present = 1;// marks as present
+    page_dir[33].fourkb.su = 1; // marks as user
 
     //need to flush the TLB here 
     asm volatile("\
