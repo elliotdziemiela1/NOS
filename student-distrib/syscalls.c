@@ -4,6 +4,7 @@
 #include "./drivers/terminal.h"
 #include "./lib.h"
 #include "filesystem.h"
+
 #include "paging.h"
 #include "x86_desc.h"
 
@@ -242,6 +243,12 @@ int32_t execute (const uint8_t* command){
     if(current_pid == MAX_PIDS - 1){
         return -1;
     }
+
+    if(strncmp((const int8_t * ) command, (const int8_t *) "clear", strlen((const int8_t *) "clear")) == 0){
+        clear();
+        return 0;
+    }
+    
     //parse command and store args in args[]
     parse_command(command, args, filename);
 
@@ -431,7 +438,7 @@ int32_t open (const uint8_t* filename){
     } else if (data_buffer[0] == MAGIC_0 && data_buffer[1] == MAGIC_1 &&
      data_buffer[2] == MAGIC_2 && data_buffer[3] == MAGIC_3){ // if executible
         file.flags |= NONREADABLE;
-        init_fop(&fop, 5); // 5 for executible
+        //init_fop(&fop, 5); // 5 for executible
     }
     file.fops_func = fop;
 

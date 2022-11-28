@@ -43,7 +43,8 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
         if(strncmp((int8_t*) fname, (int8_t*) (boot_block -> direntries[i].file_name), strlen((int8_t*) fname)) == 0 && 
         (strlen((int8_t*) fname) == strlen((int8_t*) (boot_block -> direntries[i].file_name)))){
             //copy information from dentry in boot block into given dentry
-            success_value = read_dentry_by_index(i, (dentry_t*) dentry);
+            //success_value = read_dentry_by_index(i, (dentry_t*) dentry);
+            dentry -> file_type = boot_block -> direntries[i].file_type;
             strcpy((int8_t*) dentry -> file_name, (const int8_t*) boot_block -> direntries[i].file_name);
             dentry -> inode_num = boot_block -> direntries[i].inode_num;
             //success_value = read_dentry_by_index((uint32_t) i, (dentry_t*) dentry);
@@ -71,7 +72,8 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
     }
 
     //copy information from dentry in boot block into given dentry
-    dentry -> file_type = boot_block -> direntries[index].file_type;
+    *dentry = boot_block -> direntries[index];
+
     return 0;
 }
 
@@ -154,11 +156,13 @@ int32_t read_file(int32_t fd, void* buf, int32_t nbytes){
  * Files: None
  */
 int32_t read_directory(int32_t fd, void* buf, int32_t nbytes){
+    /*
     int i;
     int j;
     int inode_idx;
     int cur_file_size;
     int num_dir = boot_block -> num_directories;
+    int bytes_read = 0;
 
     clear();
     setCursor(0, 0);
@@ -171,16 +175,37 @@ int32_t read_directory(int32_t fd, void* buf, int32_t nbytes){
         if(read_dentry_by_index(i, (dentry_t*) &dentry) == -1) return -1;
 
         for(j = 0; j < FILENAME_LENGTH; j++){
-            printf("%c", dentry.file_name[j]);
+            //printf("%c", dentry.file_name[j]);
+            strcpy(buf + bytes_read, )
         }
-        printf("                  File Type: %d", dentry.file_type);
-        printf(" File Size: %d", cur_file_size);
+        //printf("                  File Type: %d", dentry.file_type);
+        //printf(" File Size: %d", cur_file_size);
         printf("\n");
+        
 
         
     }
+    */
 
-    return 0;
+    dentry_t dentry;
+    pcb_t * cur_pcb = (pcb_t*) get_current_pcb();
+    int32_t count = cur_pcb -> file_array[fd].file_position;
+
+    if(read_dentry_by_index(count, &dentry) == -1){
+        return -1;
+    }
+
+    strncpy((int8_t*) buf, (int8_t*) & (dentry.file_name), FILENAME_LENGTH);
+    int32_t bytes_read = strlen((int8_t*) & (dentry.file_name));
+
+    count+=1;
+    cur_pcb -> file_array[fd].file_position = count;
+
+    if(bytes_read > FILENAME_LENGTH){
+        return FILENAME_LENGTH;
+    }
+
+    return bytes_read;
 }
 
 /* open_file
