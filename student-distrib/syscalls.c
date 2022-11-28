@@ -383,7 +383,14 @@ int32_t open (const uint8_t* filename){
         return -1;
     }
     dentry_t dentry;
+
+    int checker = 0;
+    if(filename == "verylargetextwithverylongname.tx"){
+        checker = 1;
+    }
+
     if(read_dentry_by_name(filename, &dentry) == -1){ // -1 is failure
+        printfBetter("FAILED LINE 393. filename: %s", filename);
         return -1;
     }
     
