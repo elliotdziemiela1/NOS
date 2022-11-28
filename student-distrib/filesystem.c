@@ -33,7 +33,7 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
     uint32_t success_value;
 
     //check edge case of the file name that's greater than 32 characters
-
+    
     //parameter validation
     if(fname == NULL || strlen((int8_t *) fname) > FILENAME_LENGTH || strlen((int8_t *) fname) == 0){
         return -1;
@@ -43,7 +43,8 @@ int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
         if(strncmp((int8_t*) fname, (int8_t*) (boot_block -> direntries[i].file_name), strlen((int8_t*) fname)) == 0 && 
         (strlen((int8_t*) fname) == strlen((int8_t*) (boot_block -> direntries[i].file_name)))){
             //copy information from dentry in boot block into given dentry
-            success_value = read_dentry_by_index(i, (dentry_t*) dentry);
+            //success_value = read_dentry_by_index(i, (dentry_t*) dentry);
+            dentry -> file_type = boot_block -> direntries[i].file_type;
             strcpy((int8_t*) dentry -> file_name, (const int8_t*) boot_block -> direntries[i].file_name);
             dentry -> inode_num = boot_block -> direntries[i].inode_num;
             //success_value = read_dentry_by_index((uint32_t) i, (dentry_t*) dentry);
@@ -72,6 +73,8 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry){
 
     //copy information from dentry in boot block into given dentry
     dentry -> file_type = boot_block -> direntries[index].file_type;
+    strcpy((int8_t*) dentry -> file_name, (const int8_t*) boot_block -> direntries[index].file_name);
+    dentry -> inode_num = boot_block -> direntries[index].inode_num;
     return 0;
 }
 
@@ -154,33 +157,26 @@ int32_t read_file(int32_t fd, void* buf, int32_t nbytes){
  * Files: None
  */
 int32_t read_directory(int32_t fd, void* buf, int32_t nbytes){
-    int i;
-    int j;
-    int inode_idx;
-    int cur_file_size;
-    int num_dir = boot_block -> num_directories;
+    dentry_t dentry;
+    pcb_t * cur_pcb = (pcb_t*) get_current_pcb();
+    int32_t count = cur_pcb -> file_array[fd].file_position;
 
-    clear();
-    setCursor(0, 0);
-
-    for(i = 0; i < num_dir; i++){
-        dentry_t dentry = boot_block -> direntries[i];
-        inode_idx = dentry.inode_num;
-        cur_file_size = inode_start[inode_idx].file_size;
-
-        if(read_dentry_by_index(i, (dentry_t*) &dentry) == -1) return -1;
-
-        for(j = 0; j < FILENAME_LENGTH; j++){
-            printf("%c", dentry.file_name[j]);
-        }
-        printf("                  File Type: %d", dentry.file_type);
-        printf(" File Size: %d", cur_file_size);
-        printf("\n");
-
-        
+    if(read_dentry_by_index(count, &dentry) == -1){
+        return -1;
     }
 
-    return 0;
+    strncpy((int8_t*) buf, (int8_t*) & (dentry.file_name), FILENAME_LENGTH);
+    int32_t bytes_read = strlen((int8_t*) & (dentry.file_name));
+
+    count+=1;
+    cur_pcb -> file_array[fd].file_position = count;
+
+    if(bytes_read > FILENAME_LENGTH){
+        return FILENAME_LENGTH;
+    }
+
+    return bytes_read;
+
 }
 
 /* open_file

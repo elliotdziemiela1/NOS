@@ -375,7 +375,8 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
  * Function: opens file 
  * */
 int32_t open (const uint8_t* filename){
-    // printfBetter("Reached system open \n");
+    // printfBetter("tried to open: ");
+    // printfBetter(filename);
 
     if(filename == NULL){
         printfBetter("Filename empty! \n");
@@ -430,8 +431,8 @@ int32_t open (const uint8_t* filename){
         file.flags |= NONREADABLE;
     } else if (data_buffer[0] == MAGIC_0 && data_buffer[1] == MAGIC_1 &&
      data_buffer[2] == MAGIC_2 && data_buffer[3] == MAGIC_3){ // if executible
-        file.flags |= NONREADABLE;
-        init_fop(&fop, 5); // 5 for executible
+        // file.flags |= NONREADABLE;
+        // init_fop(&fop, 5); // 5 for executible
     }
     file.fops_func = fop;
 
