@@ -216,8 +216,8 @@ int32_t halt (uint8_t status){
             :
             : "r"(status), "r"(old_esp), "r"(old_ebp)
     );
-    user_switch();
     return 0;
+    user_switch();
 }
 
 /* int32_t execute (const uint8_t* command);
@@ -234,7 +234,7 @@ int32_t execute (const uint8_t* command){
     int inode;
     uint8_t data_buffer[ELF_SIZE] = { '\0' };
     uint32_t physical_address;
-    int32_t user_esp;
+    int32_t user_esp; // WHERE IS THIS USED?
     uint8_t args[ARG_LEN] = { '\0' }; //store args extracted from command parameter
     uint8_t filename[ARG_LEN] = { '\0' }; //store file name extracted from command parameter
 
@@ -305,7 +305,7 @@ int32_t execute (const uint8_t* command){
     tss.esp0 = EIGHT_MB - EIGHT_KB*(current_pid+1) - 4; //we subtract 4 cause we don't want the top of the page
 
     pcb_t* pcb_ptr = (pcb_t*) get_pcb(current_pid);
-    init_pcb(pcb_ptr);
+    init_pcb(pcb_ptr); // We're saving the esp/ebp at this line, probably want to do that earlier
 
     //store arg in pcb
     // strncpy((int8_t*)(pcb_ptr->args), (int8_t*)args, ARG_LEN);
