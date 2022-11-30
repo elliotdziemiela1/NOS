@@ -110,11 +110,9 @@ void init_fop(fops_t* fop, uint8_t num){
  * Function: initializes pcb members. Initializes first 2 entries of file array with 
  *  stdin and stdout
  * */
-void init_pcb(pcb_t* pcb){
+void init_pcb(pcb_t* pcb, uint32_t s_esp, uint32_t s_ebp){
     pcb -> pcb_id = current_pid;
     pcb -> parent_id = parent_pid;
-    register uint32_t  s_esp asm("esp");
-    register uint32_t  s_ebp asm("ebp");
     pcb -> saved_esp = s_esp; // saves current esp
     pcb -> saved_ebp = s_ebp; // saves current ebp
     pcb -> active = 1; // sets active
@@ -209,9 +207,9 @@ int32_t halt (uint8_t status){
     asm volatile ("                 \n\
             movl    %1, %%esp  #restore esp     \n\
             movl    %2, %%ebp  #restore ebp     \n\
-            # movl    $0, %%eax  #clear eax     \n\
-            # movb    %0, %%al   #set return value     \n\
-            # ret                     \n\
+            movl    $0, %%eax  #clear eax     \n\
+            leave   \n\
+            ret                     \n\
             "
             :
             : "r"(status), "r"(old_esp), "r"(old_ebp)
@@ -230,6 +228,8 @@ int32_t halt (uint8_t status){
 int32_t execute (const uint8_t* command){
     // printfBetter("Reached exec \n");
     /* Initialize Variables */
+    register uint32_t  s_esp asm("esp");
+    register uint32_t  s_ebp asm("ebp");
     dentry_t dentry;
     int inode;
     uint8_t data_buffer[ELF_SIZE] = { '\0' };
@@ -298,14 +298,13 @@ int32_t execute (const uint8_t* command){
     
     // printfBetter("parse user ESP \n");
     //Parse User ESP
-    user_esp = 0x083FFFFC; //this is the user esp
 
     // tss
     tss.ss0 = KERNEL_DS;
     tss.esp0 = EIGHT_MB - EIGHT_KB*(current_pid+1) - 4; //we subtract 4 cause we don't want the top of the page
 
     pcb_t* pcb_ptr = (pcb_t*) get_pcb(current_pid);
-    init_pcb(pcb_ptr); // We're saving the esp/ebp at this line, probably want to do that earlier
+    init_pcb(pcb_ptr, s_esp, s_ebp); // We're saving the esp/ebp at this line, probably want to do that earlier
 
     //store arg in pcb
     // strncpy((int8_t*)(pcb_ptr->args), (int8_t*)args, ARG_LEN);

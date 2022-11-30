@@ -38,7 +38,7 @@ typedef struct pcb_t{
 
 uint32_t get_pcb(uint8_t num);
 uint32_t get_current_pcb();
-void init_pcb(pcb_t* pcb);
+void init_pcb(pcb_t* pcb, uint32_t s_esp, uint32_t s_ebp);
 void init_fop(fops_t* fop, uint8_t num);
 int32_t halt (uint8_t status);
 int32_t execute (const uint8_t* command);
