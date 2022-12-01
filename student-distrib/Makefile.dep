@@ -14,7 +14,8 @@ kernel.o: kernel.c multiboot.h types.h x86_desc.h lib.h i8259.h debug.h \
   switch_to_user.h ../syscalls/ece391syscall.h drivers/pit.h
 lib.o: lib.c lib.h types.h
 paging.o: paging.c paging.h lib.h types.h
-scheduling.o: scheduling.c scheduling.h lib.h types.h
+scheduling.o: scheduling.c scheduling.h lib.h types.h syscalls.h \
+  filesystem.h switch_to_user.h
 synch.o: synch.c synch.h lib.h types.h
 syscalls.o: syscalls.c syscalls.h filesystem.h lib.h types.h \
   switch_to_user.h drivers/keyboard.h drivers/rtc.h drivers/terminal.h \

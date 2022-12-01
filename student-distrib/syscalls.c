@@ -155,6 +155,8 @@ uint32_t get_pcb(uint8_t pid){
     return addr;
 }
 
+
+//CHANGE IN FILE SYSTEM BECAUSE IT IS USING THIS INSTEAD OF GET_PCB
 uint32_t get_current_pcb(){
     uint32_t addr = EIGHT_MB - EIGHT_KB*(current_pid+1); // +1 since PCB starts at top of 8kB chunk
     return addr;
@@ -204,13 +206,16 @@ int32_t halt (uint8_t status){
         temp = (int) cur_pcb->file_array[i].fops_func.close; // GDB not going into this
     }
 
+    tss.esp0 = cur_pcb -> saved_esp;
+
     read_data(inode_array[current_pid], 24, user_eip, ELF_SIZE); // changes eip to parent program
     // restore esp and ebp
     asm volatile ("                 \n\
             movl    %1, %%esp  #restore esp     \n\
             movl    %2, %%ebp  #restore ebp     \n\
-            # movl    $0, %%eax  #clear eax     \n\
-            # movb    %0, %%al   #set return value     \n\
+            movl    $0, %%eax  #restore status     \n\
+            movb    %0, %%al   #set return value     \n\
+            # leave                     \n\
             # ret                     \n\
             "
             :
