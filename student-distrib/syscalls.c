@@ -206,7 +206,7 @@ int32_t halt (uint8_t status){
         temp = (int) cur_pcb->file_array[i].fops_func.close; // GDB not going into this
     }
 
-    tss.esp0 = cur_pcb -> saved_esp;
+    tss.esp0 = old_esp;
 
     read_data(inode_array[current_pid], 24, user_eip, ELF_SIZE); // changes eip to parent program
     // restore esp and ebp
@@ -274,6 +274,7 @@ int32_t execute (const uint8_t* command){
     }
     inode_array[current_pid] = inode;
 
+
     // printfBetter("setting physical addr \n");
     physical_address = (2 + current_pid) * FOURMB; //2:you want to skip the first page which houses the kernel
     page_dir[MB_128_PAGE].fourmb.addr = physical_address / FOURKB;
@@ -307,10 +308,15 @@ int32_t execute (const uint8_t* command){
 
     // tss
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = EIGHT_MB - EIGHT_KB*(current_pid+1) - 4; //we subtract 4 cause we don't want the top of the page
+    tss.esp0 = EIGHT_MB - EIGHT_KB*(current_pid + 1) - 4; //we subtract 4 cause we don't want the top of the page
 
     pcb_t* pcb_ptr = (pcb_t*) get_pcb(current_pid);
     init_pcb(pcb_ptr);
+
+    register uint32_t  s_esp asm("esp");
+    register uint32_t  s_ebp asm("ebp");
+    pcb_ptr -> saved_esp = s_esp; // saves current esp
+    pcb_ptr -> saved_ebp = s_ebp; // saves current ebp
 
     //store arg in pcb
     // strncpy((int8_t*)(pcb_ptr->args), (int8_t*)args, ARG_LEN);
