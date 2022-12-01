@@ -3,6 +3,7 @@
 #include "../idt.h"
 #include "../i8259.h"
 #include "keyboard.h"
+#include "scheduling.h"
 
 #define KB_DATAPORT 0x60
 #define KB_IRQ 0x1
@@ -31,7 +32,9 @@ char scanTableCapsLock[0x40] = {'\0','\0','1','2','3','4','5','6','7','8','9','0
     'B','N','M',',','.','/','\0','\0','\0',' '};
 
 
-static char * buf; // the buffer to write characters to
+static char * buf1; // the buffer to write characters to of the first terminal
+static char * buf2; // the buffer to write characters to of the second terminal
+static char * buf3; // the buffer to write characters to of the third terminal
 static int length; // length of buf
 static int pos; // position in buf to write to next (0 indexed)
 static int reading; // flag that says whether or not keyboard is currently in a read
@@ -62,7 +65,13 @@ void keyboard_init(){
 int32_t gets(char * buffer, int nbytes){
     if (nbytes < 1) // shoulnt be called with 0 bytes
         return 0;
-    buf = buffer; // initialize keyboard variables
+    if (current_terminal == 1){
+        buf1 = buffer;
+    } if (current_terminal == 2){
+        buf2 = buffer;
+    } if (current_terminal == 3){
+        buf3 = buffer;
+    }
     length = nbytes-1;
     pos = 0;
     reading = 1;
@@ -77,7 +86,13 @@ int32_t gets(char * buffer, int nbytes){
 }
 
 static void addToBuffer(int index, char c){
-    buf[index] = c;
+    if (current_terminal == 1){
+        buf1[index] = c;
+    } if (current_terminal == 2){
+        buf2[index] = c;
+    } if (current_terminal == 3){
+        buf3[index] = c;
+    }
 }
 
 
@@ -93,8 +108,8 @@ static void addToBuffer(int index, char c){
  * Files: None
  */
 void keyboard_handler(){
-    // if (current pid is not in printing terminal)
-    //     return 0;
+    if (current pid is not in printing terminal)
+        return 0;
     cli();
     uint8_t input = inb(KB_DATAPORT);
     disable_irq(KB_IRQ);
