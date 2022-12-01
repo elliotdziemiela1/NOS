@@ -93,3 +93,6 @@ extern void enablePaging();
 extern void loadPageDirectory (page_directory_entry_t *page_dir);
 
 uint32_t allocate_4MB_page(uint32_t page_directory_idx, uint32_t pid);
+
+/* Scheduling Function */
+uint32_t switch_vram(uint8_t oldIdx, uint8_t newIdx);

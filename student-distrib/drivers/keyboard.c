@@ -61,7 +61,7 @@ void keyboard_init(){
  */
 int32_t gets(char * buffer, int nbytes){
     if (nbytes < 1) // shoulnt be called with 0 bytes
-        return -1;
+        return 0;
     buf = buffer; // initialize keyboard variables
     length = nbytes-1;
     pos = 0;
@@ -93,6 +93,8 @@ static void addToBuffer(int index, char c){
  * Files: None
  */
 void keyboard_handler(){
+    // if (current pid is not in printing terminal)
+    //     return 0;
     cli();
     uint8_t input = inb(KB_DATAPORT);
     disable_irq(KB_IRQ);

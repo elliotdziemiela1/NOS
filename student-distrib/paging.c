@@ -7,8 +7,6 @@
 
 // the index to insert the next PDE/4MB page.
 
-
-
 /* init_paging
  * 
  * initializes page directory and video memory (page table)
@@ -55,6 +53,10 @@ void init_paging(){
     // set video memory
     uint32_t idx = VIDEO >> add_shift; // masks top 20 bits of addr
     video_mem[idx].present = 1; // marks as present
+    video_mem[idx+1].present = 1; // video page for terminal 1
+    video_mem[idx+2].present = 1; // video page for terminal 2
+    video_mem[idx+3].present = 1; // video page for terminal 3
+    
 
     // page directory setup
     for(i = 0; i < num_pde; i++){
@@ -85,9 +87,30 @@ void init_paging(){
     page_dir[1].fourmb.rw = 1; // allows writing as well
     page_dir[1].fourmb.ps = 1; // sets page size
 
+
     // set page dir
     loadPageDirectory(page_dir);
     enablePaging();
+}
+
+/* switch_vram()
+ * 
+ * Inputs: idx - 1,2, or 3. The terminal # we want to map to vram
+ */
+uint32_t switch_vram(uint8_t oldIdx, uint8_t newIdx){
+    // terminal's vram map
+    uint32_t newIndex = (VIDEO >> add_shift) + newIdx; // index into page table of corresponding
+    uint32_t oldIndex = (VIDEO >> add_shift) + oldIdx; // index into page table of corresponding
+
+    // save vram to old terminal page
+    memcpy(video_mem[oldIdx].addr << add_shift, video_mem[VIDEO >> add_shift].addr << add_shift, FOURKB);
+    // restore vram of new terminal page
+    memcpy(video_mem[VIDEO >> add_shift].addr << add_shift, video_mem[newIdx].addr << add_shift, FOURKB);
+
+    // switch mapping
+    video_mem[newIndex].addr = (VIDEO >> add_shift);
+    video_mem[oldIndex].addr = (VIDEO >> add_shift) + oldIdx;
+    return 0;
 }
 
 uint32_t allocate_4MB_page(uint32_t page_directory_idx, uint32_t pid){

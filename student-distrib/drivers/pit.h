@@ -6,5 +6,8 @@
 #define PIT_INTERVAL    11932
 #define PIT_REG_DATA    0x40
 
+//volatile uint32_t pit_timer;
+
 void pit_init();
 void pit_handler();
+

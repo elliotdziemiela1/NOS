@@ -6,6 +6,7 @@
 #include "filesystem.h"
 #include "syscalls.h"
 #include "paging.h"
+#include "./drivers/pit.h"
 
 #define PASS 1
 #define FAIL 0

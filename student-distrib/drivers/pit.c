@@ -11,7 +11,7 @@ void pit_init(){
 
     outb(PIT_MODE, PIT_REG_CMD);
     outb((uint8_t) PIT_INTERVAL, PIT_REG_DATA);
-    outb((uint8_t) (PIT_INTERVAL << 8), PIT_REG_DATA);
+    outb((uint8_t) (PIT_INTERVAL >> 8), PIT_REG_DATA);
 
     enable_irq(PIT_IRQ);
 }
@@ -19,6 +19,17 @@ void pit_init(){
 void pit_handler(){
     cli();
     pit_timer++;
+
+    if(pit_timer % 10 == 0){
+			printfBetter("counter val: %d", pit_timer);
+	}
+
+    sti();
     send_eoi(PIT_IRQ);
+    
+    asm volatile(" \n\
+    leave \n\
+    iret"
+    );
     //Context switch into next terminal
 }

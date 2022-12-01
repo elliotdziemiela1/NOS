@@ -2,10 +2,15 @@
  * vim:ts=4 noexpandtab */
 
 #include "lib.h"
+#define FOURKB 4096
 
 static int screen_x; // x coordiante of the cursor
 static int screen_y; // y coordiante of the cursor
 static char* video_mem = (char *)VIDEO;
+
+void change_vram_address(uint8_t newTerminalIdx){
+    video_mem = (char *)VIDEO + FOURKB*newTerminalIdx;
+}
 
 /* void verticalScroll(int lines)
  * Inputs: lines - the number of lines to scroll vram up

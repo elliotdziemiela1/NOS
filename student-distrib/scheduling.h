@@ -26,7 +26,7 @@ typedef struct terminal {
 extern volatile terminal_t terminals[TOTAL_TERMINALS];
 extern volatile int8_t current_terminal;
 
-int8_t get_next_scheduled_process();
+int8_t get_next_scheduled_pid();
 
 void schedule_context_switch(int8_t process_number);
 

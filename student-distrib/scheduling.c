@@ -3,7 +3,11 @@
 volatile terminal_t terminals[TOTAL_TERMINALS];
 volatile int8_t current_terminal;
 
-int8_t get_next_scheduled_process(){
+void schedule_context_switch(int8_t process_number){
+}
+
+
+int8_t get_next_scheduled_pid(){
     int i;
 
     int8_t next_terminal = current_terminal;
@@ -19,4 +23,5 @@ int8_t get_next_scheduled_process(){
     return (int8_t) terminals[next_terminal].active_process_pid;
     
 }
+
 
