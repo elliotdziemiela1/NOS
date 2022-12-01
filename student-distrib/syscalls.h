@@ -5,6 +5,8 @@
 #define ARG_LEN 128
 #define NONREADABLE      0x2 // fd flag that says it's not a file readable by cat
 #define OPEN      0x1
+#define EIGHT_MB 0x0800000
+#define EIGHT_KB 0x0002000
 
 //file opcodes (jump) table
 typedef struct fops_t{

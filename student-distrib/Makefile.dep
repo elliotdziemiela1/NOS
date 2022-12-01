@@ -10,19 +10,23 @@ i8259.o: i8259.c i8259.h types.h lib.h synch.h
 idt.o: idt.c x86_desc.h types.h lib.h idt.h
 kernel.o: kernel.c multiboot.h types.h x86_desc.h lib.h i8259.h debug.h \
   tests.h idt.h paging.h drivers/keyboard.h drivers/rtc.h \
-  drivers/terminal.h drivers/../types.h filesystem.h syscalls.h \
-  switch_to_user.h ../syscalls/ece391syscall.h drivers/pit.h
+  drivers/terminal.h drivers/../types.h drivers/../scheduling.h \
+  drivers/../lib.h filesystem.h syscalls.h switch_to_user.h \
+  ../syscalls/ece391syscall.h drivers/pit.h
 lib.o: lib.c lib.h types.h
 paging.o: paging.c paging.h lib.h types.h
-scheduling.o: scheduling.c scheduling.h lib.h types.h syscalls.h \
-  filesystem.h switch_to_user.h
+scheduling.o: scheduling.c scheduling.h lib.h types.h drivers/terminal.h \
+  drivers/../types.h syscalls.h filesystem.h switch_to_user.h paging.h \
+  x86_desc.h
 synch.o: synch.c synch.h lib.h types.h
 syscalls.o: syscalls.c syscalls.h filesystem.h lib.h types.h \
   switch_to_user.h drivers/keyboard.h drivers/rtc.h drivers/terminal.h \
-  drivers/../types.h lib.h paging.h x86_desc.h
+  drivers/../types.h drivers/../scheduling.h drivers/../lib.h lib.h \
+  paging.h x86_desc.h
 tests.o: tests.c tests.h x86_desc.h types.h lib.h drivers/rtc.h \
-  drivers/terminal.h drivers/../types.h filesystem.h syscalls.h \
-  switch_to_user.h paging.h drivers/pit.h
+  drivers/terminal.h drivers/../types.h drivers/../scheduling.h \
+  drivers/../lib.h filesystem.h syscalls.h switch_to_user.h paging.h \
+  drivers/pit.h
 keyboard.o: drivers/keyboard.c drivers/../lib.h drivers/../types.h \
   drivers/../synch.h drivers/../idt.h drivers/../x86_desc.h \
   drivers/../i8259.h drivers/keyboard.h
@@ -31,5 +35,3 @@ pit.o: drivers/pit.c drivers/pit.h drivers/../idt.h drivers/../x86_desc.h \
 rtc.o: drivers/rtc.c drivers/../lib.h drivers/../types.h \
   drivers/../synch.h drivers/../idt.h drivers/../x86_desc.h drivers/rtc.h \
   drivers/../tests.h drivers/../i8259.h
-terminal.o: drivers/terminal.c drivers/../types.h drivers/terminal.h \
-  drivers/../lib.h drivers/../types.h drivers/keyboard.h

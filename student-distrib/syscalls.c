@@ -9,8 +9,7 @@
 
 #define JUNK 0
 #define MAX_PROCESSES 10 // arbitrary number of the maximum processes we'll allow
-#define EIGHT_MB 0x0800000
-#define EIGHT_KB 0x0002000
+
 
 #define EXE_HEADER_SIZE 28 // the number of bytes at the beginning of an executable that contain
 // magic number and entry point

@@ -19,6 +19,7 @@ void initialize_filesystem(const uint32_t file_system_start_address){
     inode_start = (inode_t *)(file_system_start_address + BLOCK_SIZE); //start of inodes is second in super block
     first_data_block = file_system_start_address + BLOCK_SIZE + (boot_block -> num_inodes) * BLOCK_SIZE ; //data block starts after boot_block and inode blocks
 }
+
 /* read_dentry_by_name
  * 
  * Parses file system by name for specfic dentry

@@ -1,7 +1,9 @@
 #include "../types.h"
 #include "terminal.h"
-#include "../lib.h"
 #include "keyboard.h"
+#include "../paging.h"
+#include "lib.h"
+
 
 static volatile char buf[BUFFER_SIZE]; 
 static int pos; // position in buffer to write next character (0 indexed)
@@ -63,6 +65,27 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes){
     int32_t bytesRead = gets(buf,BUFFER_SIZE-1);
     putcBetter('\n');
     return bytesRead;
+}
+
+//Scheduling Functions
+void initialize_terminals(){
+    int i;
+    int j;
+    for(i = 0; i < TOTAL_TERMINALS; i++){
+        terminals[i].terminal_id = i;
+        terminals[i].active_process_pid = -1;
+        terminals[i].process_flag = 0;
+        terminals[i].screen_x = 0;
+        terminals[i].screen_y = 0;
+        terminals[i].keyboard_buffer_idx = 0;
+
+        for(j = 0; j < BUFFER_SIZE; j++){
+            terminals[i].keyboard_buffer[j] = '\0';
+        }
+
+        terminals[i].video_mem = (uint32_t *) (((VIDEO >> add_shift) + (i + 1)) << add_shift);
+    }
+    
 }
 
 

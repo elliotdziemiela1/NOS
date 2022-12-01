@@ -113,6 +113,18 @@ uint32_t switch_vram(uint8_t oldIdx, uint8_t newIdx){
     return 0;
 }
 
+void remap_VRAM(uint32_t physical_address){
+    //uint32_t pde = virtual_address / FOURMB;
+    video_mem[0].addr = physical_address >> add_shift;
+    video_mem[0].present = 1;
+
+    //flush the TLB here 
+    asm volatile("\
+    mov %cr3, %eax    ;\
+    mov %eax, %cr3    ;\
+    ");
+}
+
 uint32_t allocate_4MB_page(uint32_t page_directory_idx, uint32_t pid){
     page_dir[page_directory_idx].fourmb.addr = (kernel_PDE >> 22) + pid;
     page_dir[page_directory_idx].fourmb.present = 1;// marks as present
