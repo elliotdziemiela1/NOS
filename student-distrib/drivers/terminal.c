@@ -2,7 +2,6 @@
 #include "terminal.h"
 #include "keyboard.h"
 #include "../paging.h"
-#include "lib.h"
 
 
 static volatile char buf[BUFFER_SIZE]; 

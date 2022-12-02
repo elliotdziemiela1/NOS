@@ -1,10 +1,12 @@
 #pragma once
 #include "../types.h"
 #include "../scheduling.h"
+#include "../lib.h"
+
 
 #define BUFFER_SIZE 128 
 
-typedef struct terminal {
+typedef struct terminal_t {
     int8_t terminal_id;
     int32_t active_process_pid;
 

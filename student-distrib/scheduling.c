@@ -7,6 +7,8 @@
 volatile terminal_t current_terminal_executing;
 volatile terminal_t current_terminal_displaying;
 
+
+
 void schedule_context_switch(){
     uint8_t old_pid = terminals[current_terminal_executing.terminal_id].active_process_pid;
     pcb_t * old_pcb = get_pcb(old_pid);
