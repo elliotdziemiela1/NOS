@@ -8,8 +8,8 @@ static int screen_x; // x coordiante of the cursor
 static int screen_y; // y coordiante of the cursor
 static char* video_mem = (char *)VIDEO;
 
-void change_vram_address(uint32_t terminalVram){
-    video_mem = terminalVram;
+void change_vram_address(uint32_t newAddr){
+    video_mem = newAddr;
 }
 
 /* void verticalScroll(int lines)

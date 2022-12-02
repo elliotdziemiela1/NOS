@@ -44,7 +44,7 @@ int getCursorX();
 int getCursorY();
 
 /* Scheduling Function */
-void change_vram_address(uint32_t terminalVram);
+void change_vram_address(uint32_t newAddr);
 
 /* Port read functions */
 /* Inb reads a byte and returns its value as a zero-extended 32-bit

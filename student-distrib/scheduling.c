@@ -1,30 +1,18 @@
 #include "scheduling.h"
 #include "syscalls.h"
 #include "paging.h"
-#include "syscalls.h"
 #include "x86_desc.h"
 
-volatile terminal_t current_terminal_executing;
-volatile terminal_t current_terminal_displaying;
-
-
-
 void schedule_context_switch(){
-    uint8_t old_pid = terminals[current_terminal_executing.terminal_id].active_process_pid;
+    uint8_t old_pid = get_terminal_active_pid(current_terminal_executing);
     pcb_t * old_pcb = get_pcb(old_pid);
 
-    uint8_t new_pid = get_next_scheduled_pid();
-    pcb_t * new_pcb = get_pcb(new_pid);
-
-    // switch_vram(old_pid, new_pid);
-    
-    // if(current_terminal_executing.terminal_id != current_terminal_displaying.terminal_id){
-    //     remap_VRAM((uint32_t) current_terminal_executing.video_mem);
-    // }
-
     // update current terminal executing
+    current_terminal_executing = ((current_terminal_executing + 1) % 3) + 1; // +1 since 1-indexed
+    uint8_t new_pid = get_terminal_active_pid(current_terminal_executing);
+    pcb_t * new_pcb = get_pcb(new_pid);
     
-    change_vram_address(current_terminal_executing.video_mem);
+    change_vram_address(get_terminal_vram(current_terminal_executing));
     //saving the tss
     tss.ss0 = KERNEL_DS;
     tss.esp0 = EIGHT_MB - EIGHT_KB * (new_pid + 1) - 4;
@@ -46,18 +34,20 @@ void schedule_context_switch(){
     return;
 }
 
-
-int8_t get_next_scheduled_pid(){
-    int i;
-
-    int8_t next_terminal = (current_terminal_executing.terminal_id + 1) % 3;
-
-    return (int8_t) terminals[next_terminal].active_process_pid;
-    
-}
-
-uint8_t displaying_terminal_switch(uint8_t newTerminalIdx){
-    switch_vram()
-    // current_terminal_displaying = newTerminalIdx;
+uint8_t displaying_terminal_switch(uint8_t newTerminalNum){
+    switch_vram(current_terminal_displaying, newTerminalNum);
+    current_terminal_displaying = newTerminalNum;
     return 0;
 }
+
+// 
+// HELPERS
+// 
+int8_t get_terminal_active_pid(uint8_t terminalNum){
+    return (int8_t) terminals[terminalNum-1].active_process_pid;
+}
+
+uint32_t get_terminal_vram(uint8_t terminalNum){
+    return terminals[current_terminal_executing-1].video_mem;
+}
+

@@ -221,7 +221,6 @@ int32_t halt (uint8_t status){
             :
             : "r"(status), "r"(old_esp), "r"(old_ebp)
     );
-    user_switch();
     return 0;
 }
 

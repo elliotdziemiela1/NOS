@@ -8,7 +8,6 @@
 #define TOTAL_TERMINALS
 
 typedef struct terminal_t {
-    int8_t terminal_id;
     int32_t active_process_pid;
 
     int8_t process_flag;
@@ -28,6 +27,9 @@ typedef struct terminal_t {
 
 volatile terminal_t terminals[TOTAL_TERMINALS];
 
+uint8_t current_terminal_executing;
+uint8_t current_terminal_displaying;
+
 uint32_t terminal_open();
 uint32_t terminal_close();
 int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes);
@@ -35,4 +37,4 @@ int32_t terminal_write(int32_t fd, const void* buf1, int32_t nbytes);
 
 //Scheduling Functions
 void initialize_terminals();
-
+ 

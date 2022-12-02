@@ -29,7 +29,9 @@ tests.o: tests.c tests.h x86_desc.h types.h lib.h drivers/rtc.h \
   switch_to_user.h paging.h drivers/pit.h
 keyboard.o: drivers/keyboard.c drivers/../lib.h drivers/../types.h \
   drivers/../synch.h drivers/../idt.h drivers/../x86_desc.h \
-  drivers/../i8259.h drivers/keyboard.h
+  drivers/../i8259.h drivers/keyboard.h drivers/../scheduling.h \
+  drivers/../lib.h drivers/.././drivers/terminal.h \
+  drivers/.././drivers/../types.h drivers/.././drivers/../lib.h
 pit.o: drivers/pit.c drivers/pit.h drivers/../idt.h drivers/../x86_desc.h \
   drivers/../types.h drivers/../i8259.h drivers/../lib.h drivers/rtc.h
 rtc.o: drivers/rtc.c drivers/../lib.h drivers/../types.h \
