@@ -37,9 +37,10 @@ sys_call_linkage:
     #not sure if interrupts need to be cleared here
     #still need to include assembly linkage
     
-    sti
+    # sti
     call *jump_table(, %eax, 4)
-    cli
+    # cli
+    
     #teardown stack
     popl %ebx
     popl %ecx

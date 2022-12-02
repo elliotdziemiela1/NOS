@@ -193,7 +193,7 @@ static char * buf2; // the buffer to write characters to of the second terminal
 static char * buf3; // the buffer to write characters to of the third terminal
 static int length; // length of buf
 static int pos; // position in buf to write to next (0 indexed)
-static int reading; // flag that says whether or not keyboard is currently in a read
+static int reading; // flag that says whether or not keyboard is currently in a terminal read
 static int shift; // flag that says whether or not shift is being held
 static int capsLock; // flag that says whether or not caps lock is on
 static int ctrl; // flag that says whether or not ctrl is pressed
@@ -266,12 +266,38 @@ static void addToBuffer(int index, char c){ // could be synchronization issues
  * Files: None
  */
 void keyboard_handler(){
-    if (current_terminal_displaying == current_terminal_executing)
-        return 0;
     cli();
     uint8_t input = inb(KB_DATAPORT);
     disable_irq(KB_IRQ);
-    if (reading){
+    if (alt){
+            if (input == F1_CODE){ // switch to terminal 1
+                displaying_terminal_switch(1);
+            } else if (input == F2_CODE){ // switch to terminal 2
+                displaying_terminal_switch(2);
+            } else if (input == F3_CODE){ // switch to terminal 3
+                displaying_terminal_switch(3);
+            }
+    } else if (ctrl){
+            if (input == L_CODE){ // ctrl + l = clear screen and reset cursor to top left
+                clear();
+                setCursor(0,0);
+            }
+    } else if (input == CAPSLOCK_CODE){
+        capsLock ^= 1; // flips the status of capsLock
+    } else if ((input==LEFT_SHIFT_PRESSED_CODE) || (input==RIGHT_SHIFT_PRESSED_CODE)){
+        shift = 1;
+    } else if ((input==LEFT_SHIFT_RELEASED_CODE) || (input==RIGHT_SHIFT_RELEASED_CODE)){
+        shift = 0;
+    } else if (input==CTRL_PRESSED_CODE){
+        ctrl = 1;
+    } else if (input==CTRL_RELEASED_CODE){
+        ctrl = 0;
+    } else if (input==ALT_PRESSED_CODE){
+        alt = 1;
+    } else if (input==ALT_RELEASED_CODE){
+        alt = 0;
+    }
+    if ((reading) && (current_terminal_displaying == current_terminal_executing)){
         if (input == ENTER_CODE){
             reading = 0;
             addToBuffer(pos,'\0');
@@ -284,38 +310,11 @@ void keyboard_handler(){
                 putcBetter(' ');
                 setCursor(getCursorX()-1,getCursorY());
             }
-        } else if (input == CAPSLOCK_CODE){
-            capsLock ^= 1; // flips the status of capsLock
-        } else if ((input==LEFT_SHIFT_PRESSED_CODE) || (input==RIGHT_SHIFT_PRESSED_CODE)){
-            shift = 1;
-        } else if ((input==LEFT_SHIFT_RELEASED_CODE) || (input==RIGHT_SHIFT_RELEASED_CODE)){
-            shift = 0;
-        } else if (input==CTRL_PRESSED_CODE){
-            ctrl = 1;
-        } else if (input==CTRL_RELEASED_CODE){
-            ctrl = 0;
-        } else if (input==ALT_PRESSED_CODE){
-            alt = 1;
-        } else if (input==ALT_RELEASED_CODE){
-            alt = 0;
         } else if ((pos<length) && (input<=0x3d)){ // x39 is the last index in the scan code arrays
-            if (ctrl){
-                if (input == L_CODE){ // ctrl + l = clear screen and reset cursor to top left
-                    clear();
-                    setCursor(0,0);
-                }
-            } else if (shift){
+            if (shift){
                 addToBuffer(pos,scanTableShift[input]);// add character to buffer we're currently writing to
                 putcBetter(scanTableShift[input]);
-            } else if (alt){
-                if (input == F1_CODE){ // switch to terminal 1
-                    displaying_terminal_switch(1);
-                } else if (input == F2_CODE){ // switch to terminal 2
-                    displaying_terminal_switch(2);
-                } else if (input == F3_CODE){ // switch to terminal 3
-                    displaying_terminal_switch(3);
-                }
-            } else if (capsLock){
+            }  else if (capsLock){
                 addToBuffer(pos,scanTableCapsLock[input]);// add character to buffer we're currently writing to
                 putcBetter(scanTableCapsLock[input]);
             } else {

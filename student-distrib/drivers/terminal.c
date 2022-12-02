@@ -75,11 +75,11 @@ void initialize_terminals(){
         terminals[i].process_flag = 0;
         terminals[i].screen_x = 0;
         terminals[i].screen_y = 0;
-        terminals[i].keyboard_buffer_idx = 0;
+        // terminals[i].keyboard_buffer_idx = 0;
 
-        for(j = 0; j < BUFFER_SIZE; j++){
-            terminals[i].keyboard_buffer[j] = '\0';
-        }
+        // for(j = 0; j < BUFFER_SIZE; j++){
+        //     terminals[i].keyboard_buffer[j] = '\0';
+        // }
 
         terminals[i].video_mem = (uint32_t *) (((VIDEO >> add_shift) + (i + 1)) << add_shift);
     }

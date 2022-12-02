@@ -15,10 +15,9 @@ typedef struct terminal_t {
     int32_t screen_x;
     int32_t screen_y;
 
-    volatile uint8_t keyboard_buffer[BUFFER_SIZE];
-    volatile uint8_t keyboard_buffer_idx;
-
-    volatile int keyboard_buffer_enable;
+    // volatile uint8_t keyboard_buffer[BUFFER_SIZE];
+    // volatile uint8_t keyboard_buffer_idx;
+    // volatile int keyboard_buffer_enable;
 
     //pointer to this terminals video memory
     uint32_t *video_mem; // 32 bit address. Either 0xb8000, 0xb9000, or 0xba000
@@ -37,4 +36,4 @@ int32_t terminal_write(int32_t fd, const void* buf1, int32_t nbytes);
 
 //Scheduling Functions
 void initialize_terminals();
- 
+

@@ -162,6 +162,7 @@ void entry(unsigned long magic, unsigned long addr) {
     keyboard_init();
 
     current_terminal_displaying = 1; 
+    current_terminal_executing = 1; 
 
 
     //pit_init();

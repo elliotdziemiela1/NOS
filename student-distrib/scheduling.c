@@ -44,6 +44,11 @@ uint8_t displaying_terminal_switch(uint8_t newTerminalNum){
     terminals[current_terminal_displaying].screen_x = getCursorX(); // saves cursor x
     terminals[current_terminal_displaying].screen_y = getCursorY(); // saves cursor y
     setCursor(terminals[newTerminalNum].screen_x, terminals[newTerminalNum].screen_y);
+
+    // 
+    current_terminal_executing = newTerminalNum; // PLACEHOLDER UNTIL WE CALL CONTEXT SWITCH
+    // 
+
     current_terminal_displaying = newTerminalNum;
     return 0;
 }
