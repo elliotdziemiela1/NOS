@@ -103,9 +103,9 @@ uint32_t switch_vram(uint8_t oldIdx, uint8_t newIdx){
     uint32_t oldIndex = (VIDEO >> add_shift) + oldIdx; // index into page table of corresponding
 
     // save vram to old terminal page
-    memcpy(video_mem[oldIdx].addr << add_shift, video_mem[VIDEO >> add_shift].addr << add_shift, FOURKB);
+    memcpy(video_mem[oldIndex].addr << add_shift, video_mem[VIDEO >> add_shift].addr << add_shift, FOURKB);
     // restore vram of new terminal page
-    memcpy(video_mem[VIDEO >> add_shift].addr << add_shift, video_mem[newIdx].addr << add_shift, FOURKB);
+    memcpy(video_mem[VIDEO >> add_shift].addr << add_shift, video_mem[newIndex].addr << add_shift, FOURKB);
 
     // switch mapping
     video_mem[newIndex].addr = (VIDEO >> add_shift);

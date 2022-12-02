@@ -297,7 +297,7 @@ void keyboard_handler(){
             alt = 1;
         } else if (input==ALT_RELEASED_CODE){
             alt = 0;
-        } else if ((pos<length) && (input<=0x39)){ // x39 is the last index in the scan code arrays
+        } else if ((pos<length) && (input<=0x3d)){ // x39 is the last index in the scan code arrays
             if (ctrl){
                 if (input == L_CODE){ // ctrl + l = clear screen and reset cursor to top left
                     clear();
