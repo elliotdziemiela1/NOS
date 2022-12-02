@@ -12,7 +12,12 @@ void schedule_context_switch(){
     uint8_t new_pid = get_terminal_active_pid(current_terminal_executing);
     pcb_t * new_pcb = get_pcb(new_pid);
     
-    change_vram_address(get_terminal_vram(current_terminal_executing));
+    // change vram pointer in lib.c
+    if (current_terminal_executing == current_terminal_displaying){
+        change_vram_address(VIDEO);
+    } else {
+        change_vram_address(get_terminal_vram(current_terminal_executing));
+    }
     //saving the tss
     tss.ss0 = KERNEL_DS;
     tss.esp0 = EIGHT_MB - EIGHT_KB * (new_pid + 1) - 4;
