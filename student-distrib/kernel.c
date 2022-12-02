@@ -166,6 +166,8 @@ void entry(unsigned long magic, unsigned long addr) {
     // 
     // DUBUGGING PURPOSES
     current_terminal_displaying = 1; 
+    change_vram_address(0xb9000);
+    video_mem[0xb9].addr = 0xb8;
     // 
     // 
     // 
