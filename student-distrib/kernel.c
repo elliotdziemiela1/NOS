@@ -164,7 +164,8 @@ void entry(unsigned long magic, unsigned long addr) {
     // 
     // 
     // 
-    current_terminal_displaying = 1; // DUBUGGING PURPOSES
+    // DUBUGGING PURPOSES
+    current_terminal_displaying = 1; 
     // 
     // 
     // 
