@@ -70,7 +70,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes){
 void initialize_terminals(){
     int i;
     int j;
-    for(i = 0; i < TOTAL_TERMINALS; i++){
+    for(i = 0; i < 3; i++){
         terminals[i].terminal_id = i;
         terminals[i].active_process_pid = -1;
         terminals[i].process_flag = 0;

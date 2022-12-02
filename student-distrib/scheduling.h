@@ -5,7 +5,6 @@
 
 #define TOTAL_TERMINALS 3
 
-volatile terminal_t terminals[TOTAL_TERMINALS];
 
 int8_t get_next_scheduled_pid();
 

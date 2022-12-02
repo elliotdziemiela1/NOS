@@ -5,6 +5,7 @@
 
 
 #define BUFFER_SIZE 128 
+#define TOTAL_TERMINALS
 
 typedef struct terminal_t {
     int8_t terminal_id;
@@ -21,9 +22,11 @@ typedef struct terminal_t {
     volatile int keyboard_buffer_enable;
 
     //pointer to this terminals video memory
-    uint32_t *video_mem;
+    uint32_t *video_mem; // 32 bit address. Either 0xb8000, 0xb9000, or 0xba000
 
 } terminal_t;
+
+volatile terminal_t terminals[TOTAL_TERMINALS];
 
 uint32_t terminal_open();
 uint32_t terminal_close();

@@ -16,12 +16,15 @@ void schedule_context_switch(){
     uint8_t new_pid = get_next_scheduled_pid();
     pcb_t * new_pcb = get_pcb(new_pid);
 
-    switch_vram(old_pid, new_pid);
+    // switch_vram(old_pid, new_pid);
     
-    if(current_terminal_executing.terminal_id != current_terminal_displaying.terminal_id){
-        remap_VRAM((uint32_t) current_terminal_executing.video_mem);
-    }
+    // if(current_terminal_executing.terminal_id != current_terminal_displaying.terminal_id){
+    //     remap_VRAM((uint32_t) current_terminal_executing.video_mem);
+    // }
 
+    // update current terminal executing
+    
+    change_vram_address(current_terminal_executing.video_mem);
     //saving the tss
     tss.ss0 = KERNEL_DS;
     tss.esp0 = EIGHT_MB - EIGHT_KB * (new_pid + 1) - 4;
@@ -54,7 +57,7 @@ int8_t get_next_scheduled_pid(){
 }
 
 uint8_t displaying_terminal_switch(uint8_t newTerminalIdx){
-    
-    current_displaying_terminal = newTerminalIdx;
+    // switch_vram()
+    // current_terminal_displaying = newTerminalIdx;
     return 0;
 }
