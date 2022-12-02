@@ -243,13 +243,14 @@ int32_t gets(char * buffer, int nbytes){
 }
 
 static void addToBuffer(int index, char c){ // could be synchronization issues
-    if (current_terminal_displaying == 1){
-        buf1[index] = c;
-    } if (current_terminal_displaying == 2){
-        buf2[index] = c;
-    } if (current_terminal_displaying == 3){
-        buf3[index] = c;
-    }
+    buf1[index] = c; // debugging purposes
+    // if (current_terminal_displaying == 1){
+    //     buf1[index] = c;
+    // } if (current_terminal_displaying == 2){
+    //     buf2[index] = c;
+    // } if (current_terminal_displaying == 3){
+    //     buf3[index] = c;
+    // }
 }
 
 
@@ -309,9 +310,9 @@ void keyboard_handler(){
             } else if (alt){
                 if (input == F1_CODE){ // switch to terminal 1
                     displaying_terminal_switch(1);
-                } else if (input == F2_CODE){ // switch to terminal 1
+                } else if (input == F2_CODE){ // switch to terminal 2
                     displaying_terminal_switch(2);
-                } else if (input == F3_CODE){ // switch to terminal 1
+                } else if (input == F3_CODE){ // switch to terminal 3
                     displaying_terminal_switch(3);
                 }
             } else if (capsLock){
