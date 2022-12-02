@@ -94,7 +94,8 @@ void init_paging(){
 }
 
 /* switch_vram()
- * 
+ * Description: saves displaying vram to page of old terminal, then copys the nondisplaying vram page
+ *  of the new terminal into the displaying vram.
  * Inputs: idx - 1,2, or 3. The terminal # we want to map to vram
  */
 uint32_t switch_vram(uint8_t oldIdx, uint8_t newIdx){
@@ -103,13 +104,13 @@ uint32_t switch_vram(uint8_t oldIdx, uint8_t newIdx){
     uint32_t oldIndex = (VIDEO >> add_shift) + oldIdx; // index into page table of corresponding
 
     // save vram to old terminal page
-    memcpy(video_mem[oldIndex].addr << add_shift, video_mem[VIDEO >> add_shift].addr << add_shift, FOURKB);
+    memcpy(video_mem[oldIndex].addr << add_shift, VIDEO, FOURKB);
     // restore vram of new terminal page
-    memcpy(video_mem[VIDEO >> add_shift].addr << add_shift, video_mem[newIndex].addr << add_shift, FOURKB);
+    memcpy(VIDEO, video_mem[newIndex].addr << add_shift, FOURKB);
 
     // switch mapping
-    video_mem[newIndex].addr = (VIDEO >> add_shift);
-    video_mem[oldIndex].addr = (VIDEO >> add_shift) + oldIdx;
+    // video_mem[newIndex].addr = (VIDEO >> add_shift);
+    // video_mem[oldIndex].addr = (VIDEO >> add_shift) + oldIdx;
     return 0;
 }
 
