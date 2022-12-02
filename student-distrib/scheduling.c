@@ -57,7 +57,7 @@ int8_t get_next_scheduled_pid(){
 }
 
 uint8_t displaying_terminal_switch(uint8_t newTerminalIdx){
-    // switch_vram()
+    switch_vram()
     // current_terminal_displaying = newTerminalIdx;
     return 0;
 }

@@ -178,6 +178,7 @@ int32_t halt (uint8_t status){
     if (parent_pid == -1){ // if we have only 1 running process or none at all
         current_pid = -1;
         execute((const uint8_t*)"shell"); // set flag to restart shell at end
+        return 0;
     }
 
     // change current and parent pid variables, and set current pid array value to 0
@@ -205,7 +206,7 @@ int32_t halt (uint8_t status){
         temp = (int) cur_pcb->file_array[i].fops_func.close; // GDB not going into this
     }
 
-    tss.esp0 = old_esp;
+    tss.esp0 = EIGHT_MB - EIGHT_KB*(current_pid + 1) - 4;
 
     read_data(inode_array[current_pid], 24, user_eip, ELF_SIZE); // changes eip to parent program
     // restore esp and ebp
@@ -214,8 +215,8 @@ int32_t halt (uint8_t status){
             movl    %2, %%ebp  #restore ebp     \n\
             movl    $0, %%eax  #restore status     \n\
             movb    %0, %%al   #set return value     \n\
-            # leave                     \n\
-            # ret                     \n\
+            leave                     \n\
+            ret                     \n\
             "
             :
             : "r"(status), "r"(old_esp), "r"(old_ebp)
