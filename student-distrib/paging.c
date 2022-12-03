@@ -108,6 +108,11 @@ uint32_t switch_vram(uint8_t oldIdx, uint8_t newIdx){
     // restore vram of new terminal page
     memcpy(VIDEO, video_mem[newIndex].addr << add_shift, FOURKB);
 
+    asm volatile("\
+    mov %cr3, %eax    ;\
+    mov %eax, %cr3    ;\
+    ");
+
     // switch mapping
     // video_mem[newIndex].addr = (VIDEO >> add_shift);
     // video_mem[oldIndex].addr = (VIDEO >> add_shift) + oldIdx;

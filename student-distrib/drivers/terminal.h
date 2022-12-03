@@ -15,7 +15,7 @@ typedef struct terminal_t {
     int32_t screen_x;
     int32_t screen_y;
 
-    // volatile uint8_t keyboard_buffer[BUFFER_SIZE];
+    uint8_t keyboard_buffer[BUFFER_SIZE];
     // volatile uint8_t keyboard_buffer_idx;
     // volatile int keyboard_buffer_enable;
 

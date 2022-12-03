@@ -4,11 +4,13 @@
 #include "x86_desc.h"
 
 void schedule_context_switch(){
+    //CHANGE THIS LATER
     uint8_t old_pid = get_terminal_active_pid(current_terminal_executing);
     pcb_t * old_pcb = get_pcb(old_pid);
 
     // update current terminal executing
     current_terminal_executing = ((current_terminal_executing + 1) % 3) + 1; // +1 since 1-indexed
+    //CHANGE THIS LATER TOO
     uint8_t new_pid = get_terminal_active_pid(current_terminal_executing);
     pcb_t * new_pcb = get_pcb(new_pid);
     
@@ -50,6 +52,15 @@ uint8_t displaying_terminal_switch(uint8_t newTerminalNum){
     // 
 
     current_terminal_displaying = newTerminalNum;
+
+    if(get_terminal_current_pid(newTerminalNum - 1) == -1){
+        clear();
+        setCursor(0,0);
+        
+        printf("TERMINAL %d \n", newTerminalNum);
+        // execute((const uint8_t *) "shell");
+    }
+
     return 0;
 }
 

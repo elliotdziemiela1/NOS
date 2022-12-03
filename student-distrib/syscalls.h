@@ -60,3 +60,7 @@ void parse_command(const uint8_t* command, uint8_t* args, uint8_t* filename);
 
 int32_t set_handler (int32_t signum, void* handler_address);
 int32_t sigreturn (void);
+
+//scheduling functions/variables
+int32_t get_terminal_current_pid(int8_t terminal_num);
+int32_t get_terminal_parent_pid(int8_t terminal_num);

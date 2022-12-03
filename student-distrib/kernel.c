@@ -164,7 +164,7 @@ void entry(unsigned long magic, unsigned long addr) {
     current_terminal_displaying = 1; 
     current_terminal_executing = 1; 
 
-
+    initialize_terminals();
     //pit_init();
 
     /* Enable interrupts */
@@ -178,9 +178,12 @@ void entry(unsigned long magic, unsigned long addr) {
 
 #ifdef RUN_TESTS
     /* Run tests */
-    launch_tests();
+    //launch_tests();
 #endif
     /* Execute the first program ("shell") ... */
+    clear();
+	setCursor(0,0);
+    execute((const uint8_t *) "shell");
 
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");

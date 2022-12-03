@@ -192,7 +192,10 @@ static char * buf1; // the buffer to write characters to of the first terminal
 static char * buf2; // the buffer to write characters to of the second terminal
 static char * buf3; // the buffer to write characters to of the third terminal
 static int length; // length of buf
-static int pos; // position in buf to write to next (0 indexed)
+static int pos;
+static int pos1; // position in buf to write to next (0 indexed) for first terminal
+static int pos2; // position in buf to write to next (0 indexed) for second terminal
+static int pos3; // position in buf to write to next (0 indexed) for thrid terminal
 static int reading; // flag that says whether or not keyboard is currently in a terminal read
 static int shift; // flag that says whether or not shift is being held
 static int capsLock; // flag that says whether or not caps lock is on
@@ -229,6 +232,17 @@ int32_t gets(char * buffer, int nbytes){
     } if (current_terminal_displaying == 3){
         buf3 = buffer;
     }
+
+    // int pos;
+
+    // if(current_terminal_displaying == 1){
+    //     pos = pos1;
+    // }else if (current_terminal_displaying == 2){
+    //     pos = pos2;
+    // }else if (current_terminal_displaying == 3){
+    //     pos = pos3;
+    // }
+
     length = nbytes-1;
     pos = 0;
     reading = 1;
@@ -236,9 +250,19 @@ int32_t gets(char * buffer, int nbytes){
     capsLock = 0;
     ctrl = 0;
     enable_irq(KB_IRQ);
+    sti();
     while (reading){} // this will end when the user presses enter in the keyboard
     // handler, setting reading to false.
     disable_irq(KB_IRQ);
+
+    // if(current_terminal_displaying == 1){
+    //     pos1 = pos;
+    // }else if (current_terminal_displaying == 2){
+    //     pos2 = pos;
+    // }else if (current_terminal_displaying == 3){
+    //     pos3 = pos;
+    // }
+
     return pos;
 }
 
@@ -267,6 +291,16 @@ static void addToBuffer(int index, char c){ // could be synchronization issues
  */
 void keyboard_handler(){
     cli();
+    // int pos;
+
+    // if(current_terminal_displaying == 1){
+    //     pos = pos1;
+    // }else if (current_terminal_displaying == 2){
+    //     pos = pos2;
+    // }else if (current_terminal_displaying == 3){
+    //     pos = pos3;
+    // }
+
     uint8_t input = inb(KB_DATAPORT);
     disable_irq(KB_IRQ);
     if (alt){
@@ -324,6 +358,15 @@ void keyboard_handler(){
             pos++;
         }
     }
+
+    // if(current_terminal_displaying == 1){
+    //     pos1 = pos;
+    // }else if (current_terminal_displaying == 2){
+    //     pos2 = pos;
+    // }else if (current_terminal_displaying == 3){
+    //     pos3 = pos;
+    // }
+
     send_eoi(KB_IRQ);
     enable_irq(KB_IRQ);
     sti();
