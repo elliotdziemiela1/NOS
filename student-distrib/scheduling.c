@@ -4,19 +4,19 @@
 #include "x86_desc.h"
 
 void schedule_context_switch(){
-    uint8_t old_pid = get_terminal_active_pid(current_terminal_executing);
+    uint8_t old_pid = terminals[current_terminal_executing].active_process_pid;
     pcb_t * old_pcb = get_pcb(old_pid);
 
     // update current terminal executing
     current_terminal_executing = ((current_terminal_executing + 1) % 3) + 1; // +1 since 1-indexed
-    uint8_t new_pid = get_terminal_active_pid(current_terminal_executing);
+    uint8_t new_pid = terminals[current_terminal_executing].active_process_pid;
     pcb_t * new_pcb = get_pcb(new_pid);
     
     // change vram pointer in lib.c
     if (current_terminal_executing == current_terminal_displaying){
         change_vram_address(VIDEO);
     } else {
-        change_vram_address(get_terminal_vram(current_terminal_executing));
+        change_vram_address(terminals[current_terminal_executing].video_mem);
     }
     //saving the tss
     tss.ss0 = KERNEL_DS;
@@ -46,21 +46,10 @@ uint8_t displaying_terminal_switch(uint8_t newTerminalNum){
     setCursor(terminals[newTerminalNum].screen_x, terminals[newTerminalNum].screen_y);
 
     // 
+    // CURRENTLY ONLY EXECUTES THE DISPLAYING TERMINAL
     current_terminal_executing = newTerminalNum; // PLACEHOLDER UNTIL WE CALL CONTEXT SWITCH
     // 
 
     current_terminal_displaying = newTerminalNum;
     return 0;
 }
-
-// 
-// HELPERS
-// 
-int8_t get_terminal_active_pid(uint8_t terminalNum){
-    return (int8_t) terminals[terminalNum-1].active_process_pid;
-}
-
-uint32_t get_terminal_vram(uint8_t terminalNum){
-    return terminals[current_terminal_executing-1].video_mem;
-}
-

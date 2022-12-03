@@ -75,7 +75,8 @@ void initialize_terminals(){
         terminals[i].process_flag = 0;
         terminals[i].screen_x = 0;
         terminals[i].screen_y = 0;
-        // terminals[i].keyboard_buffer_idx = 0;
+        terminals[i].reading = 0;
+        terminals[i].kb_buffer_position = 0;
 
         // for(j = 0; j < BUFFER_SIZE; j++){
         //     terminals[i].keyboard_buffer[j] = '\0';

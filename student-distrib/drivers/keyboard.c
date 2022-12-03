@@ -188,12 +188,11 @@ char scanTableCapsLock[0x40] = {'\0','\0','1','2','3','4','5','6','7','8','9','0
     'S','D','F','G','H','J','K','L',';','\'','`','\0','\\','Z','X','C','V',
     'B','N','M',',','.','/','\0','\0','\0',' '};
 
+// ONLY 3 BUFFERS, EACH CORRESPONDING TO THE BUFFER OF THE TOPMOST SHELL IN EACH TERMINAL.
 static char * buf1; // the buffer to write characters to of the first terminal
 static char * buf2; // the buffer to write characters to of the second terminal
 static char * buf3; // the buffer to write characters to of the third terminal
 static int length; // length of buf
-static int pos; // position in buf to write to next (0 indexed)
-static int reading; // flag that says whether or not keyboard is currently in a terminal read
 static int shift; // flag that says whether or not shift is being held
 static int capsLock; // flag that says whether or not caps lock is on
 static int ctrl; // flag that says whether or not ctrl is pressed
@@ -223,33 +222,33 @@ void keyboard_init(){
 int32_t gets(char * buffer, int nbytes){
     if (nbytes < 1) // shoulnt be called with 0 bytes
         return 0;
-    if (current_terminal_displaying == 1){
+    if (current_terminal_displaying == 0){
         buf1 = buffer;
-    } if (current_terminal_displaying == 2){
+    } if (current_terminal_displaying == 1){
         buf2 = buffer;
-    } if (current_terminal_displaying == 3){
+    } if (current_terminal_displaying == 2){
         buf3 = buffer;
     }
     length = nbytes-1;
-    pos = 0;
-    reading = 1;
+    terminals[current_terminal_displaying].kb_buffer_position = 0;
+    terminals[current_terminal_displaying].reading = 1;
     shift = 0;
     capsLock = 0;
     ctrl = 0;
     // enable_irq(KB_IRQ);
-    while (reading){} // this will end when the user presses enter in the keyboard
+    while (terminals[current_terminal_displaying].reading){} // this will end when the user presses enter in the keyboard
     // handler, setting reading to false.
     // disable_irq(KB_IRQ);
-    return pos;
+    return terminals[current_terminal_displaying].kb_buffer_position;
 }
 
 static void addToBuffer(int index, char c){ // could be synchronization issues
-    buf1[index] = c; // debugging purposes
-    // if (current_terminal_displaying == 1){
+    buf1[index] = c; // SO FAR WE ONLY HAVE 1 SHELL EXECUTING THUS ONLY 1 BUFFER
+    // if (current_terminal_displaying == 0){
     //     buf1[index] = c;
-    // } if (current_terminal_displaying == 2){
+    // } if (current_terminal_displaying == 1){
     //     buf2[index] = c;
-    // } if (current_terminal_displaying == 3){
+    // } if (current_terminal_displaying == 2){
     //     buf3[index] = c;
     // }
 }
@@ -259,7 +258,8 @@ static void addToBuffer(int index, char c){ // could be synchronization issues
 
 /* keyboard_handler
  * 
- * Handles the keyboard interrupts
+ * Handles the keyboard interrupts. Only writes to a buffer if the current executing terminal
+ * Is also the current displaying terminal
  * Inputs: None
  * Outputs: None
  * Side Effects: Handles the keyboard interrupts
@@ -271,12 +271,12 @@ void keyboard_handler(){
     uint8_t input = inb(KB_DATAPORT);
     disable_irq(KB_IRQ);
     if (alt){
-            if (input == F1_CODE){ // switch to terminal 1
+            if (input == F1_CODE){ // switch to terminal 0
+                displaying_terminal_switch(0);
+            } else if (input == F2_CODE){ // switch to terminal 1
                 displaying_terminal_switch(1);
-            } else if (input == F2_CODE){ // switch to terminal 2
+            } else if (input == F3_CODE){ // switch to terminal 2
                 displaying_terminal_switch(2);
-            } else if (input == F3_CODE){ // switch to terminal 3
-                displaying_terminal_switch(3);
             }
     } else if (ctrl){
             if (input == L_CODE){ // ctrl + l = clear screen and reset cursor to top left
@@ -298,31 +298,31 @@ void keyboard_handler(){
     } else if (input==ALT_RELEASED_CODE){
         alt = 0;
     }
-    if ((reading) && (current_terminal_displaying == current_terminal_executing)){
+    if ((terminals[current_terminal_displaying].reading) && (current_terminal_displaying == current_terminal_executing)){
         if (input == ENTER_CODE){
-            reading = 0;
-            addToBuffer(pos,'\0');
+            terminals[current_terminal_displaying].reading = 0;
+            addToBuffer(terminals[current_terminal_displaying].kb_buffer_position,'\0');
             // putcBetter('\n');
         } else if (input == BACKSPACE_CODE){
-            if (pos > 0){
-                addToBuffer(pos-1,' ');
-                pos--;
+            if (terminals[current_terminal_displaying].kb_buffer_position > 0){
+                addToBuffer(terminals[current_terminal_displaying].kb_buffer_position-1,' ');
+                terminals[current_terminal_displaying].kb_buffer_position--;
                 setCursor(getCursorX()-1,getCursorY());
                 putcBetter(' ');
                 setCursor(getCursorX()-1,getCursorY());
             }
-        } else if ((pos<length) && (input<=0x3d)){ // x39 is the last index in the scan code arrays
+        } else if ((terminals[current_terminal_displaying].kb_buffer_position<length) && (input<=0x3d)){ // x39 is the last index in the scan code arrays
             if (shift){
-                addToBuffer(pos,scanTableShift[input]);// add character to buffer we're currently writing to
+                addToBuffer(terminals[current_terminal_displaying].kb_buffer_position,scanTableShift[input]);// add character to buffer we're currently writing to
                 putcBetter(scanTableShift[input]);
             }  else if (capsLock){
-                addToBuffer(pos,scanTableCapsLock[input]);// add character to buffer we're currently writing to
+                addToBuffer(terminals[current_terminal_displaying].kb_buffer_position,scanTableCapsLock[input]);// add character to buffer we're currently writing to
                 putcBetter(scanTableCapsLock[input]);
             } else {
-                addToBuffer(pos,scanTable[input]);// add character to buffer we're currently writing to
+                addToBuffer(terminals[current_terminal_displaying].kb_buffer_position,scanTable[input]);// add character to buffer we're currently writing to
                 putcBetter(scanTable[input]);
             }
-            pos++;
+            terminals[current_terminal_displaying].kb_buffer_position++;
         }
     }
     send_eoi(KB_IRQ);

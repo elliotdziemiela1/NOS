@@ -161,8 +161,8 @@ void entry(unsigned long magic, unsigned long addr) {
     rtc_init();
     keyboard_init();
 
-    current_terminal_displaying = 1; 
-    current_terminal_executing = 1; 
+    current_terminal_displaying = 0; 
+    current_terminal_executing = 0;
 
 
     //pit_init();

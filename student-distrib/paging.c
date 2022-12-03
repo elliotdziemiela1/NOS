@@ -100,8 +100,8 @@ void init_paging(){
  */
 uint32_t switch_vram(uint8_t oldIdx, uint8_t newIdx){
     // terminal's vram map
-    uint32_t newIndex = (VIDEO >> add_shift) + newIdx; // index into page table of corresponding
-    uint32_t oldIndex = (VIDEO >> add_shift) + oldIdx; // index into page table of corresponding
+    uint32_t newIndex = (VIDEO >> add_shift) + newIdx+1; // +1 due to 0 indexed value
+    uint32_t oldIndex = (VIDEO >> add_shift) + oldIdx+1; // +1 due to 0 indexed value
 
     // save vram to old terminal page
     memcpy(video_mem[oldIndex].addr << add_shift, VIDEO, FOURKB);

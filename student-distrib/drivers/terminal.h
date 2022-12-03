@@ -15,6 +15,10 @@ typedef struct terminal_t {
     int32_t screen_x;
     int32_t screen_y;
 
+    uint32_t kb_buffer_position;
+    uint8_t reading; // flag for keyboard handler to reference that says if this terminal is taking in
+    // a string from the keyboard right now
+
     // volatile uint8_t keyboard_buffer[BUFFER_SIZE];
     // volatile uint8_t keyboard_buffer_idx;
     // volatile int keyboard_buffer_enable;
@@ -26,8 +30,8 @@ typedef struct terminal_t {
 
 volatile terminal_t terminals[TOTAL_TERMINALS];
 
-uint8_t current_terminal_executing;
-uint8_t current_terminal_displaying;
+volatile uint8_t current_terminal_executing; // 0 indexed: 0,1, or 2
+volatile uint8_t current_terminal_displaying; // 0 indexed: 0,1, or 2
 
 uint32_t terminal_open();
 uint32_t terminal_close();
