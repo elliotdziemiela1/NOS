@@ -222,33 +222,37 @@ void keyboard_init(){
 int32_t gets(char * buffer, int nbytes){
     if (nbytes < 1) // shoulnt be called with 0 bytes
         return 0;
-    if (current_terminal_displaying == 0){
+    if (current_terminal_executing == 0){
         buf1 = buffer;
-    } if (current_terminal_displaying == 1){
+    } if (current_terminal_executing == 1){
         buf2 = buffer;
-    } if (current_terminal_displaying == 2){
+    } if (current_terminal_executing == 2){
         buf3 = buffer;
     }
     length = nbytes-1;
-    terminals[current_terminal_displaying].kb_buffer_position = 0;
-    terminals[current_terminal_displaying].reading = 1;
+    terminals[current_terminal_executing].kb_buffer_position = 0;
+    terminals[current_terminal_executing].reading = 1;
     shift = 0;
     capsLock = 0;
     ctrl = 0;
     // enable_irq(KB_IRQ);
-    while (terminals[current_terminal_displaying].reading){} // this will end when the user presses enter in the keyboard
-    // handler, setting reading to false.
+
+    while (terminals[current_terminal_executing].reading){} // this will end when the user presses enter in the keyboard
+    // handler, setting reading to false. If we call one instance of this function in one terminal, then switch to another 
+    // executing terminal, the while loop wont end. It only ends when we are displaying the terminal that called gets
+    // and press enter. This loop will however end until we start doing executing terminal context switching.
+
     // disable_irq(KB_IRQ);
-    return terminals[current_terminal_displaying].kb_buffer_position;
+    return terminals[current_terminal_executing].kb_buffer_position;
 }
 
 static void addToBuffer(int index, char c){ // could be synchronization issues
     buf1[index] = c; // SO FAR WE ONLY HAVE 1 SHELL EXECUTING THUS ONLY 1 BUFFER
-    // if (current_terminal_displaying == 0){
+    // if (current_terminal_executing == 0){
     //     buf1[index] = c;
-    // } if (current_terminal_displaying == 1){
+    // } if (current_terminal_executing == 1){
     //     buf2[index] = c;
-    // } if (current_terminal_displaying == 2){
+    // } if (current_terminal_executing == 2){
     //     buf3[index] = c;
     // }
 }
@@ -298,31 +302,31 @@ void keyboard_handler(){
     } else if (input==ALT_RELEASED_CODE){
         alt = 0;
     }
-    if ((terminals[current_terminal_displaying].reading) && (current_terminal_displaying == current_terminal_executing)){
+    if ((terminals[current_terminal_executing].reading) && (current_terminal_displaying == current_terminal_executing)){
         if (input == ENTER_CODE){
-            terminals[current_terminal_displaying].reading = 0;
-            addToBuffer(terminals[current_terminal_displaying].kb_buffer_position,'\0');
+            terminals[current_terminal_executing].reading = 0;
+            addToBuffer(terminals[current_terminal_executing].kb_buffer_position,'\0');
             // putcBetter('\n');
         } else if (input == BACKSPACE_CODE){
-            if (terminals[current_terminal_displaying].kb_buffer_position > 0){
-                addToBuffer(terminals[current_terminal_displaying].kb_buffer_position-1,' ');
-                terminals[current_terminal_displaying].kb_buffer_position--;
+            if (terminals[current_terminal_executing].kb_buffer_position > 0){
+                addToBuffer(terminals[current_terminal_executing].kb_buffer_position-1,' ');
+                terminals[current_terminal_executing].kb_buffer_position--;
                 setCursor(getCursorX()-1,getCursorY());
                 putcBetter(' ');
                 setCursor(getCursorX()-1,getCursorY());
             }
-        } else if ((terminals[current_terminal_displaying].kb_buffer_position<length) && (input<=0x3d)){ // x39 is the last index in the scan code arrays
+        } else if ((terminals[current_terminal_executing].kb_buffer_position<length) && (input<=0x3d)){ // x39 is the last index in the scan code arrays
             if (shift){
-                addToBuffer(terminals[current_terminal_displaying].kb_buffer_position,scanTableShift[input]);// add character to buffer we're currently writing to
+                addToBuffer(terminals[current_terminal_executing].kb_buffer_position,scanTableShift[input]);// add character to buffer we're currently writing to
                 putcBetter(scanTableShift[input]);
             }  else if (capsLock){
-                addToBuffer(terminals[current_terminal_displaying].kb_buffer_position,scanTableCapsLock[input]);// add character to buffer we're currently writing to
+                addToBuffer(terminals[current_terminal_executing].kb_buffer_position,scanTableCapsLock[input]);// add character to buffer we're currently writing to
                 putcBetter(scanTableCapsLock[input]);
             } else {
-                addToBuffer(terminals[current_terminal_displaying].kb_buffer_position,scanTable[input]);// add character to buffer we're currently writing to
+                addToBuffer(terminals[current_terminal_executing].kb_buffer_position,scanTable[input]);// add character to buffer we're currently writing to
                 putcBetter(scanTable[input]);
             }
-            terminals[current_terminal_displaying].kb_buffer_position++;
+            terminals[current_terminal_executing].kb_buffer_position++;
         }
     }
     send_eoi(KB_IRQ);
