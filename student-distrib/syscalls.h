@@ -7,6 +7,8 @@
 #define OPEN      0x1
 #define EIGHT_MB 0x0800000
 #define EIGHT_KB 0x0002000
+#define MB_4 0x400000
+#define MB_128_PAGE 32
 
 //file opcodes (jump) table
 typedef struct fops_t{
@@ -32,6 +34,8 @@ typedef struct pcb_t{
     uint32_t parent_id;
     uint32_t saved_esp;
     uint32_t saved_ebp;
+    uint32_t saved_process_esp;
+    uint32_t saved_process_ebp;
     uint32_t saved_eip;
     uint8_t active      :1;
     uint8_t args[ARG_LEN];

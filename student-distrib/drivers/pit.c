@@ -3,6 +3,7 @@
 #include "../i8259.h"
 #include "../lib.h"
 #include "rtc.h"
+#include "../scheduling.h"
 
 volatile uint32_t pit_timer = 0;
 
@@ -20,10 +21,11 @@ void pit_handler(){
     cli();
     pit_timer++;
 
-    if(pit_timer % 10 == 0){
-			printfBetter("counter val: %d", pit_timer);
-	}
+    // if(pit_timer % 10 == 0){
+	// 		printfBetter("counter val: %d", pit_timer);
+	// }
 
+    schedule_context_switch();
     sti();
     send_eoi(PIT_IRQ);
     

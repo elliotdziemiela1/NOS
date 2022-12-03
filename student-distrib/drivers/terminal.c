@@ -72,6 +72,7 @@ void initialize_terminals(){
     int j;
     for(i = 0; i < 3; i++){
         terminals[i].active_process_pid = -1;
+        terminals[i].parent_process_pid = -1;
         terminals[i].process_flag = 0;
         terminals[i].screen_x = 0;
         terminals[i].screen_y = 0;
@@ -83,7 +84,7 @@ void initialize_terminals(){
         // }
 
         terminals[i].video_mem = (uint32_t *) (((VIDEO >> add_shift) + (i + 1)) << add_shift);
-    }
+    }   
     
 }
 

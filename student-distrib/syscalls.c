@@ -21,9 +21,7 @@
 #define MAGIC_3 0x46
 #define PROG_IMG_VIRTUAL_ADDR 0x08048000 // 128MB:virtual address we need to map physical
 #define MAX_PIDS 3
-#define MB_4 0x400000
 
-#define MB_128_PAGE 32
 #define ELF_SIZE 4
 #define PROG_IMG_START_BYTE 24
 

@@ -158,7 +158,6 @@
 #include "terminal.h"
 
 #define KB_DATAPORT 0x60
-#define KB_IRQ 0x1
 #define BACKSPACE_CODE 0x0e  // scan codes
 #define ENTER_CODE 0x1c 
 #define CAPSLOCK_CODE 0x3a

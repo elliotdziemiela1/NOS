@@ -5,8 +5,6 @@
 
 #define TOTAL_TERMINALS 3
 
-int8_t get_next_scheduled_pid();
-
 uint8_t displaying_terminal_switch(uint8_t terminalIdx);
 
 void schedule_context_switch();

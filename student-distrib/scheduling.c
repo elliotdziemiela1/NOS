@@ -2,13 +2,18 @@
 #include "syscalls.h"
 #include "paging.h"
 #include "x86_desc.h"
+#include "i8259.h"
+#include "drivers/keyboard.h"
 
 void schedule_context_switch(){
     uint8_t old_pid = terminals[current_terminal_executing].active_process_pid;
     pcb_t * old_pcb = get_pcb(old_pid);
 
     // update current terminal executing
-    current_terminal_executing = ((current_terminal_executing + 1) % 3) + 1; // +1 since 1-indexed
+    current_terminal_executing = (current_terminal_executing + 1) % 3;
+    while (terminals[(current_terminal_executing + 1) % 3].active_process_pid == -1) // round robin
+        current_terminal_executing = (current_terminal_executing + 1) % 3;
+
     uint8_t new_pid = terminals[current_terminal_executing].active_process_pid;
     pcb_t * new_pcb = get_pcb(new_pid);
     
@@ -18,15 +23,20 @@ void schedule_context_switch(){
     } else {
         change_vram_address(terminals[current_terminal_executing].video_mem);
     }
+
     //saving the tss
     tss.ss0 = KERNEL_DS;
     tss.esp0 = EIGHT_MB - EIGHT_KB * (new_pid + 1) - 4;
+
+    // change virtual program page mapping to next program
+    uint32_t physical_address = (2 + new_pid) * FOURMB; //2:you want to skip the first page which houses the kernel
+    page_dir[MB_128_PAGE].fourmb.addr = physical_address / FOURKB;
 
     /* Perform context switch, swap ESP/EBP with that of the registers */
     asm volatile(
                  "movl %%esp, %%eax;"
                  "movl %%ebp, %%ebx;"
-                 :"=a"(old_pcb->saved_esp), "=b"(old_pcb->saved_ebp)    /* outputs */
+                 :"=a"(old_pcb->saved_process_esp), "=b"(old_pcb->saved_process_ebp)    /* outputs */
                  :                                          /* no input */
                  );
                  
@@ -34,12 +44,12 @@ void schedule_context_switch(){
                  "movl %%eax, %%esp;"
                  "movl %%ebx, %%ebp;"
                  :                                          /* no outputs */
-                 :"a"(new_pcb->saved_esp), "b"(new_pcb->saved_ebp)    /* input */
+                 :"a"(new_pcb->saved_process_esp), "b"(new_pcb->saved_process_ebp)    /* input */
                  );
     return;
 }
 
-uint8_t displaying_terminal_switch(uint8_t newTerminalNum){
+uint8_t displaying_terminal_switch(uint8_t newTerminalNum){ // 0,1, or 2
     switch_vram(current_terminal_displaying, newTerminalNum);
     terminals[current_terminal_displaying].screen_x = getCursorX(); // saves cursor x
     terminals[current_terminal_displaying].screen_y = getCursorY(); // saves cursor y
@@ -51,5 +61,13 @@ uint8_t displaying_terminal_switch(uint8_t newTerminalNum){
     // 
 
     current_terminal_displaying = newTerminalNum;
+
+    if (terminals[current_terminal_displaying].active_process_pid == -1){
+        current_terminal_executing = newTerminalNum;
+        send_eoi(KB_IRQ);
+        enable_irq(KB_IRQ); 
+        sti();  
+        execute("shell");
+    }
     return 0;
 }

@@ -167,7 +167,7 @@ void entry(unsigned long magic, unsigned long addr) {
     initialize_terminals();
 
 
-    //pit_init();
+    // pit_init();
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
@@ -180,7 +180,9 @@ void entry(unsigned long magic, unsigned long addr) {
 
 #ifdef RUN_TESTS
     /* Run tests */
-    launch_tests();
+    //launch_tests();
+    clear();
+    execute("shell");
 #endif
     /* Execute the first program ("shell") ... */
 
