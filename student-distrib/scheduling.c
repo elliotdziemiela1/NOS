@@ -47,7 +47,7 @@ uint8_t displaying_terminal_switch(uint8_t newTerminalNum){
 
     // 
     // CURRENTLY ONLY EXECUTES THE DISPLAYING TERMINAL
-    current_terminal_executing = newTerminalNum; // PLACEHOLDER UNTIL WE CALL CONTEXT SWITCH
+    // current_terminal_executing = newTerminalNum; // UNCOMMENT TO SHOW TYPING IN OTHER TERMINALS
     // 
 
     current_terminal_displaying = newTerminalNum;

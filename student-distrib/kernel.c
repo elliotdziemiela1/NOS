@@ -164,6 +164,8 @@ void entry(unsigned long magic, unsigned long addr) {
     current_terminal_displaying = 0; 
     current_terminal_executing = 0;
 
+    initialize_terminals();
+
 
     //pit_init();
 
