@@ -8,7 +8,9 @@
 #define TOTAL_TERMINALS
 
 typedef struct terminal_t {
-    int32_t active_process_pid;
+    int32_t active_process_pid; // pid of the current running program in this terminal
+    uint32_t parent_process_pid; // pid of the program that called the current running 
+    // program in this terminal
 
     int8_t process_flag;
 
