@@ -166,8 +166,8 @@ void entry(unsigned long magic, unsigned long addr) {
 
     initialize_terminals();
 
+    pit_init();
 
-    // pit_init();
 
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
@@ -181,11 +181,11 @@ void entry(unsigned long magic, unsigned long addr) {
 #ifdef RUN_TESTS
     /* Run tests */
     //launch_tests();
-    clear();
-    execute("shell");
+    
 #endif
     /* Execute the first program ("shell") ... */
-
+    clear();
+    execute((const uint8_t*) "shell");
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");
 }

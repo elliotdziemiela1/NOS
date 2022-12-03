@@ -43,6 +43,8 @@ void schedule_context_switch(){
     asm volatile(
                  "movl %%eax, %%esp;"
                  "movl %%ebx, %%ebp;"
+                 "leave;"
+                 "ret;"
                  :                                          /* no outputs */
                  :"a"(new_pcb->saved_process_esp), "b"(new_pcb->saved_process_ebp)    /* input */
                  );
@@ -62,12 +64,12 @@ uint8_t displaying_terminal_switch(uint8_t newTerminalNum){ // 0,1, or 2
 
     current_terminal_displaying = newTerminalNum;
 
-    if (terminals[current_terminal_displaying].active_process_pid == -1){
-        current_terminal_executing = newTerminalNum;
-        send_eoi(KB_IRQ);
-        enable_irq(KB_IRQ); 
-        sti();  
-        execute("shell");
-    }
+    // if (terminals[current_terminal_displaying].active_process_pid == -1){
+    //     current_terminal_executing = newTerminalNum;
+    //     send_eoi(KB_IRQ);
+    //     enable_irq(KB_IRQ); 
+    //     sti();  
+    //     execute("shell");
+    // }
     return 0;
 }

@@ -30,8 +30,8 @@ typedef struct file_desc_t{
 
 typedef struct pcb_t{
     file_desc_t file_array[MAX_FILES];       //contains file descriptors for files (struct file_desc_t)
-    uint32_t pcb_id;
-    uint32_t parent_id;
+    int32_t pcb_id;
+    int32_t parent_id;
     uint32_t saved_esp;
     uint32_t saved_ebp;
     uint32_t saved_process_esp;
