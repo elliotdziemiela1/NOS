@@ -210,6 +210,7 @@ static int alt; // flag that says whether or not alt is pressed
  */
 void keyboard_init(){
     insert_handler(KB_IRQ, (int)&keyboard_handler,0);
+    enable_irq(KB_IRQ);
 }
 
 /* gets
@@ -235,10 +236,10 @@ int32_t gets(char * buffer, int nbytes){
     shift = 0;
     capsLock = 0;
     ctrl = 0;
-    enable_irq(KB_IRQ);
+    // enable_irq(KB_IRQ);
     while (reading){} // this will end when the user presses enter in the keyboard
     // handler, setting reading to false.
-    disable_irq(KB_IRQ);
+    // disable_irq(KB_IRQ);
     return pos;
 }
 
