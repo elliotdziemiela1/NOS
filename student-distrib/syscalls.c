@@ -204,7 +204,7 @@ int32_t halt (uint8_t status){
         temp = (int) cur_pcb->file_array[i].fops_func.close; // GDB not going into this
     }
 
-    tss.esp0 = EIGHT_MB - EIGHT_KB*(terminals[current_terminal_executing].active_process_pid + 1) - 4;
+    tss.esp0 = EIGHT_MB - EIGHT_KB*(terminals[current_terminal_executing].active_process_pid) - 4;
 
     read_data(inode_array[terminals[current_terminal_executing].active_process_pid], 24, user_eip, ELF_SIZE); // changes eip to parent program
     // restore esp and ebp
@@ -305,7 +305,7 @@ int32_t execute (const uint8_t* command){
 
     // tss
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = EIGHT_MB - EIGHT_KB*(terminals[current_terminal_executing].active_process_pid + 1) - 4; //we subtract 4 cause we don't want the top of the page
+    tss.esp0 = EIGHT_MB - EIGHT_KB*(terminals[current_terminal_executing].active_process_pid) - 4; //we subtract 4 cause we don't want the top of the page
 
     pcb_t* pcb_ptr = (pcb_t*) get_pcb(terminals[current_terminal_executing].active_process_pid);
     init_pcb(pcb_ptr);

@@ -14,21 +14,27 @@ void pit_init(){
 
     outb(PIT_MODE, PIT_REG_CMD);
     outb((PIT_INTERVAL / HZ) & 0xFF, PIT_REG_DATA);
-    outb(((PIT_INTERVAL / HZ) >> 8), PIT_REG_DATA);
+    outb(((PIT_INTERVAL / HZ) >> 8) & 0xFF, PIT_REG_DATA);
 
     enable_irq(PIT_IRQ);
 }
 
 void pit_handler(){
+    // send_eoi(PIT_IRQ);
     cli();
-    pit_timer++;
+    disable_irq(PIT_IRQ);
+    // pit_timer++;
+    // if(pit_timer < 15){
+    //     printfBetter("cte: %d test: %d \n", current_terminal_executing, pit_timer);
+    // }
     if(terminal_to_start == 0){
         current_terminal_executing = terminal_to_start;
         displaying_terminal_switch(current_terminal_executing);
-        sti();
-        send_eoi(PIT_IRQ);
         terminal_to_start ++;
         clear();
+        sti();
+        enable_irq(PIT_IRQ);
+        send_eoi(PIT_IRQ);
         execute((const uint8_t *)"shell");
     }else if(terminal_to_start < 3){
         current_terminal_executing = terminal_to_start;
@@ -44,28 +50,35 @@ void pit_handler(){
                  :                                          /* no input */
                  );
                  
-        sti();
-        send_eoi(PIT_IRQ);
         terminal_to_start ++;
+        sti();
+        enable_irq(PIT_IRQ);
+        send_eoi(PIT_IRQ);
         execute((const uint8_t *)"shell");
     }
+    disable_irq(PIT_IRQ);
 
     if(terminal_to_start == 3){
+        // printf("pre terminal display switch");
         displaying_terminal_switch(0);
         terminal_to_start++;
+        // printf("post terminal display switch");
     }
 
     // if(pit_timer % 10 == 0){
 	// 		printfBetter("counter val: %d", pit_timer);
 	// }
-
+    // if(current_terminal_executing == 0){
+    //     printf("XXXXXXXXXXXXXXXXXXX \n");
+    // }
     sti();
+    enable_irq(PIT_IRQ);
     send_eoi(PIT_IRQ);
     schedule_context_switch();
+    //enable_irq(PIT_IRQ);
     
     asm volatile(" \n\
     leave \n\
     iret"
     );
-    //Context switch into next terminal
 }

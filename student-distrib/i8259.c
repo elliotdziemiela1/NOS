@@ -67,6 +67,7 @@ void enable_irq(uint32_t irq_num) {
     }
 }
 
+
 /* Disable (mask) the specified IRQ by setting it's bit in the mask to 1*/
 void disable_irq(uint32_t irq_num) {
     if (irq_num <= 7){ // irq lies on pic 1 (IRQs 0-7)
@@ -81,6 +82,7 @@ void disable_irq(uint32_t irq_num) {
         outb(slave_mask, SLAVE_8259_PORT+1); // mask all of PIC 2. +1 means data port.
     }
 }
+
 
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num) {
