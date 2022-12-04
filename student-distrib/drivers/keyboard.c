@@ -246,7 +246,7 @@ void keyboard_handler(){
     }
 
     send_eoi(KB_IRQ);
-    // enable_irq(KB_IRQ);
+    enable_irq(KB_IRQ);
     // enable_irq(PIT_IRQ);
     keyboardIntEnd();
     sti();
