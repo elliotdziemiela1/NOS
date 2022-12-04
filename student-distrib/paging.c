@@ -113,46 +113,14 @@ uint32_t switch_vram(uint8_t oldIdx, uint8_t newIdx){
     // restore vram of new terminal page
     memcpy(VIDEO, video_mem[newIndex].addr << add_shift, FOURKB);
 
-    // switch mapping
-    // video_mem[newIndex].addr = (VIDEO >> add_shift);
-    // video_mem[oldIndex].addr = (VIDEO >> add_shift) + oldIdx;
     return 0;
 }
 
-// void remap_VRAM(uint32_t physical_address){
-//     //uint32_t pde = virtual_address / FOURMB;
-//     video_mem[0].addr = physical_address >> add_shift;
-//     video_mem[0].present = 1;
-
-//     //flush the TLB here 
-//     asm volatile("\
-//     mov %cr3, %eax    ;\
-//     mov %eax, %cr3    ;\
-//     ");
-// }
-
 uint32_t allocate_4MB_page(uint32_t page_directory_idx, uint32_t pid){
-    page_dir[page_directory_idx].fourmb.addr = (kernel_PDE >> 22) + pid;
+    page_dir[page_directory_idx].fourmb.addr = (kernel_PDE >> 22) + pid; // 22 is the offset into the pde
     page_dir[page_directory_idx].fourmb.present = 1;// marks as present
     page_dir[page_directory_idx].fourmb.rw = 1; // allows writing as well
     page_dir[page_directory_idx].fourmb.ps = 1; // sets page size
     return 0;
 }
 
-/* allocate_4MB_page()
- * 
- * Inputs: vaddr - virtual address to allocate 4MB page
- * Return Value: SUCCESS=0, FAIL=-1;
- */
-// uint32_t allocate_4MB_page(uint32_t vaddr, uint32_t physaddr){
-//     if (vaddr % FOURMB != 0 || physaddr % FOURMB != 0) // if vaddr isn't divisiable by 4096 (4MB)
-//         return -1;
-//     if (page_dir[vaddr/FOURMB].fourmb.present) // if 4MB page already exists at vaddr
-//         return -1;
-//     page_dir[vaddr/FOURMB].fourmb.addr = physaddr >> add_shift;
-//     page_dir[vaddr/FOURMB].fourmb.present = 1;
-//     page_dir[vaddr/FOURMB].fourmb.rw = 1;
-//     page_dir[vaddr/FOURMB].fourmb.ps = 1;
-
-//     return 0;
-// }   

@@ -92,13 +92,13 @@ void init_fop(fops_t* fop, uint8_t num){
         return;
     }
 
-    if(num == 5){ // executible
-        fop->read = dummy_read;
-        fop->write = dummy_write;
-        fop->open = dummy_open;
-        fop->close = dummy_close;
-        return;
-    }
+    // if(num == 5){ // executible
+    //     fop->read = dummy_read;
+    //     fop->write = dummy_write;
+    //     fop->open = dummy_open;
+    //     fop->close = dummy_close;
+    //     return;
+    // }
 }
 
 /* void init_pcb;
@@ -402,7 +402,7 @@ int32_t open (const uint8_t* filename){
     dentry_t dentry;
 
     int checker = 0;
-    if(filename == "verylargetextwithverylongname.tx"){
+    if(filename == (uint8_t*)"verylargetextwithverylongname.tx"){
         checker = 1;
     }
 

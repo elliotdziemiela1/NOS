@@ -31,12 +31,12 @@ void schedule_context_switch(){
         vidremap(VIDEO);
     } else {
         change_vram_address(terminals[current_terminal_executing].video_mem);
-        vidremap(terminals[current_terminal_executing].video_mem);
+        vidremap((uint32_t)(terminals[current_terminal_executing].video_mem));
     }
 
     //saving the tss
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = EIGHT_MB - EIGHT_KB * (new_pid) - 4; 
+    tss.esp0 = EIGHT_MB - EIGHT_KB * (new_pid) - 4; // -4 is the offset to get the end of the previous pcb
 
     // change virtual program page mapping to next program
     uint32_t physical_address = (2 + new_pid) * FOURMB; //2:you want to skip the first page which houses the kernel
