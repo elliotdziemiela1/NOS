@@ -36,7 +36,7 @@ void schedule_context_switch(){
 
     //saving the tss
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = EIGHT_MB - EIGHT_KB * (new_pid) - 4; //we subtract 4 cause we don't want the top of the page
+    tss.esp0 = EIGHT_MB - EIGHT_KB * (new_pid) - 4; 
 
     // change virtual program page mapping to next program
     uint32_t physical_address = (2 + new_pid) * FOURMB; //2:you want to skip the first page which houses the kernel
@@ -76,7 +76,6 @@ void schedule_context_switch(){
  * Function: Changes the video memory mapping to switch to the terminal that we want to switch to. Also saves the VRAM of the current_displaying_terminal to its respective video page
  * */
 uint8_t displaying_terminal_switch(uint8_t newTerminalNum){ // 0,1, or 2
-
     if(newTerminalNum < 0 || newTerminalNum > 2){ //invalid terminal number
         return -1;
     }
@@ -86,6 +85,5 @@ uint8_t displaying_terminal_switch(uint8_t newTerminalNum){ // 0,1, or 2
 
     // update displaying terminal number to next terminal 
     current_terminal_displaying = newTerminalNum;
-
     return 0;
 }

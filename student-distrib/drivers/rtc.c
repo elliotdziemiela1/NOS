@@ -6,7 +6,7 @@
 #include "../i8259.h"
 #include "terminal.h"
 
-#define RTC_IRQ 0x8
+
 #define RTC_INDEX_PORT 0x70
 #define MAX_FREQ 1024
 #define MIN_FREQ 2
@@ -14,12 +14,9 @@
 
 char prev;
 unsigned int rate;
-int flag;
 
 int counters[3] = {0,0,0};
 int flags[3] = {0,0,0};
-
-//Note: used OSDEV for init, handler
 
 /* rtc_init
  * 
@@ -61,17 +58,17 @@ void rtc_init(){ // MAKE SURE TO INSTALL RTC HANDLER BEFORE CALLING THIS FUNCTIO
  */
 void rtc_handler(){
 
-    outb(0x0C, RTC_INDEX_PORT);
-    inb(0x71);
-    // flag = 1;
-    counters[current_terminal_executing]++;
-    if(counters[current_terminal_executing] >= terminals[current_terminal_executing].rtc_mod){
-        flags[current_terminal_executing] = 1;
-        counters[current_terminal_executing] = 0;
+    outb(0x0C, RTC_INDEX_PORT); // x0c: select register A, and disable NMI
+    inb(0x71); // x71: read the current value of register B
+
+    counters[current_terminal_executing]++; // increment counter for the executing terminal
+    if(counters[current_terminal_executing] >= terminals[current_terminal_executing].rtc_mod){ // checks if executing terminal's rtc should raise a flag
+        flags[current_terminal_executing] = 1; // raising terminal's rtc flag
+        counters[current_terminal_executing] = 0; // setting rtc counter back to zero
     }
-    //test_interrupts();
-    send_eoi(RTC_IRQ);
+    send_eoi(RTC_IRQ); // send end of interrupt
     
+    // returning from handler
     asm volatile(" \n\
     leave \n\
     iret"
@@ -89,11 +86,13 @@ void rtc_handler(){
  */
 int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
 //check to see if interrupt has been generated and set flag accordingly
-    // flag = 0;
-    flags[current_terminal_executing] = 0;
+    
+    flags[current_terminal_executing] = 0; // makes sure flag is initially zero
+
+    // spinlock around executing terminal's rtc flag
     while(1){
         if(flags[current_terminal_executing]){
-            break;
+            break; // break and return once rtc interrupt is raised
         }
     }
     return 0;
@@ -108,22 +107,13 @@ int32_t rtc_read(int32_t fd, void* buf, int32_t nbytes){
  * Files: None
  */    
 int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes){
-    // printf("REACHED RTC_WRITE \n");
-    //check if all values passed in are valid
-    // if(fd == 0 || fd == 1|| buf == NULL || nbytes != 4 ) {
-	// 	return -1;
-	// }
 
-    int32_t freq =*((int32_t*)buf);
+    int32_t freq =*((int32_t*)buf); // string user program's frequency
 
+    // altering terminal rtc mod value by a constant factor (5.5) determined through experimentation
     terminals[current_terminal_executing].rtc_mod = (RTC_FREQ/(freq*5.5));
 
-    // if(set_frequency(freq) != 0){
-    //     return -1;
-    // }
-    // set_frequency(freq);
-
-    return 0; //discussion slides say to return 0 or -1 but appendix b says number of bytes??
+    return 0; //return success
 }
 
 /* rtc_open
@@ -135,10 +125,9 @@ int32_t rtc_write(int32_t fd, const void* buf, int32_t nbytes){
  */
 int32_t rtc_open(const uint8_t* filename){
     if(filename == NULL){
-        return -1;
+        return -1; // return failure if empty filename is passed
     }
-    // set_frequency(2);
-    return current_terminal_displaying;
+    return current_terminal_displaying; // return current terminal displaying as the file descriptor index
 }
 
 /* rtc_close
@@ -150,89 +139,6 @@ int32_t rtc_open(const uint8_t* filename){
  * Files: None
  */
 int32_t rtc_close(int32_t fd){
-    return 0;
+    return 0; // rtc cannot be closed so simply return 0
 }
 
-/* set_frequency
- * 
- * Function takes frequency and changes the rate based on the value
- * Inputs: frequency
- * Outputs: None
- * Return value: -1 if fail and 0 if success
- * Files: None
- */
-// int32_t set_frequency(int32_t freq){
-//     if (freq < MIN_FREQ || freq > MAX_FREQ){ //check if frequency is greater than minimum hz and less than max hz
-//         return -1;
-//     }
-//     if(is_power_of_two(freq) == 0){
-//         return -1;
-//     }
-//     //choose rate based on frequency value
-//     switch(freq){
-//         case 2: 
-//             rate= 0x0F;
-//             break;
-//         case 4: 
-//             rate= 0x0E;
-//             break;
-//         case 8: 
-//             rate= 0x0D;
-//             break;
-//         case 16: 
-//             rate= 0x0C;
-//             break;
-//         case 32: 
-//             rate= 0x0B;
-//             break;    
-//         case 64: 
-//             rate= 0x0A;
-//             break;
-//         case 128: 
-//             rate= 0x09;
-//             break;
-//         case 256: 
-//             rate= 0x08;
-//             break;
-//         case 512: 
-//             rate= 0x07;
-//             break;
-//         case 1024: 
-//             rate= 0x06;
-//             break;
-//         default: 
-//             return -1;
-//     }
-
-//     outb(0x8A, RTC_INDEX_PORT);		// x8B: select register B, and disable NMI
-//     prev= inb(RTC_INDEX_PORT+1);	// x71: read the current value of register B
-//     outb(0x8A, RTC_INDEX_PORT);		// set the index again (a read will reset the index to register D)
-//     outb((prev & 0xF0) | rate, RTC_INDEX_PORT+1);	// write the previous value ORed with 0x40. This turns on bit 6 of register B
-
-//     insert_handler(RTC_IRQ, (int)&rtc_handler,0);
-//     enable_irq(RTC_IRQ);
-//     return 0;
-
-// }
-
-/* is_power_of_two
- * 
- * Function checks if value is power of 2
- * Inputs: number to check
- * Outputs: None
- * Return value: 1 if success and 0 if fail
- * Files: None
- */
-int is_power_of_two(int num){
-    //check to see if number is power of 2
-    if(num == 1 || num == 0){
-        return 0;
-    }
-    while(num!=1){
-        num = num/2;
-        if((num%2 != 0) && (num != 1)){
-            return 0;
-        }
-    }
-    return 1;
-}

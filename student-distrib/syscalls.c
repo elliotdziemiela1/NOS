@@ -198,7 +198,6 @@ int32_t halt (uint8_t status){
     uint8_t * img_addr = (uint8_t*) PROG_IMG_VIRTUAL_ADDR;
     read_data(inode_array[terminals[current_terminal_executing].active_process_pid], 0, img_addr, prog_inode_ptr -> file_size);
     
-
     //close any relevant FDs
     int i, temp;
     for(i = 0; i<MAX_FILES; i++){
@@ -479,8 +478,6 @@ int32_t close (int32_t fd){
         return -1;
     }
 
-
-
     pcb_t* pcb = (pcb_t*) get_pcb(terminals[current_terminal_executing].active_process_pid);
     if(!(pcb->file_array[fd].flags & OPEN)){
         printfBetter("Can't close unopened \n");
@@ -522,8 +519,8 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes){
             return 0;
         int32_t ret = pcb->file_array[fd].fops_func.read(fd, buf, nbytes);
         pcb->file_array[fd].file_position += ret;
-        return -1;
-        // return ret;
+        // return -1;
+        return ret;
     }
 }
 

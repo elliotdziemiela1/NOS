@@ -1,4 +1,5 @@
 #pragma once
+#define RTC_IRQ 0x8
 void rtc_init();
 void rtc_handler();
 

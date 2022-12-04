@@ -6,7 +6,6 @@
 
 static volatile char buf[BUFFER_SIZE]; 
 static int pos; // position in buffer to write next character (0 indexed)
-// static int opened; // flag for whether or not the terminal is currently opened.
 
 /* acceptNewCommand()
  * Inputs: none
@@ -15,10 +14,10 @@ static int pos; // position in buffer to write next character (0 indexed)
  * Function: moves cursor down and prints shell path to screen, then sets cursor 
  *           after shell path to accept input from user
  */
-static void acceptNewCommand(){ // THIS CODE NEEDS TO BE CHANGED
+static void acceptNewCommand(){
     int i;
     for (i = 0; i < BUFFER_SIZE-1; i++){
-        buf[i] = ' ';
+        buf[i] = ' '; // prepares for new command by wiping the buffer
     }
     buf[BUFFER_SIZE-1] = '\n'; // signifies end of buffer
     pos = 0;
@@ -33,13 +32,11 @@ static void acceptNewCommand(){ // THIS CODE NEEDS TO BE CHANGED
  */
 uint32_t terminal_open(){
     clear();
-    // opened = 1;
     return -1;
 }
 
 uint32_t terminal_close(){
     clear();
-    // opened = 0;
     return -1;
 }
 
@@ -49,7 +46,7 @@ uint32_t terminal_close(){
  * Function: writes the characters from buffer to the screen
  * */
 int32_t terminal_write(int32_t fd, const void* buf1, int32_t nbytes){
-    int ret = printfBetter((int8_t *) buf1);
+    int ret = printfBetter((int8_t *) buf1); // writes buffer to screen
     return ret;
 }
 
@@ -61,11 +58,8 @@ int32_t terminal_write(int32_t fd, const void* buf1, int32_t nbytes){
  * */
 int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes){
     acceptNewCommand();
-    int32_t bytesRead = gets(buf,BUFFER_SIZE-1);
-    putcBetter('\n');
-    // printfBetter("buf: ");
-    // printfBetter(buf);
-    // printfBetter("\n");
+    int32_t bytesRead = gets(buf,BUFFER_SIZE-1); // reads all user arguments till user presses enter key
+    putcBetter('\n'); // moves to next line of screen
     return bytesRead;
 }
 
@@ -79,7 +73,7 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes){
 void initialize_terminals(){
     int i;
     int j;
-    for(i = 0; i < 3; i++){
+    for(i = 0; i < TOTAL_TERMINALS; i++){
         terminals[i].active_process_pid = -1;
         terminals[i].parent_process_pid = -1;
         terminals[i].process_flag = 0;
@@ -89,11 +83,7 @@ void initialize_terminals(){
         terminals[i].kb_buffer_position = 0;
         terminals[i].rtc_mod = 1;
 
-        // for(j = 0; j < BUFFER_SIZE; j++){
-        //     terminals[i].keyboard_buffer[j] = '\0';
-        // }
-
-        terminals[i].video_mem = (uint32_t *) (((VIDEO >> add_shift) + (i + 1)) << add_shift);
+        terminals[i].video_mem = (uint32_t *) (((VIDEO >> add_shift) + (i + 1)) << add_shift); //each terminal is mapped to its own 4 kb page
     }   
     
 }
