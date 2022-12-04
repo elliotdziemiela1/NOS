@@ -210,13 +210,13 @@ void keyboard_handler(){
         change_vram_address(0xb8000);
         if (input == ENTER_CODE){
             // if (current_terminal_executing == 0){
-            //     printfBetter("enter t0, buf: ");\
+            //     printfBetter("enter t0, buf: ");
             // }
             // if (current_terminal_executing == 1){
-            //     printfBetter("enter t1, buf: ");\
+            //     printfBetter("enter t1, buf: ");
             // }
             // if (current_terminal_executing == 2){
-            //     printfBetter("enter t2, buf: ");\
+            //     printfBetter("enter t2, buf: ");
             // }
             terminals[current_terminal_displaying].reading = 0;
             addToBuffer(terminals[current_terminal_displaying].kb_buffer_position,'\0');

@@ -42,8 +42,8 @@ void verticalScroll(int lines);
 void setCursor(int x, int y);
 int getCursorX();
 int getCursorY();
-keyboardIntStart();
-keyboardIntEnd();
+void keyboardIntStart();
+void keyboardIntEnd();
 
 /* Scheduling Function */
 void change_vram_address(uint32_t newAddr);
