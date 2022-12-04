@@ -72,11 +72,11 @@ int32_t gets(char * buffer, int nbytes){
     if (nbytes < 1) // shoulnt be called with 0 bytes
         return 0;
     if (current_terminal_displaying == 0){
-        buf1 = terminals[current_terminal_displaying].keyboard_buffer;
+        buf1 = terminals[current_terminal_executing].keyboard_buffer;
     } if (current_terminal_displaying == 1){
-        buf2 = terminals[current_terminal_displaying].keyboard_buffer;
+        buf2 = terminals[current_terminal_executing].keyboard_buffer;
     } if (current_terminal_displaying == 2){
-        buf3 = terminals[current_terminal_displaying].keyboard_buffer;
+        buf3 = terminals[current_terminal_executing].keyboard_buffer;
     }
     length = nbytes-1;
     terminals[current_terminal_executing].kb_buffer_position = 0;
