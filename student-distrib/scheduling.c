@@ -65,9 +65,9 @@ void schedule_context_switch(){
 
 uint8_t displaying_terminal_switch(uint8_t newTerminalNum){ // 0,1, or 2
     switch_vram(current_terminal_displaying, newTerminalNum);
-    terminals[current_terminal_displaying].screen_x = getCursorX(); // saves cursor x
-    terminals[current_terminal_displaying].screen_y = getCursorY(); // saves cursor y
-    setCursor(terminals[newTerminalNum].screen_x, terminals[newTerminalNum].screen_y);
+    terminals[current_terminal_displaying].screen_x = getCursorX(current_terminal_displaying); // saves cursor x
+    terminals[current_terminal_displaying].screen_y = getCursorY(current_terminal_displaying); // saves cursor y
+    setCursor(terminals[newTerminalNum].screen_x, terminals[newTerminalNum].screen_y, current_terminal_displaying);
 
     // 
     // CURRENTLY ONLY EXECUTES THE DISPLAYING TERMINAL

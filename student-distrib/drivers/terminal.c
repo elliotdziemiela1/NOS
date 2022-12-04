@@ -49,7 +49,7 @@ uint32_t terminal_close(){
  * Function: writes the characters from buffer to the screen
  * */
 int32_t terminal_write(int32_t fd, const void* buf1, int32_t nbytes){
-    int ret = printfBetter((int8_t *) buf1);
+    int ret = printfBetter(current_terminal_executing, (int8_t *) buf1);
     return ret;
 }
 
@@ -62,7 +62,7 @@ int32_t terminal_write(int32_t fd, const void* buf1, int32_t nbytes){
 int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes){
     acceptNewCommand();
     int32_t bytesRead = gets(buf,BUFFER_SIZE-1);
-    putcBetter('\n');
+    putcBetter('\n', current_terminal_displaying);
     return bytesRead;
 }
 

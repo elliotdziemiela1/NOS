@@ -133,7 +133,7 @@ void keyboard_handler(){
     } else if (ctrl){
             if (input == L_CODE){ // ctrl + l = clear screen and reset cursor to top left
                 clear();
-                setCursor(0,0);
+                setCursor(0,0,current_terminal_displaying);
             }
     } else if (input == CAPSLOCK_CODE){
         capsLock ^= 1; // flips the status of capsLock
@@ -150,31 +150,31 @@ void keyboard_handler(){
     } else if (input==ALT_RELEASED_CODE){
         alt = 0;
     }
-    if ((terminals[current_terminal_executing].reading) && (current_terminal_displaying == current_terminal_executing)){
+    if ((terminals[current_terminal_displaying].reading)){
         if (input == ENTER_CODE){
-            terminals[current_terminal_executing].reading = 0;
-            addToBuffer(terminals[current_terminal_executing].kb_buffer_position,'\0');
+            terminals[current_terminal_displaying].reading = 0;
+            addToBuffer(terminals[current_terminal_displaying].kb_buffer_position,'\0');
             // putcBetter('\n');
         } else if (input == BACKSPACE_CODE){
-            if (terminals[current_terminal_executing].kb_buffer_position > 0){
-                addToBuffer(terminals[current_terminal_executing].kb_buffer_position-1,' ');
-                terminals[current_terminal_executing].kb_buffer_position--;
-                setCursor(getCursorX()-1,getCursorY());
-                putcBetter(' ');
-                setCursor(getCursorX()-1,getCursorY());
+            if (terminals[current_terminal_displaying].kb_buffer_position > 0){
+                addToBuffer(terminals[current_terminal_displaying].kb_buffer_position-1,' ');
+                terminals[current_terminal_displaying].kb_buffer_position--;
+                setCursor(getCursorX(current_terminal_displaying)-1,getCursorY(current_terminal_displaying), current_terminal_displaying); //
+                putcBetter(' ', current_terminal_displaying);//
+                setCursor(getCursorX(current_terminal_displaying)-1,getCursorY(current_terminal_displaying), current_terminal_displaying); //
             }
-        } else if ((terminals[current_terminal_executing].kb_buffer_position<length) && (input<=0x3d)){ // x39 is the last index in the scan code arrays
+        } else if ((terminals[current_terminal_displaying].kb_buffer_position<length) && (input<=0x3d)){ // x39 is the last index in the scan code arrays
             if (shift){
-                addToBuffer(terminals[current_terminal_executing].kb_buffer_position,scanTableShift[input]);// add character to buffer we're currently writing to
-                putcBetter(scanTableShift[input]);
+                addToBuffer(terminals[current_terminal_displaying].kb_buffer_position,scanTableShift[input]);// add character to buffer we're currently writing to
+                putcBetter(scanTableShift[input], current_terminal_displaying);//
             }  else if (capsLock){
-                addToBuffer(terminals[current_terminal_executing].kb_buffer_position,scanTableCapsLock[input]);// add character to buffer we're currently writing to
-                putcBetter(scanTableCapsLock[input]);
+                addToBuffer(terminals[current_terminal_displaying].kb_buffer_position,scanTableCapsLock[input]);// add character to buffer we're currently writing to
+                putcBetter(scanTableCapsLock[input], current_terminal_displaying);//
             } else {
-                addToBuffer(terminals[current_terminal_executing].kb_buffer_position,scanTable[input]);// add character to buffer we're currently writing to
-                putcBetter(scanTable[input]);
+                addToBuffer(terminals[current_terminal_displaying].kb_buffer_position,scanTable[input]);// add character to buffer we're currently writing to
+                putcBetter(scanTable[input], current_terminal_displaying);//
             }
-            terminals[current_terminal_executing].kb_buffer_position++;
+            terminals[current_terminal_displaying].kb_buffer_position++;
         }
     }
 

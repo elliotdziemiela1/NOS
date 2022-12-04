@@ -363,13 +363,13 @@ void parse_command(const uint8_t* command, uint8_t* args, uint8_t* filename){
 int32_t write (int32_t fd, const void* buf, int32_t nbytes){
 
     if(fd < 0 || fd > MAX_FILES){
-        printfBetter("Invalid fd \n");
+        printfBetter(current_terminal_executing, "Invalid fd \n");
         return -1;
     }
     pcb_t* pcb = (pcb_t*) get_pcb(terminals[current_terminal_executing].active_process_pid);
 
     if(!(pcb->file_array[fd].flags & OPEN)){
-        printfBetter("Can't close unopened \n");
+        printfBetter(current_terminal_executing, "Can't close unopened \n");
         return -1;
     }
     
@@ -387,7 +387,7 @@ int32_t open (const uint8_t* filename){
     // printfBetter(filename);
 
     if(filename == NULL){
-        printfBetter("Filename empty! \n");
+        printfBetter(current_terminal_executing, "Filename empty! \n");
         return -1;
     }
     dentry_t dentry;
@@ -398,7 +398,7 @@ int32_t open (const uint8_t* filename){
     }
 
     if(read_dentry_by_name(filename, &dentry) == -1){ // -1 is failure
-        printfBetter("FAILED LINE 393. filename: %s", filename);
+        printfBetter(current_terminal_executing, "FAILED LINE 393. filename: %s", filename);
         return -1;
     }
     
@@ -410,7 +410,7 @@ int32_t open (const uint8_t* filename){
         if(!(pcb->file_array[i].flags & OPEN))
             break;
         else if(i == MAX_FILES-1){
-            printfBetter("No free file positions \n");
+            printfBetter(current_terminal_executing, "No free file positions \n");
             return -1;
         }
     }
@@ -465,7 +465,7 @@ int32_t open (const uint8_t* filename){
  * */
 int32_t close (int32_t fd){
     if(fd < 2 || fd > MAX_FILES){
-        printfBetter("Invalid fd \n");
+        printfBetter(current_terminal_executing, "Invalid fd \n");
         return -1;
     }
 
@@ -473,7 +473,7 @@ int32_t close (int32_t fd){
 
     pcb_t* pcb = (pcb_t*) get_pcb(terminals[current_terminal_executing].active_process_pid);
     if(!(pcb->file_array[fd].flags & OPEN)){
-        printfBetter("Can't close unopened \n");
+        printfBetter(current_terminal_executing, "Can't close unopened \n");
         return -1;
     }
     pcb->file_array[fd].flags ^= OPEN; // closes file
@@ -494,7 +494,7 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes){
     //printfBetter("fd = %d \n",fd); 
     sti();
     if(fd < 0 || fd > MAX_FILES){
-        printfBetter("Invalid fd %d \n", fd);
+        printfBetter(current_terminal_executing, "Invalid fd %d \n", fd);
         return -1;
     }
     // printfBetter("Reached system read \n");
@@ -525,12 +525,12 @@ int32_t dummy_write (int32_t fd, const void* buf, int32_t nbytes){
 }
 
 int32_t dummy_open (int32_t fd, const void* buf, int32_t nbytes){
-    printfBetter("Dummy Open Hit");
+    printfBetter(current_terminal_executing, "Dummy Open Hit");
     return -1;
 }
 
 int32_t dummy_close (int32_t fd, const void* buf, int32_t nbytes){
-    printfBetter("Dummy Close Hit");
+    printfBetter(current_terminal_executing, "Dummy Close Hit");
     return -1;
 }
 
