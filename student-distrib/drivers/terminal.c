@@ -72,7 +72,6 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes){
  * */
 void initialize_terminals(){
     int i;
-    int j;
     for(i = 0; i < TOTAL_TERMINALS; i++){
         terminals[i].active_process_pid = -1;
         terminals[i].parent_process_pid = -1;
