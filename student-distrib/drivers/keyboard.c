@@ -121,25 +121,25 @@ int32_t gets(char * buffer, int nbytes){
     if(current_terminal_displaying == 0){
         memcpy(buffer, buf1, terminals[0].kb_buffer_position);
         clearBuffer(0);
-        printfBetter("displaying 0\n");
+        // printfBetter("displaying 0\n");
     }
     if(current_terminal_displaying == 1){
         memcpy(buffer, buf2, terminals[1].kb_buffer_position);
         clearBuffer(1);
-        printfBetter("displaying 1\n");
+        // printfBetter("displaying 1\n");
     }
     if(current_terminal_displaying == 2){
         memcpy(buffer, buf3, terminals[2].kb_buffer_position);
         clearBuffer(2);
-        printfBetter("displaying 2\n");
+        // printfBetter("displaying 2\n");
     }
-    printfBetter("\nbuf1:");
-    printfBetter(buf1);
-    printfBetter("\nbuf2:");
-    printfBetter(buf2);
-    printfBetter("\nbuf3:");
-    printfBetter(buf3);
-    printfBetter("\n");
+    // printfBetter("\nbuf1:");
+    // printfBetter(buf1);
+    // printfBetter("\nbuf2:");
+    // printfBetter(buf2);
+    // printfBetter("\nbuf3:");
+    // printfBetter(buf3);
+    // printfBetter("\n");
 
 
     return terminals[current_terminal_executing].kb_buffer_position;
@@ -166,20 +166,7 @@ void keyboard_handler(){
     // disable_irq(PIT_IRQ);
     uint8_t input = inb(KB_DATAPORT);
     disable_irq(KB_IRQ);
-    if (alt){
-            if (input == F1_CODE){ // switch to terminal 0
-                displaying_terminal_switch(0);
-            } else if (input == F2_CODE){ // switch to terminal 1
-                displaying_terminal_switch(1);
-            } else if (input == F3_CODE){ // switch to terminal 2
-                displaying_terminal_switch(2);
-            }
-    } else if (ctrl){
-            if (input == L_CODE){ // ctrl + l = clear screen and reset cursor to top left
-                clear();
-                setCursor(0,0);
-            }
-    } else if (input == CAPSLOCK_CODE){
+    if (input == CAPSLOCK_CODE){
         capsLock ^= 1; // flips the status of capsLock
     } else if ((input==LEFT_SHIFT_PRESSED_CODE) || (input==RIGHT_SHIFT_PRESSED_CODE)){
         shift = 1;
@@ -193,8 +180,20 @@ void keyboard_handler(){
         alt = 1;
     } else if (input==ALT_RELEASED_CODE){
         alt = 0;
-    }
-    if (terminals[current_terminal_displaying].reading){
+    } else if (alt){
+            if (input == F1_CODE){ // switch to terminal 0
+                displaying_terminal_switch(0);
+            } else if (input == F2_CODE){ // switch to terminal 1
+                displaying_terminal_switch(1);
+            } else if (input == F3_CODE){ // switch to terminal 2
+                displaying_terminal_switch(2);
+            }
+    } else if (ctrl){
+            if (input == L_CODE){ // ctrl + l = clear screen and reset cursor to top left
+                clear();
+                setCursor(0,0);
+            }
+    } else if (terminals[current_terminal_displaying].reading){
         uint32_t savedVramAddress = get_vram_address();
         change_vram_address(0xb8000);
         if (input == ENTER_CODE){
