@@ -20,7 +20,7 @@
 #define MAGIC_2 0x4c
 #define MAGIC_3 0x46
 #define PROG_IMG_VIRTUAL_ADDR 0x08048000 // 128MB:virtual address we need to map physical
-#define MAX_PIDS 3
+#define MAX_PIDS 6
 
 #define ELF_SIZE 4
 #define PROG_IMG_START_BYTE 24
@@ -166,6 +166,7 @@ uint32_t get_current_pcb(){
  *  resets ebp and esp to parent's, and changes current and parrent PIDs and corresponding arrays.
  * */
 int32_t halt (uint8_t status){
+    // printfBetter("halt called");
 
     pcb_t* cur_pcb = (pcb_t*) get_pcb(terminals[current_terminal_executing].active_process_pid);
     int32_t old_esp = cur_pcb->saved_esp;
@@ -233,12 +234,14 @@ int32_t execute (const uint8_t* command){
     // printfBetter("Reached exec \n");
     /* Initialize Variables */
     while (current_terminal_displaying != current_terminal_executing){}
-    if (current_terminal_executing == 0)
-        printfBetter("executing t0");
-    if (current_terminal_executing == 1)
-        printfBetter("executing t1");
-    if (current_terminal_executing == 2)
-        printfBetter("executing t2");
+    // if (current_terminal_executing == 0)
+    //     printfBetter("executing t0");
+    // if (current_terminal_executing == 1)
+    //     printfBetter("executing t1");
+    // if (current_terminal_executing == 2)
+    //     printfBetter("executing t2");
+    // printfBetter(" command:");
+    // printfBetter(command);
     dentry_t dentry;
     int inode;
     uint8_t data_buffer[ELF_SIZE] = { '\0' };

@@ -47,6 +47,27 @@ static int capsLock; // flag that says whether or not caps lock is on
 static int ctrl; // flag that says whether or not ctrl is pressed
 static int alt; // flag that says whether or not alt is pressed
 
+static void clearBuffer(int num){
+    int i = 0;
+    for (i = 0; i < BUFFER_SIZE; i++){
+        if (num == 0)
+            *(buf1+i) = '\0';
+        if (num == 1)
+            *(buf1+i) = '\0';
+        if (num == 2)
+            *(buf1+i) = '\0';
+    }
+}
+static void addToBuffer(int index, char c){ // could be synchronization issues
+    // buf1[index] = c; // SO FAR WE ONLY HAVE 1 SHELL EXECUTING THUS ONLY 1 BUFFER
+    if (current_terminal_displaying == 0){
+        buf1[index] = c;
+    } if (current_terminal_displaying == 1){
+        buf2[index] = c;
+    } if (current_terminal_displaying == 2){
+        buf3[index] = c;
+    }
+}
 /* keyboard_init
  * 
  * Initializes the keyboard
@@ -86,6 +107,11 @@ int32_t gets(char * buffer, int nbytes){
     ctrl = 0;
     // enable_irq(KB_IRQ);
 
+    // clears input buffer
+    int i = 0;
+    for (i = 0; i < BUFFER_SIZE; i++){
+        *(buffer+i) = '\0';
+    }
     while (terminals[current_terminal_executing].reading){} // this will end when the user presses enter in the keyboard
     // handler, setting reading to false. If we call one instance of this function in one terminal, then switch to another 
     // executing terminal, the while loop wont end. It only ends when we are displaying the terminal that called gets
@@ -93,30 +119,24 @@ int32_t gets(char * buffer, int nbytes){
     
     // disable_irq(KB_IRQ);
     if(current_terminal_displaying == 0){
-        // memcpy(buffer, buf1, terminals[0].kb_buffer_position);
-        memcpy(buffer, buf1, 6);
+        memcpy(buffer, buf1, terminals[0].kb_buffer_position);
+        clearBuffer(0);
     }
     if(current_terminal_displaying == 1){
-        // memcpy(buffer, buf2, terminals[1].kb_buffer_position);
+        memcpy(buffer, buf2, terminals[1].kb_buffer_position);
+        clearBuffer(1);
     }
     if(current_terminal_displaying == 2){
-        // memcpy(buffer, buf3, terminals[2].kb_buffer_position);
+        memcpy(buffer, buf3, terminals[2].kb_buffer_position);
+        clearBuffer(2);
     }
 
-    // return terminals[current_terminal_executing].kb_buffer_position;
-    return 6;
+
+    return terminals[current_terminal_executing].kb_buffer_position;
+    // return 6;
 }
 
-static void addToBuffer(int index, char c){ // could be synchronization issues
-    // buf1[index] = c; // SO FAR WE ONLY HAVE 1 SHELL EXECUTING THUS ONLY 1 BUFFER
-    if (current_terminal_displaying == 0){
-        buf1[index] = c;
-    } if (current_terminal_displaying == 1){
-        buf2[index] = c;
-    } if (current_terminal_displaying == 2){
-        buf3[index] = c;
-    }
-}
+
 
 
 
@@ -172,17 +192,18 @@ void keyboard_handler(){
             printfBetter(buf1);
             printfBetter("\nbuf2:");
             printfBetter(buf2);
-            printfBetter("\nbuf3:\n");
+            printfBetter("\nbuf3:");
             printfBetter(buf3);
-            if (current_terminal_executing == 0){
-                printfBetter("enter t0, buf: ");\
-            }
-            if (current_terminal_executing == 1){
-                printfBetter("enter t1, buf: ");\
-            }
-            if (current_terminal_executing == 2){
-                printfBetter("enter t2, buf: ");\
-            }
+            printfBetter("\n");
+            // if (current_terminal_executing == 0){
+            //     printfBetter("enter t0, buf: ");\
+            // }
+            // if (current_terminal_executing == 1){
+            //     printfBetter("enter t1, buf: ");\
+            // }
+            // if (current_terminal_executing == 2){
+            //     printfBetter("enter t2, buf: ");\
+            // }
             terminals[current_terminal_displaying].reading = 0;
             addToBuffer(terminals[current_terminal_displaying].kb_buffer_position,'\0');
             // putcBetter('\n');

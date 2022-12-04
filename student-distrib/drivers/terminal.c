@@ -63,6 +63,9 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes){
     acceptNewCommand();
     int32_t bytesRead = gets(buf,BUFFER_SIZE-1);
     putcBetter('\n');
+    printfBetter("buf: ");
+    printfBetter(buf);
+    printfBetter("\n");
     return bytesRead;
 }
 

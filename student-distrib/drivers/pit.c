@@ -7,9 +7,10 @@
 #include "../syscalls.h"
 
 volatile uint32_t pit_timer = 0;
-uint8_t terminal_to_start = 0;
+uint8_t terminal_to_start;
 
 void pit_init(){
+    terminal_to_start = 0;
     insert_handler(PIT_IRQ, (int) &pit_handler, 0); //0 for dpl 0
 
     outb(PIT_MODE, PIT_REG_CMD);
