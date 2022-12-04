@@ -591,9 +591,15 @@ int32_t vidmap (uint8_t** screen_start){
 
 
     // set video memory map
-    video_mem_map[0].present = 1; // marks as present
-    video_mem_map[0].su = 1; // sets to user
-    video_mem_map[0].addr = VIDEO >> add_shift;
+    if (!video_mem_map[0].present){
+        video_mem_map[0].present = 1; // marks as present
+        video_mem_map[0].su = 1; // sets to user
+        if (current_terminal_executing == current_terminal_displaying){
+            video_mem_map[0].addr = VIDEO >> add_shift;
+        } else {
+            video_mem_map[0].addr = (unsigned)(terminals[current_terminal_executing].video_mem) >> add_shift;
+        }
+    }
 
     // init 4 kb
     page_dir[33].fourkb.addr = (int)(video_mem_map) >> add_shift; // masks top 10 bits of addr
@@ -610,6 +616,15 @@ int32_t vidmap (uint8_t** screen_start){
     *screen_start = (uint8_t *)((FOURMB*33)); 
 
     return 0;
+}
+
+/* set handler
+ * Inputs:- address= address to remap the vidmap page to
+ * Return Value: none
+ * Function: remaps the vidmap page to a different physical address
+ * */
+void vidremap(uint32_t address){
+    video_mem_map[0].addr = (int)address >> add_shift;
 }
 
 /* set handler

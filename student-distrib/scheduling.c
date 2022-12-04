@@ -7,6 +7,12 @@
 #include "./drivers/pit.h"
 #include "lib.h"
 
+
+/* void schedule_context_switch;
+ * Inputs: - None
+ * Return Value: None
+ * Function: Handles the context switching. Only called when there are three shells running in each terminal.
+ * */
 void schedule_context_switch(){
     uint8_t old_pid = terminals[current_terminal_executing].active_process_pid;
     pcb_t * old_pcb = get_pcb(old_pid);
@@ -22,8 +28,10 @@ void schedule_context_switch(){
     // change vram pointer in lib.c
     if (current_terminal_executing == current_terminal_displaying){
         change_vram_address(VIDEO);
+        vidremap(VIDEO);
     } else {
         change_vram_address(terminals[current_terminal_executing].video_mem);
+        vidremap(terminals[current_terminal_executing].video_mem);
     }
 
     //saving the tss
@@ -39,8 +47,6 @@ void schedule_context_switch(){
     mov %eax, %cr3    ;\
     ");
 
-    //printf("IIIIIIIIIIIIIIIIIII \n");
-    //setCursor(terminals[current_terminal_executing].screen_x, terminals[current_terminal_executing].screen_y);
 
     /* Perform context switch, swap ESP/EBP with that of the registers */
     asm volatile(

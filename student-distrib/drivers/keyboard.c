@@ -47,6 +47,11 @@ static int capsLock; // flag that says whether or not caps lock is on
 static int ctrl; // flag that says whether or not ctrl is pressed
 static int alt; // flag that says whether or not alt is pressed
 
+/* static void clear_buffer;
+ * Inputs: - int num - indicator of buffer we want to clear
+ * Return Value: None
+ * Function: Clears the keyboard buffer for the argument that we pass in
+ * */
 static void clearBuffer(int num){
     int i = 0;
     for (i = 0; i < BUFFER_SIZE; i++){
@@ -58,6 +63,12 @@ static void clearBuffer(int num){
             *(buf1+i) = '\0';
     }
 }
+
+/* static void addToBuffer;
+ * Inputs: - int index: place in buffer we want to add a character, char c: character that we want to add
+ * Return Value: None
+ * Function: Adds a character to the corresponding buffer
+ * */
 static void addToBuffer(int index, char c){ // could be synchronization issues
     // buf1[index] = c; // SO FAR WE ONLY HAVE 1 SHELL EXECUTING THUS ONLY 1 BUFFER
     if (current_terminal_displaying == 0){

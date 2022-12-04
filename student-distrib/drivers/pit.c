@@ -29,7 +29,7 @@ void pit_init(){
 /* void pit_handler;
  * Inputs: - None
  * Return Value: None
- * Function: Handler which is called whenever a PIT interrupt occurs. 
+ * Function: Handler which is called whenever a PIT interrupt occurs. Manages context switches for first three shell execution and any subsequent processes
  * */
 void pit_handler(){
     // send_eoi(PIT_IRQ);
