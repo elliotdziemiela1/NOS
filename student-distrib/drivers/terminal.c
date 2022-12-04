@@ -63,9 +63,9 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes){
     acceptNewCommand();
     int32_t bytesRead = gets(buf,BUFFER_SIZE-1);
     putcBetter('\n');
-    printfBetter("buf: ");
-    printfBetter(buf);
-    printfBetter("\n");
+    // printfBetter("buf: ");
+    // printfBetter(buf);
+    // printfBetter("\n");
     return bytesRead;
 }
 
@@ -87,6 +87,7 @@ void initialize_terminals(){
         terminals[i].screen_y = 0;
         terminals[i].reading = 0;
         terminals[i].kb_buffer_position = 0;
+        terminals[i].rtc_mod = 1;
 
         // for(j = 0; j < BUFFER_SIZE; j++){
         //     terminals[i].keyboard_buffer[j] = '\0';
