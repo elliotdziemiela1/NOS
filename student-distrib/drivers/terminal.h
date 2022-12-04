@@ -5,7 +5,7 @@
 
 
 #define BUFFER_SIZE 128 
-#define TOTAL_TERMINALS
+#define TOTAL_TERMINALS 3
 
 typedef struct terminal_t {
     int8_t active_process_pid; // pid of the current running program in this terminal

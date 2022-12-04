@@ -2,11 +2,18 @@
  * vim:ts=4 noexpandtab */
 
 #include "lib.h"
+#include "drivers/terminal.h"
 #define FOURKB 4096
 
-static int screen_x; // x coordiante of the cursor
-static int screen_y; // y coordiante of the cursor
 static char* video_mem = (char *)VIDEO;
+static int kbInt = 0;
+
+keyboardIntStart(){
+    kbInt = 1;
+}
+keyboardIntEnd(){
+    kbInt = 0;
+}
 
 void change_vram_address(uint32_t newAddr){
     video_mem = newAddr;
@@ -24,7 +31,11 @@ void verticalScroll(int lines){
     int i;
     for (i = 0; i < lines; i++){ // 2=ascii code+attribute byte
         memmove(video_mem, video_mem+NUM_COLS*2, NUM_COLS*(NUM_ROWS-1)*2); 
-        screen_y--;
+        if (kbInt){
+            terminals[current_terminal_displaying].screen_y--;
+        } else {
+            terminals[current_terminal_executing].screen_y--;
+        }
     }
     memset(video_mem+(NUM_COLS*(NUM_ROWS-1)*2), 0, NUM_COLS*2);
 }
@@ -34,14 +45,27 @@ void verticalScroll(int lines){
  * Return Value: none
  * Function: Clears video memory */
 void setCursor(int x, int y){
-    screen_x = x;
-    screen_y = y;
+    if (kbInt){
+        terminals[current_terminal_displaying].screen_x = x;
+        terminals[current_terminal_displaying].screen_y = y; 
+    } else {
+        terminals[current_terminal_executing].screen_x = x;
+        terminals[current_terminal_executing].screen_y = y; 
+    }
 }
 int getCursorX(){
-    return screen_x;
+    if (kbInt){
+        return terminals[current_terminal_displaying].screen_x;
+    } else {
+        return terminals[current_terminal_executing].screen_x;
+    }
 }
 int getCursorY(){
-    return screen_y;
+    if (kbInt){
+        return terminals[current_terminal_displaying].screen_y;
+    } else {
+        return terminals[current_terminal_executing].screen_y;
+    }
 }
 
 /* void clear(void);
@@ -203,14 +227,14 @@ int32_t puts(int8_t* s) {
  *  Function: Output a character to the console */
 void putc(uint8_t c) {
     if(c == '\n' || c == '\r') {
-        screen_y++;
-        screen_x = 0;
+        terminals[current_terminal_executing].screen_y++;
+        terminals[current_terminal_executing].screen_x = 0;
     } else {
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-        screen_x++;
-        screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
+        *(uint8_t *)(video_mem + ((NUM_COLS * terminals[current_terminal_executing].screen_y + terminals[current_terminal_executing].screen_x) << 1)) = c;
+        *(uint8_t *)(video_mem + ((NUM_COLS * terminals[current_terminal_executing].screen_y + terminals[current_terminal_executing].screen_x) << 1) + 1) = ATTRIB;
+        terminals[current_terminal_executing].screen_x++;
+        terminals[current_terminal_executing].screen_x %= NUM_COLS;
+        terminals[current_terminal_executing].screen_y = (terminals[current_terminal_executing].screen_y + (terminals[current_terminal_executing].screen_x / NUM_COLS)) % NUM_ROWS;
     }
 }
 
@@ -346,24 +370,46 @@ int32_t putsBetter(int8_t* s) {
  * Return Value: void
  *  Function: Output a character to the console */
 void putcBetter(uint8_t c) {
-    while (screen_y >= NUM_ROWS)
-        verticalScroll(1);
-    if(c == '\n' || c == '\r') {
-        screen_y++;
-        // if (screen_y == NUM_ROWS)
-        //     verticalScroll(1);
-        screen_x = 0;
+    if (kbInt){
+        while (terminals[current_terminal_displaying].screen_y >= NUM_ROWS)
+            verticalScroll(1);
+        if(c == '\n' || c == '\r') {
+            terminals[current_terminal_displaying].screen_y++;
+            // if (terminals[current_terminal_displaying].screen_y == NUM_ROWS)
+            //     verticalScroll(1);
+            terminals[current_terminal_displaying].screen_x = 0;
+        } else {
+            *(uint8_t *)(video_mem + ((NUM_COLS * terminals[current_terminal_displaying].screen_y + terminals[current_terminal_displaying].screen_x) << 1)) = c;
+            *(uint8_t *)(video_mem + ((NUM_COLS * terminals[current_terminal_displaying].screen_y + terminals[current_terminal_displaying].screen_x) << 1) + 1) = ATTRIB;
+            terminals[current_terminal_displaying].screen_x++; 
+            if (terminals[current_terminal_displaying].screen_x == NUM_COLS){
+                terminals[current_terminal_displaying].screen_y++;
+                terminals[current_terminal_displaying].screen_x = 0;
+                if (terminals[current_terminal_displaying].screen_y == NUM_ROWS)
+                    verticalScroll(1);
+            }
+        }
     } else {
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
-        *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
-        screen_x++; 
-        if (screen_x == NUM_COLS){
-            screen_y++;
-            screen_x = 0;
-            if (screen_y == NUM_ROWS)
-                verticalScroll(1);
+        while (terminals[current_terminal_executing].screen_y >= NUM_ROWS)
+            verticalScroll(1);
+        if(c == '\n' || c == '\r') {
+            terminals[current_terminal_executing].screen_y++;
+            // if (terminals[current_terminal_executing].screen_y == NUM_ROWS)
+            //     verticalScroll(1);
+            terminals[current_terminal_executing].screen_x = 0;
+        } else {
+            *(uint8_t *)(video_mem + ((NUM_COLS * terminals[current_terminal_executing].screen_y + terminals[current_terminal_executing].screen_x) << 1)) = c;
+            *(uint8_t *)(video_mem + ((NUM_COLS * terminals[current_terminal_executing].screen_y + terminals[current_terminal_executing].screen_x) << 1) + 1) = ATTRIB;
+            terminals[current_terminal_executing].screen_x++; 
+            if (terminals[current_terminal_executing].screen_x == NUM_COLS){
+                terminals[current_terminal_executing].screen_y++;
+                terminals[current_terminal_executing].screen_x = 0;
+                if (terminals[current_terminal_executing].screen_y == NUM_ROWS)
+                    verticalScroll(1);
+            }
         }
     }
+    
 }
 // END OF MY CODE
 

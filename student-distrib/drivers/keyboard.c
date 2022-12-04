@@ -174,6 +174,7 @@ int32_t gets(char * buffer, int nbytes){
  */
 void keyboard_handler(){
     cli();
+    keyboardIntStart();
     // disable_irq(PIT_IRQ);
     uint8_t input = inb(KB_DATAPORT);
     disable_irq(KB_IRQ);
@@ -247,6 +248,7 @@ void keyboard_handler(){
     send_eoi(KB_IRQ);
     enable_irq(KB_IRQ);
     // enable_irq(PIT_IRQ);
+    keyboardIntEnd();
     sti();
     
     asm volatile(" \n\

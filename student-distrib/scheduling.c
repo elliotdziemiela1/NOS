@@ -14,14 +14,14 @@
  * Function: Handles the context switching. Only called when there are three shells running in each terminal.
  * */
 void schedule_context_switch(){
+    //get currently executing process
     uint8_t old_pid = terminals[current_terminal_executing].active_process_pid;
     pcb_t * old_pcb = get_pcb(old_pid);
 
     // update current terminal executing
-    current_terminal_executing = (current_terminal_executing + 1) % 3;
-    // while (terminals[(current_terminal_executing + 1) % 3].active_process_pid == -1) // round robin
-    //     current_terminal_executing = (current_terminal_executing + 1) % 3;
+    current_terminal_executing = (current_terminal_executing + 1) % TOTAL_TERMINALS;
 
+    //get process to execute next
     uint8_t new_pid = terminals[current_terminal_executing].active_process_pid;
     pcb_t * new_pcb = get_pcb(new_pid);
     
@@ -36,11 +36,12 @@ void schedule_context_switch(){
 
     //saving the tss
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = EIGHT_MB - EIGHT_KB * (new_pid) - 4;
+    tss.esp0 = EIGHT_MB - EIGHT_KB * (new_pid) - 4; //we subtract 4 cause we don't want the top of the page
 
     // change virtual program page mapping to next program
     uint32_t physical_address = (2 + new_pid) * FOURMB; //2:you want to skip the first page which houses the kernel
     page_dir[MB_128_PAGE].fourmb.addr = physical_address / FOURKB;
+
     //flush tlb; takes place after change in paging structure
     asm volatile("\
     mov %cr3, %eax    ;\
@@ -48,7 +49,7 @@ void schedule_context_switch(){
     ");
 
 
-    /* Perform context switch, swap ESP/EBP with that of the registers */
+    /* Perform context switch, swap and save ESP/EBP with that of the registers */
     asm volatile(
                  "movl %%esp, %%eax;"
                  "movl %%ebp, %%ebx;"
@@ -65,12 +66,7 @@ void schedule_context_switch(){
                  :"a"(new_pcb->saved_process_esp), "b"(new_pcb->saved_process_ebp)    /* input */
                  );
 
-    // send_eoi(PIT_IRQ);
-    // enable_irq(PIT_IRQ); 
-    // asm volatile(
-    //     "leave;"
-    //     "ret;"
-    // );
+    
     return;
 }
 
@@ -81,25 +77,14 @@ void schedule_context_switch(){
  * */
 uint8_t displaying_terminal_switch(uint8_t newTerminalNum){ // 0,1, or 2
 
-    if(newTerminalNum < 0 || newTerminalNum > 2){
+    if(newTerminalNum < 0 || newTerminalNum > 2){ //invalid terminal number
         return -1;
     }
 
-    // if (current_terminal_executing == current_terminal_displaying){
-    //     change_vram_address(VIDEO);
-    // } else {
-    //     change_vram_address(terminals[current_terminal_executing].video_mem);
-    // }
+    // save current vram page, restore next vram page
     switch_vram(current_terminal_displaying, newTerminalNum);
-    terminals[current_terminal_displaying].screen_x = getCursorX(); // saves cursor x
-    terminals[current_terminal_displaying].screen_y = getCursorY(); // saves cursor y
-    setCursor(terminals[newTerminalNum].screen_x, terminals[newTerminalNum].screen_y);
 
-    // 
-    // CURRENTLY ONLY EXECUTES THE DISPLAYING TERMINAL
-    // current_terminal_executing = newTerminalNum; // UNCOMMENT TO SHOW TYPING IN OTHER TERMINALS
-    // 
-
+    // update displaying terminal number to next terminal 
     current_terminal_displaying = newTerminalNum;
 
     return 0;
