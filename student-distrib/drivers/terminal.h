@@ -14,6 +14,8 @@ typedef struct terminal_t {
 
     int8_t process_flag;
 
+    int32_t rtc_mod;
+
     int32_t screen_x;
     int32_t screen_y;
 

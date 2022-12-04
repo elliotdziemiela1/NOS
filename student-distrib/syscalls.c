@@ -482,7 +482,7 @@ int32_t close (int32_t fd){
 
 
     pcb_t* pcb = (pcb_t*) get_pcb(terminals[current_terminal_executing].active_process_pid);
-    if(!(pcb->file_array[fd].flags & OPEN)){
+    if(! (pcb->file_array[fd].flags & OPEN)){
         printfBetter("Can't close unopened \n");
         return -1;
     }
