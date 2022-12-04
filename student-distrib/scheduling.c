@@ -16,21 +16,21 @@
 void schedule_context_switch(){
     //get currently executing process
     uint8_t old_pid = terminals[current_terminal_executing].active_process_pid;
-    pcb_t * old_pcb = get_pcb(old_pid);
+    pcb_t * old_pcb = (pcb_t*)get_pcb(old_pid);
 
     // update current terminal executing
     current_terminal_executing = (current_terminal_executing + 1) % TOTAL_TERMINALS;
 
     //get process to execute next
     uint8_t new_pid = terminals[current_terminal_executing].active_process_pid;
-    pcb_t * new_pcb = get_pcb(new_pid);
+    pcb_t * new_pcb = (pcb_t*)get_pcb(new_pid);
     
     // change vram pointer in lib.c
     if (current_terminal_executing == current_terminal_displaying){
         change_vram_address(VIDEO);
         vidremap(VIDEO);
     } else {
-        change_vram_address(terminals[current_terminal_executing].video_mem);
+        change_vram_address((uint32_t)terminals[current_terminal_executing].video_mem);
         vidremap((uint32_t)(terminals[current_terminal_executing].video_mem));
     }
 
@@ -76,9 +76,6 @@ void schedule_context_switch(){
  * Function: Changes the video memory mapping to switch to the terminal that we want to switch to. Also saves the VRAM of the current_displaying_terminal to its respective video page
  * */
 uint8_t displaying_terminal_switch(uint8_t newTerminalNum){ // 0,1, or 2
-    if(newTerminalNum < 0 || newTerminalNum > 2){ //invalid terminal number
-        return -1;
-    }
 
     // save current vram page, restore next vram page
     switch_vram(current_terminal_displaying, newTerminalNum);
