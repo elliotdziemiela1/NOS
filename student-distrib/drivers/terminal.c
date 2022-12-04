@@ -1,11 +1,11 @@
 #include "../types.h"
 #include "terminal.h"
-#include "../lib.h"
 #include "keyboard.h"
+#include "../paging.h"
+
 
 static volatile char buf[BUFFER_SIZE]; 
 static int pos; // position in buffer to write next character (0 indexed)
-// static int opened; // flag for whether or not the terminal is currently opened.
 
 /* acceptNewCommand()
  * Inputs: none
@@ -14,16 +14,13 @@ static int pos; // position in buffer to write next character (0 indexed)
  * Function: moves cursor down and prints shell path to screen, then sets cursor 
  *           after shell path to accept input from user
  */
-static void acceptNewCommand(){ // THIS CODE NEEDS TO BE CHANGED
-    // char path[11] = {'s','o','m','e','w','h','e','r','e',':','\0'};
+static void acceptNewCommand(){
     int i;
     for (i = 0; i < BUFFER_SIZE-1; i++){
-        buf[i] = ' ';
+        buf[i] = ' '; // prepares for new command by wiping the buffer
     }
     buf[BUFFER_SIZE-1] = '\n'; // signifies end of buffer
     pos = 0;
-
-    // printfBetter(path);
 }
 
 /* terminal_open
@@ -35,13 +32,11 @@ static void acceptNewCommand(){ // THIS CODE NEEDS TO BE CHANGED
  */
 uint32_t terminal_open(){
     clear();
-    // opened = 1;
     return -1;
 }
 
 uint32_t terminal_close(){
     clear();
-    // opened = 0;
     return -1;
 }
 
@@ -51,16 +46,7 @@ uint32_t terminal_close(){
  * Function: writes the characters from buffer to the screen
  * */
 int32_t terminal_write(int32_t fd, const void* buf1, int32_t nbytes){
-    // if (!opened)
-    //     return -1;
-    // char * ptr = buf;
-    // while (ptr != (buf+BUFFER_SIZE)){
-    //     putcBetter(*ptr);
-    //     ptr++;
-    // }
-    int ret = printfBetter((int8_t *) buf1);
-    // if (ret)
-    //     putcBetter('\n');
+    int ret = printfBetter((int8_t *) buf1); // writes buffer to screen
     return ret;
 }
 
@@ -72,12 +58,34 @@ int32_t terminal_write(int32_t fd, const void* buf1, int32_t nbytes){
  * */
 int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes){
     acceptNewCommand();
-    // if (!opened) // if we have not yet opened the terminal, do nothing
-    //     return -1;
-    int32_t bytesRead = gets(buf,BUFFER_SIZE-1);
-    putcBetter('\n');
-    // printf("ali test 1");
+    int32_t bytesRead = gets(buf,BUFFER_SIZE-1); // reads all user arguments till user presses enter key
+    putcBetter('\n'); // moves to next line of screen
     return bytesRead;
+}
+
+//Scheduling Functions
+
+/* void initialize_terminals;
+ * Inputs: - None
+ * Return Value: None
+ * Function: Initializes three terminal structs to their default values
+ * */
+void initialize_terminals(){
+    int i;
+    int j;
+    for(i = 0; i < TOTAL_TERMINALS; i++){
+        terminals[i].active_process_pid = -1;
+        terminals[i].parent_process_pid = -1;
+        terminals[i].process_flag = 0;
+        terminals[i].screen_x = 0;
+        terminals[i].screen_y = 0;
+        terminals[i].reading = 0;
+        terminals[i].kb_buffer_position = 0;
+        terminals[i].rtc_mod = 1;
+
+        terminals[i].video_mem = (uint32_t *) (((VIDEO >> add_shift) + (i + 1)) << add_shift); //each terminal is mapped to its own 4 kb page
+    }   
+    
 }
 
 

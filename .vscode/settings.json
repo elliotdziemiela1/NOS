@@ -12,6 +12,8 @@
         "paging.h": "c",
         "ece391support.h": "c",
         "switch_to_user.h": "c",
-        "filesystem.h": "c"
+        "filesystem.h": "c",
+        "scheduling.h": "c",
+        "pit.h": "c"
     }
 }

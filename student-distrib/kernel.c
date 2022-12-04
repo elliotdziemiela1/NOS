@@ -16,6 +16,7 @@
 #include "filesystem.h"
 #include "syscalls.h"
 #include "../syscalls/ece391syscall.h"
+#include "./drivers/pit.h"
 
 #define RUN_TESTS
 
@@ -160,21 +161,33 @@ void entry(unsigned long magic, unsigned long addr) {
     rtc_init();
     keyboard_init();
 
+    current_terminal_displaying = 0; 
+    current_terminal_executing = 0;
+
+    initialize_terminals();
+
+    pit_init();
+
+
     /* Enable interrupts */
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
     printf("Enabling Interrupts\n");
     sti();
+
+    // weird paging test
     
 
 
 #ifdef RUN_TESTS
     /* Run tests */
-    launch_tests();
+    //launch_tests();
+    
 #endif
     /* Execute the first program ("shell") ... */
-
+    clear();
+    execute((const uint8_t*) "shell");
     /* Spin (nicely, so we don't chew up cycles) */
     asm volatile (".1: hlt; jmp .1;");
 }

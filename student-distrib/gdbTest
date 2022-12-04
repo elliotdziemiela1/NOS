@@ -1,3 +1,3 @@
-add-symbol-file ../syscalls/grep.exe 0x8048094
+add-symbol-file ../syscalls/syserr.exe 0x8048094
 target remote 10.0.2.2:1234
-c
+

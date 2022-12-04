@@ -7,8 +7,6 @@
 
 // the index to insert the next PDE/4MB page.
 
-
-
 /* init_paging
  * 
  * initializes page directory and video memory (page table)
@@ -55,6 +53,10 @@ void init_paging(){
     // set video memory
     uint32_t idx = VIDEO >> add_shift; // masks top 20 bits of addr
     video_mem[idx].present = 1; // marks as present
+    video_mem[idx+1].present = 1; // video page for terminal 1
+    video_mem[idx+2].present = 1; // video page for terminal 2
+    video_mem[idx+3].present = 1; // video page for terminal 3
+    
 
     // page directory setup
     for(i = 0; i < num_pde; i++){
@@ -85,10 +87,49 @@ void init_paging(){
     page_dir[1].fourmb.rw = 1; // allows writing as well
     page_dir[1].fourmb.ps = 1; // sets page size
 
+    page_dir[3].fourmb.addr = 3*(pte_size * num_pde) >> add_shift;// masks top 10 bits of addr
+    page_dir[3].fourmb.present = 1;// marks as present
+    page_dir[3].fourmb.rw = 1; // allows writing as well
+    page_dir[3].fourmb.ps = 1; // sets page size
+
+
     // set page dir
     loadPageDirectory(page_dir);
     enablePaging();
 }
+
+/* switch_vram()
+ * Description: saves displaying vram to page of old terminal, then copys the nondisplaying vram page
+ *  of the new terminal into the displaying vram.
+ * Inputs: idx - 1,2, or 3. The terminal # we want to map to vram
+ */
+uint32_t switch_vram(uint8_t oldIdx, uint8_t newIdx){
+    // terminal's vram map
+    uint32_t newIndex = (VIDEO >> add_shift) + newIdx+1; // +1 due to 0 indexed value
+    uint32_t oldIndex = (VIDEO >> add_shift) + oldIdx+1; // +1 due to 0 indexed value
+
+    // save vram to old terminal page
+    memcpy(video_mem[oldIndex].addr << add_shift, VIDEO, FOURKB);
+    // restore vram of new terminal page
+    memcpy(VIDEO, video_mem[newIndex].addr << add_shift, FOURKB);
+
+    // switch mapping
+    // video_mem[newIndex].addr = (VIDEO >> add_shift);
+    // video_mem[oldIndex].addr = (VIDEO >> add_shift) + oldIdx;
+    return 0;
+}
+
+// void remap_VRAM(uint32_t physical_address){
+//     //uint32_t pde = virtual_address / FOURMB;
+//     video_mem[0].addr = physical_address >> add_shift;
+//     video_mem[0].present = 1;
+
+//     //flush the TLB here 
+//     asm volatile("\
+//     mov %cr3, %eax    ;\
+//     mov %eax, %cr3    ;\
+//     ");
+// }
 
 uint32_t allocate_4MB_page(uint32_t page_directory_idx, uint32_t pid){
     page_dir[page_directory_idx].fourmb.addr = (kernel_PDE >> 22) + pid;

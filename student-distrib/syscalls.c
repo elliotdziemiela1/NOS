@@ -9,8 +9,7 @@
 
 #define JUNK 0
 #define MAX_PROCESSES 10 // arbitrary number of the maximum processes we'll allow
-#define EIGHT_MB 0x0800000
-#define EIGHT_KB 0x0002000
+
 
 #define EXE_HEADER_SIZE 28 // the number of bytes at the beginning of an executable that contain
 // magic number and entry point
@@ -21,17 +20,15 @@
 #define MAGIC_2 0x4c
 #define MAGIC_3 0x46
 #define PROG_IMG_VIRTUAL_ADDR 0x08048000 // 128MB:virtual address we need to map physical
-#define MAX_PIDS 3
-#define MB_4 0x400000
+#define MAX_PIDS 6
 
-#define MB_128_PAGE 32
 #define ELF_SIZE 4
 #define PROG_IMG_START_BYTE 24
 
 // addresses of program images to (first program at 8MB physical, second program at 12MB physical)
 
-int32_t current_pid = -1; // -1 means no current process
-int32_t parent_pid = -1; // -1 means no parent process
+// int32_t current_pid = -1; // -1 means no current process
+// int32_t parent_pid = -1; // -1 means no parent process
 
 uint32_t pid_array[MAX_PIDS] = { 0 }; // array of flags telling us which PIDS are availible
 uint32_t inode_array[MAX_PIDS]= { 0 }; // array of inodes of the executible files indexed in order
@@ -111,8 +108,8 @@ void init_fop(fops_t* fop, uint8_t num){
  *  stdin and stdout
  * */
 void init_pcb(pcb_t* pcb){
-    pcb -> pcb_id = current_pid;
-    pcb -> parent_id = parent_pid;
+    pcb -> pcb_id = terminals[current_terminal_executing].active_process_pid;
+    pcb -> parent_id = terminals[current_terminal_executing].parent_process_pid;
     register uint32_t  s_esp asm("esp");
     register uint32_t  s_ebp asm("ebp");
     pcb -> saved_esp = s_esp; // saves current esp
@@ -155,8 +152,10 @@ uint32_t get_pcb(uint8_t pid){
     return addr;
 }
 
+
+//CHANGE IN FILE SYSTEM BECAUSE IT IS USING THIS INSTEAD OF GET_PCB
 uint32_t get_current_pcb(){
-    uint32_t addr = EIGHT_MB - EIGHT_KB*(current_pid+1); // +1 since PCB starts at top of 8kB chunk
+    uint32_t addr = EIGHT_MB - EIGHT_KB*(terminals[current_terminal_executing].active_process_pid+1); // +1 since PCB starts at top of 8kB chunk
     return addr;
 }
 
@@ -167,25 +166,27 @@ uint32_t get_current_pcb(){
  *  resets ebp and esp to parent's, and changes current and parrent PIDs and corresponding arrays.
  * */
 int32_t halt (uint8_t status){
+    // printfBetter("halt called");
 
-    pcb_t* cur_pcb = (pcb_t*) get_pcb(current_pid);
+    pcb_t* cur_pcb = (pcb_t*) get_pcb(terminals[current_terminal_executing].active_process_pid);
     int32_t old_esp = cur_pcb->saved_esp;
     int32_t old_ebp = cur_pcb->saved_ebp;
 
-    pid_array[current_pid] = 0;
+    pid_array[terminals[current_terminal_executing].active_process_pid] = 0;
 
-    if (parent_pid == -1){ // if we have only 1 running process or none at all
-        current_pid = -1;
+    if (terminals[current_terminal_executing].parent_process_pid == -1){ // if we have only 1 running process or none at all
+        terminals[current_terminal_executing].active_process_pid = -1;
         execute((const uint8_t*)"shell"); // set flag to restart shell at end
+        return 0;
     }
 
     // change current and parent pid variables, and set current pid array value to 0
-    pcb_t* parent_pcb = (pcb_t*) get_pcb(parent_pid);
-    current_pid = parent_pid;
-    parent_pid = parent_pcb->parent_id;
+    pcb_t* parent_pcb = (pcb_t*) get_pcb(terminals[current_terminal_executing].parent_process_pid);
+    terminals[current_terminal_executing].active_process_pid = terminals[current_terminal_executing].parent_process_pid;
+    terminals[current_terminal_executing].parent_process_pid = parent_pcb->parent_id;
 
     //restore parent paging
-    uint32_t physical_address = (2 + current_pid) * FOURMB; //2:you want to skip the first page which houses the kernel
+    uint32_t physical_address = (2 + terminals[current_terminal_executing].active_process_pid) * FOURMB; //2:you want to skip the first page which houses the kernel
     page_dir[MB_128_PAGE].fourmb.addr = physical_address / FOURKB;
     //flush tlb; takes place after change in paging structure
     asm volatile("\
@@ -193,30 +194,31 @@ int32_t halt (uint8_t status){
     mov %eax, %cr3    ;\
     ");
     /* Load the file into physical memory */
-    inode_t * prog_inode_ptr = (inode_t *)(inode_start + inode_array[current_pid]); // somehow need to get parent inode
+    inode_t * prog_inode_ptr = (inode_t *)(inode_start + inode_array[terminals[current_terminal_executing].active_process_pid]); // somehow need to get parent inode
     uint8_t * img_addr = (uint8_t*) PROG_IMG_VIRTUAL_ADDR;
-    read_data(inode_array[current_pid], 0, img_addr, prog_inode_ptr -> file_size);
+    read_data(inode_array[terminals[current_terminal_executing].active_process_pid], 0, img_addr, prog_inode_ptr -> file_size);
     
-
     //close any relevant FDs
     int i, temp;
     for(i = 0; i<MAX_FILES; i++){
         temp = (int) cur_pcb->file_array[i].fops_func.close; // GDB not going into this
     }
 
-    read_data(inode_array[current_pid], 24, user_eip, ELF_SIZE); // changes eip to parent program
+    tss.esp0 = EIGHT_MB - EIGHT_KB*(terminals[current_terminal_executing].active_process_pid) - 4;
+
+    read_data(inode_array[terminals[current_terminal_executing].active_process_pid], 24, user_eip, ELF_SIZE); // changes eip to parent program
     // restore esp and ebp
     asm volatile ("                 \n\
             movl    %1, %%esp  #restore esp     \n\
             movl    %2, %%ebp  #restore ebp     \n\
-            # movl    $0, %%eax  #clear eax     \n\
-            # movb    %0, %%al   #set return value     \n\
-            # ret                     \n\
+            movl    $0, %%eax  #restore status     \n\
+            movb    %0, %%al   #set return value     \n\
+            leave                     \n\
+            ret                     \n\
             "
             :
             : "r"(status), "r"(old_esp), "r"(old_ebp)
     );
-    user_switch();
     return 0;
 }
 
@@ -230,6 +232,15 @@ int32_t halt (uint8_t status){
 int32_t execute (const uint8_t* command){
     // printfBetter("Reached exec \n");
     /* Initialize Variables */
+    while (current_terminal_displaying != current_terminal_executing){}
+    // if (current_terminal_executing == 0)
+    //     printfBetter("executing t0");
+    // if (current_terminal_executing == 1)
+    //     printfBetter("executing t1");
+    // if (current_terminal_executing == 2)
+    //     printfBetter("executing t2");
+    // printfBetter(" command:");
+    // printfBetter(command);
     dentry_t dentry;
     int inode;
     uint8_t data_buffer[ELF_SIZE] = { '\0' };
@@ -239,7 +250,7 @@ int32_t execute (const uint8_t* command){
     uint8_t filename[ARG_LEN] = { '\0' }; //store file name extracted from command parameter
 
     //there aren't any pids available
-    if(current_pid == MAX_PIDS - 1){
+    if(terminals[current_terminal_executing].active_process_pid == MAX_PIDS - 1){
         return -1;
     }
     //parse command and store args in args[]
@@ -256,21 +267,22 @@ int32_t execute (const uint8_t* command){
         return -1;
     }
 
-    parent_pid = current_pid;
+    terminals[current_terminal_executing].parent_process_pid = terminals[current_terminal_executing].active_process_pid;
     // printfBetter("Setting up paging \n");
     /* Set up paging */
     int i;
     for(i = 0; i < MAX_PIDS; i++){ //currently only 3 PIDs
         if(pid_array[i] == 0){
             pid_array[i] = 1;
-            current_pid = i;
+            terminals[current_terminal_executing].active_process_pid = i;
             break;
         }
     }
-    inode_array[current_pid] = inode;
+    inode_array[terminals[current_terminal_executing].active_process_pid] = inode;
+
 
     // printfBetter("setting physical addr \n");
-    physical_address = (2 + current_pid) * FOURMB; //2:you want to skip the first page which houses the kernel
+    physical_address = (2 + terminals[current_terminal_executing].active_process_pid) * FOURMB; //2:you want to skip the first page which houses the kernel
     page_dir[MB_128_PAGE].fourmb.addr = physical_address / FOURKB;
     page_dir[MB_128_PAGE].fourmb.present = 1; // marks as present
     page_dir[MB_128_PAGE].fourmb.rw = 1; // allows writing as well
@@ -302,10 +314,15 @@ int32_t execute (const uint8_t* command){
 
     // tss
     tss.ss0 = KERNEL_DS;
-    tss.esp0 = EIGHT_MB - EIGHT_KB*(current_pid+1) - 4; //we subtract 4 cause we don't want the top of the page
+    tss.esp0 = EIGHT_MB - EIGHT_KB*(terminals[current_terminal_executing].active_process_pid) - 4; //we subtract 4 cause we don't want the top of the page
 
-    pcb_t* pcb_ptr = (pcb_t*) get_pcb(current_pid);
+    pcb_t* pcb_ptr = (pcb_t*) get_pcb(terminals[current_terminal_executing].active_process_pid);
     init_pcb(pcb_ptr);
+
+    register uint32_t  s_esp asm("esp");
+    register uint32_t  s_ebp asm("ebp");
+    pcb_ptr -> saved_esp = s_esp; // saves current esp
+    pcb_ptr -> saved_ebp = s_ebp; // saves current ebp
 
     //store arg in pcb
     // strncpy((int8_t*)(pcb_ptr->args), (int8_t*)args, ARG_LEN);
@@ -358,7 +375,7 @@ int32_t write (int32_t fd, const void* buf, int32_t nbytes){
         printfBetter("Invalid fd \n");
         return -1;
     }
-    pcb_t* pcb = (pcb_t*) get_pcb(current_pid);
+    pcb_t* pcb = (pcb_t*) get_pcb(terminals[current_terminal_executing].active_process_pid);
 
     if(!(pcb->file_array[fd].flags & OPEN)){
         printfBetter("Can't close unopened \n");
@@ -394,7 +411,7 @@ int32_t open (const uint8_t* filename){
         return -1;
     }
     
-    pcb_t* pcb = (pcb_t*) get_pcb(current_pid);
+    pcb_t* pcb = (pcb_t*) get_pcb(terminals[current_terminal_executing].active_process_pid);
 
     // add file to fda
     int i;
@@ -461,9 +478,7 @@ int32_t close (int32_t fd){
         return -1;
     }
 
-
-
-    pcb_t* pcb = (pcb_t*) get_pcb(current_pid);
+    pcb_t* pcb = (pcb_t*) get_pcb(terminals[current_terminal_executing].active_process_pid);
     if(!(pcb->file_array[fd].flags & OPEN)){
         printfBetter("Can't close unopened \n");
         return -1;
@@ -490,7 +505,7 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes){
         return -1;
     }
     // printfBetter("Reached system read \n");
-    pcb_t* pcb = (pcb_t*) get_pcb(current_pid);
+    pcb_t* pcb = (pcb_t*) get_pcb(terminals[current_terminal_executing].active_process_pid);
     
     if(!(pcb->file_array[fd].flags & OPEN)) // not opened
         // printfBetter("finished open \n");
@@ -504,6 +519,7 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes){
             return 0;
         int32_t ret = pcb->file_array[fd].fops_func.read(fd, buf, nbytes);
         pcb->file_array[fd].file_position += ret;
+        // return -1;
         return ret;
     }
 }
@@ -534,7 +550,7 @@ int32_t dummy_close (int32_t fd, const void* buf, int32_t nbytes){
  * */
 int32_t getargs (uint8_t* buf, int32_t nbytes){
     // int i;
-    pcb_t* pcb_ptr = (pcb_t*) get_pcb(current_pid);
+    pcb_t* pcb_ptr = (pcb_t*) get_pcb(terminals[current_terminal_executing].active_process_pid);
 
     //check if buffer is null and if argument fits in buffer
     if(buf == NULL || (strlen((int8_t*)pcb_ptr->args) > nbytes)){
@@ -572,9 +588,15 @@ int32_t vidmap (uint8_t** screen_start){
 
 
     // set video memory map
-    video_mem_map[0].present = 1; // marks as present
-    video_mem_map[0].su = 1; // sets to user
-    video_mem_map[0].addr = VIDEO >> add_shift;
+    if (!video_mem_map[0].present){
+        video_mem_map[0].present = 1; // marks as present
+        video_mem_map[0].su = 1; // sets to user
+        if (current_terminal_executing == current_terminal_displaying){
+            video_mem_map[0].addr = VIDEO >> add_shift;
+        } else {
+            video_mem_map[0].addr = (unsigned)(terminals[current_terminal_executing].video_mem) >> add_shift;
+        }
+    }
 
     // init 4 kb
     page_dir[33].fourkb.addr = (int)(video_mem_map) >> add_shift; // masks top 10 bits of addr
@@ -591,6 +613,15 @@ int32_t vidmap (uint8_t** screen_start){
     *screen_start = (uint8_t *)((FOURMB*33)); 
 
     return 0;
+}
+
+/* set handler
+ * Inputs:- address= address to remap the vidmap page to
+ * Return Value: none
+ * Function: remaps the vidmap page to a different physical address
+ * */
+void vidremap(uint32_t address){
+    video_mem_map[0].addr = (int)address >> add_shift;
 }
 
 /* set handler

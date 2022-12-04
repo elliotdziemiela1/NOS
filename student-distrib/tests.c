@@ -6,6 +6,7 @@
 #include "filesystem.h"
 #include "syscalls.h"
 #include "paging.h"
+#include "./drivers/pit.h"
 
 #define PASS 1
 #define FAIL 0
@@ -360,11 +361,12 @@ int test_system_calls(){
 }
 
 
+
 /* Test suite entry point */
 void launch_tests(){
 	
-	TEST_OUTPUT("SYSCALLS", execute_test());
-	//TEST_OUTPUT("allocate memory test", test_system_calls);
+	TEST_OUTPUT("GARBAGE", execute_test());
+	//TEST_OUTPUT("allocate memory test", test_read_directory);
 	// launch your tests here
 
 	//rtc_1_test();
