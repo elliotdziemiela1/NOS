@@ -64,3 +64,25 @@
    Symptom: We were using the inode number of a dentry to read it by index
    Time to fix: 10 min
    Action done to fix problem: Use index instead of inode
+
+3.5:
+14. Problem: Boot loop when terminals switch
+    Symptom: We did not configure the remap paging properly
+    Time to Fix: 1 hour
+    Action done to fix problem: Changed the remap paging function
+15. Problem: PIT doesn't receive interrupts after executing terminals
+    Symptom: Forgot to send EOI to PIT
+    Time to Fix: 1 hour
+    Action done to fix problem: Changed the remap paging function
+16. Problem: Execute only called in most recent shell ran
+    Symptom: Did not flush TLB or save TSS when executing the first three shells in PIT handler
+    Time to Fix: 3 hours
+    Action done to fix problem: Added flush TLB and save tss to context switch
+17. Problem: Execute only called in most recent shell ran
+    Symptom: Did not flush TLB or save TSS when executing the first three shells in PIT handler
+    Time to Fix: 3 hours
+    Action done to fix problem: Added flush TLB and save tss to context switch
+18> Problem: Fish in second terminal is changing a lot slower than first terminal
+    Symptom: We did not implement the RTC virtualization
+    Time to Fix: 1 hour
+    Action done: We changed the terminal struct and added the appropriate functions to allow a different RTC frequency for each terminal
