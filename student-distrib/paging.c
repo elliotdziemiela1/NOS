@@ -87,6 +87,11 @@ void init_paging(){
     page_dir[1].fourmb.rw = 1; // allows writing as well
     page_dir[1].fourmb.ps = 1; // sets page size
 
+    page_dir[3].fourmb.addr = 3*(pte_size * num_pde) >> add_shift;// masks top 10 bits of addr
+    page_dir[3].fourmb.present = 1;// marks as present
+    page_dir[3].fourmb.rw = 1; // allows writing as well
+    page_dir[3].fourmb.ps = 1; // sets page size
+
 
     // set page dir
     loadPageDirectory(page_dir);

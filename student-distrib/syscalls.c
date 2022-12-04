@@ -232,6 +232,13 @@ int32_t halt (uint8_t status){
 int32_t execute (const uint8_t* command){
     // printfBetter("Reached exec \n");
     /* Initialize Variables */
+    while (current_terminal_displaying != current_terminal_executing){}
+    if (current_terminal_executing == 0)
+        printfBetter("executing t0");
+    if (current_terminal_executing == 1)
+        printfBetter("executing t1");
+    if (current_terminal_executing == 2)
+        printfBetter("executing t2");
     dentry_t dentry;
     int inode;
     uint8_t data_buffer[ELF_SIZE] = { '\0' };
@@ -512,7 +519,8 @@ int32_t read (int32_t fd, void* buf, int32_t nbytes){
             return 0;
         int32_t ret = pcb->file_array[fd].fops_func.read(fd, buf, nbytes);
         pcb->file_array[fd].file_position += ret;
-        return ret;
+        return -1;
+        // return ret;
     }
 }
 

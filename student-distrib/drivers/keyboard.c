@@ -5,6 +5,7 @@
 #include "keyboard.h"
 #include "../scheduling.h"
 #include "terminal.h"
+#include "pit.h"
 
 #define KB_DATAPORT 0x60
 #define BACKSPACE_CODE 0x0e  // scan codes
@@ -70,12 +71,12 @@ void keyboard_init(){
 int32_t gets(char * buffer, int nbytes){
     if (nbytes < 1) // shoulnt be called with 0 bytes
         return 0;
-    if (current_terminal_executing == 0){
-        buf1 = buffer;
-    } if (current_terminal_executing == 1){
-        buf2 = buffer;
-    } if (current_terminal_executing == 2){
-        buf3 = buffer;
+    if (current_terminal_displaying == 0){
+        buf1 = terminals[current_terminal_displaying].keyboard_buffer;
+    } if (current_terminal_displaying == 1){
+        buf2 = terminals[current_terminal_displaying].keyboard_buffer;
+    } if (current_terminal_displaying == 2){
+        buf3 = terminals[current_terminal_displaying].keyboard_buffer;
     }
     length = nbytes-1;
     terminals[current_terminal_executing].kb_buffer_position = 0;
@@ -91,7 +92,19 @@ int32_t gets(char * buffer, int nbytes){
     // and press enter. This loop will however end until we start doing executing terminal context switching.
     
     // disable_irq(KB_IRQ);
-    return terminals[current_terminal_executing].kb_buffer_position;
+    if(current_terminal_displaying == 0){
+        // memcpy(buffer, buf1, terminals[0].kb_buffer_position);
+        memcpy(buffer, buf1, 6);
+    }
+    if(current_terminal_displaying == 1){
+        // memcpy(buffer, buf2, terminals[1].kb_buffer_position);
+    }
+    if(current_terminal_displaying == 2){
+        // memcpy(buffer, buf3, terminals[2].kb_buffer_position);
+    }
+
+    // return terminals[current_terminal_executing].kb_buffer_position;
+    return 6;
 }
 
 static void addToBuffer(int index, char c){ // could be synchronization issues
@@ -120,6 +133,7 @@ static void addToBuffer(int index, char c){ // could be synchronization issues
  */
 void keyboard_handler(){
     cli();
+    disable_irq(PIT_IRQ);
     uint8_t input = inb(KB_DATAPORT);
     disable_irq(KB_IRQ);
     if (alt){
@@ -154,6 +168,21 @@ void keyboard_handler(){
         uint32_t savedVramAddress = get_vram_address();
         change_vram_address(0xb8000);
         if (input == ENTER_CODE){
+            printfBetter("\nbuf1:");
+            printfBetter(buf1);
+            printfBetter("\nbuf2:");
+            printfBetter(buf2);
+            printfBetter("\nbuf3:\n");
+            printfBetter(buf3);
+            if (current_terminal_executing == 0){
+                printfBetter("enter t0, buf: ");\
+            }
+            if (current_terminal_executing == 1){
+                printfBetter("enter t1, buf: ");\
+            }
+            if (current_terminal_executing == 2){
+                printfBetter("enter t2, buf: ");\
+            }
             terminals[current_terminal_displaying].reading = 0;
             addToBuffer(terminals[current_terminal_displaying].kb_buffer_position,'\0');
             // putcBetter('\n');
@@ -183,6 +212,7 @@ void keyboard_handler(){
 
     send_eoi(KB_IRQ);
     enable_irq(KB_IRQ);
+    enable_irq(PIT_IRQ);
     sti();
     
     asm volatile(" \n\

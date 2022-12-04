@@ -21,6 +21,8 @@ typedef struct terminal_t {
     uint8_t reading; // flag for keyboard handler to reference that says if this terminal is taking in
     // a string from the keyboard right now
 
+    char keyboard_buffer[BUFFER_SIZE];
+
     // volatile uint8_t keyboard_buffer[BUFFER_SIZE];
     // volatile uint8_t keyboard_buffer_idx;
     // volatile int keyboard_buffer_enable;
