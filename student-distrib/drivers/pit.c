@@ -16,7 +16,7 @@ uint8_t terminal_to_start;
  * Function: Initializes the pit by inserting its handler in the IDT table and setting its frequency
  * */
 void pit_init(){
-    terminal_to_start = 0;
+    terminal_to_start = 0; // need to initialize terminal 0 to shell
     insert_handler(PIT_IRQ, (int) &pit_handler, 0); //0 for dpl 0
 
     outb(PIT_MODE, PIT_REG_CMD);
@@ -32,42 +32,50 @@ void pit_init(){
  * Function: Handler which is called whenever a PIT interrupt occurs. Manages context switches for first three shell execution and any subsequent processes
  * */
 void pit_handler(){
-    // send_eoi(PIT_IRQ);
+
     cli();
     disable_irq(PIT_IRQ);
-    // pit_timer++;
-    // if(pit_timer < 15){
-    //     printfBetter("cte: %d test: %d \n", current_terminal_executing, pit_timer);
-    // }
+    
+    // set terminal 0 to shell
     if(terminal_to_start == 0){
+        // switching screen to terminal 0
         current_terminal_executing = terminal_to_start;
         displaying_terminal_switch(current_terminal_executing);
         terminal_to_start ++;
         clear();
         
+        // saving the stack segment
         tss.ss0 = KERNEL_DS;
-        tss.esp0 = EIGHT_MB - EIGHT_KB * (0) - 4;
+        tss.esp0 = EIGHT_MB - EIGHT_KB * (0) - 4; // -4 is the offset to get the end of the previous pcb
 
         // change virtual program page mapping to next program
         uint32_t physical_address = (2 + 0) * FOURMB; //2:you want to skip the first page which houses the kernel
         page_dir[MB_128_PAGE].fourmb.addr = physical_address / FOURKB;
+
         //flush tlb; takes place after change in paging structure
         asm volatile("\
         mov %cr3, %eax    ;\
         mov %eax, %cr3    ;\
         ");
 
+        // enable interrupts and send eoi
         sti();
         enable_irq(PIT_IRQ);
         send_eoi(PIT_IRQ);
         execute((const uint8_t *)"shell");
-    }else if(terminal_to_start < 3){
+    }   
+
+    // set terminal 1 and 2 to shell
+    else if(terminal_to_start < 3){
+        // switching screen to terminal 1/2
         current_terminal_executing = terminal_to_start;
         displaying_terminal_switch(current_terminal_executing);
 
+        // getting previous active process
         int8_t term_pid = terminals[current_terminal_executing - 1].active_process_pid;
-        pcb_t * term_pcb = get_pcb(term_pid);
+        pcb_t * term_pcb = (pcb_t *)get_pcb(term_pid);
 
+        // saving previous terminal (0/1) esp and ebp
         asm volatile(
                  "movl %%esp, %%eax;"
                  "movl %%ebp, %%ebx;"
@@ -75,13 +83,14 @@ void pit_handler(){
                  :                                          /* no input */
                  );
                  
-
+        // saving the stack segment
         tss.ss0 = KERNEL_DS;
-        tss.esp0 = EIGHT_MB - EIGHT_KB * (terminal_to_start) - 4;
+        tss.esp0 = EIGHT_MB - EIGHT_KB * (terminal_to_start) - 4; // -4 is the offset to get the end of the previous pcb
 
         // change virtual program page mapping to next program
         uint32_t physical_address = (2 + terminal_to_start) * FOURMB; //2:you want to skip the first page which houses the kernel
         page_dir[MB_128_PAGE].fourmb.addr = physical_address / FOURKB;
+
         //flush tlb; takes place after change in paging structure
         asm volatile("\
         mov %cr3, %eax    ;\
@@ -99,24 +108,15 @@ void pit_handler(){
     // disable_irq(PIT_IRQ);
 
     if(terminal_to_start == 3){
-        // printf("pre terminal display switch");
-        
         displaying_terminal_switch(0);
         terminal_to_start++;
-        // printf("post terminal display switch");
     }
 
-    // if(pit_timer % 10 == 0){
-	// 		printfBetter("counter val: %d", pit_timer);
-	// }
-    // if(current_terminal_executing == 0){
-    //     printf("XXXXXXXXXXXXXXXXXXX \n");
-    // }
+    // enable interrupts and send eoi
     sti();
     enable_irq(PIT_IRQ);
     send_eoi(PIT_IRQ);
     schedule_context_switch();
-    //enable_irq(PIT_IRQ);
     
     asm volatile(" \n\
     leave \n\

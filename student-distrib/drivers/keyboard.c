@@ -54,6 +54,7 @@ static int alt; // flag that says whether or not alt is pressed
  * */
 static void clearBuffer(int num){
     int i = 0;
+    // goes through buffer and sets everything to empty
     for (i = 0; i < BUFFER_SIZE; i++){
         if (num == 0)
             *(buf1+i) = '\0';
@@ -70,7 +71,6 @@ static void clearBuffer(int num){
  * Function: Adds a character to the terminal buffer at the index specified by index
  * */
 static void addToBuffer(int index, char c){ // could be synchronization issues
-    // buf1[index] = c; // SO FAR WE ONLY HAVE 1 SHELL EXECUTING THUS ONLY 1 BUFFER
     if (current_terminal_displaying == 0){
         buf1[index] = c;
     } if (current_terminal_displaying == 1){

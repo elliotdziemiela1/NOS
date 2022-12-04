@@ -1,3 +1,5 @@
+
+
 .GLOBL call_open                   ;\
 call_open:   PUSHL	%EBX          ;\
 	MOVL	$5,%EAX  ;\
@@ -30,4 +32,8 @@ my_do_call:   PUSHL	%EBX          ;\
 
 	stringi:
 	.string "rtc"
+
+
+
+
 	

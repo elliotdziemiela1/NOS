@@ -92,13 +92,13 @@ void init_fop(fops_t* fop, uint8_t num){
         return;
     }
 
-    if(num == 5){ // executible
-        fop->read = dummy_read;
-        fop->write = dummy_write;
-        fop->open = dummy_open;
-        fop->close = dummy_close;
-        return;
-    }
+    // if(num == 5){ // executible
+    //     fop->read = dummy_read;
+    //     fop->write = dummy_write;
+    //     fop->open = dummy_open;
+    //     fop->close = dummy_close;
+    //     return;
+    // }
 }
 
 /* void init_pcb;
@@ -172,7 +172,7 @@ int32_t halt (uint8_t status){
     int32_t old_esp = cur_pcb->saved_esp;
     int32_t old_ebp = cur_pcb->saved_ebp;
 
-    pid_array[terminals[current_terminal_executing].active_process_pid] = 0;
+    pid_array[(int)terminals[current_terminal_executing].active_process_pid] = 0;
 
     if (terminals[current_terminal_executing].parent_process_pid == -1){ // if we have only 1 running process or none at all
         terminals[current_terminal_executing].active_process_pid = -1;
@@ -194,9 +194,9 @@ int32_t halt (uint8_t status){
     mov %eax, %cr3    ;\
     ");
     /* Load the file into physical memory */
-    inode_t * prog_inode_ptr = (inode_t *)(inode_start + inode_array[terminals[current_terminal_executing].active_process_pid]); // somehow need to get parent inode
+    inode_t * prog_inode_ptr = (inode_t *)(inode_start + inode_array[(int)(terminals[current_terminal_executing].active_process_pid)]); // somehow need to get parent inode
     uint8_t * img_addr = (uint8_t*) PROG_IMG_VIRTUAL_ADDR;
-    read_data(inode_array[terminals[current_terminal_executing].active_process_pid], 0, img_addr, prog_inode_ptr -> file_size);
+    read_data(inode_array[(int)(terminals[current_terminal_executing].active_process_pid)], 0, img_addr, prog_inode_ptr -> file_size);
     
     //close any relevant FDs
     int i, temp;
@@ -206,7 +206,7 @@ int32_t halt (uint8_t status){
 
     tss.esp0 = EIGHT_MB - EIGHT_KB*(terminals[current_terminal_executing].active_process_pid) - 4;
 
-    read_data(inode_array[terminals[current_terminal_executing].active_process_pid], 24, user_eip, ELF_SIZE); // changes eip to parent program
+    read_data(inode_array[(int)(terminals[current_terminal_executing].active_process_pid)], 24, user_eip, ELF_SIZE); // changes eip to parent program
     // restore esp and ebp
     asm volatile ("                 \n\
             movl    %1, %%esp  #restore esp     \n\
@@ -278,7 +278,7 @@ int32_t execute (const uint8_t* command){
             break;
         }
     }
-    inode_array[terminals[current_terminal_executing].active_process_pid] = inode;
+    inode_array[(int)(terminals[current_terminal_executing].active_process_pid)] = inode;
 
 
     // printfBetter("setting physical addr \n");
@@ -402,7 +402,7 @@ int32_t open (const uint8_t* filename){
     dentry_t dentry;
 
     int checker = 0;
-    if(filename == "verylargetextwithverylongname.tx"){
+    if(filename == (uint8_t*)"verylargetextwithverylongname.tx"){
         checker = 1;
     }
 

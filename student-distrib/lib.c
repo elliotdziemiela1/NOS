@@ -8,20 +8,20 @@
 static char* video_mem = (char *)VIDEO;
 static int kbInt = 0;
 
-keyboardIntStart(){
+void keyboardIntStart(){
     kbInt = 1;
 }
-keyboardIntEnd(){
+void keyboardIntEnd(){
     kbInt = 0;
 }
 
 void change_vram_address(uint32_t newAddr){
-    video_mem = newAddr;
+    video_mem = (char*)newAddr;
     // video_mem = 0xb8000;
 }
 
 uint32_t get_vram_address(){
-    return video_mem;
+    return (uint32_t)video_mem;
 }
 /* void verticalScroll(int lines)
  * Inputs: lines - the number of lines to scroll vram up

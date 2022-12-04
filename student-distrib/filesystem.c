@@ -31,7 +31,6 @@ void initialize_filesystem(const uint32_t file_system_start_address){
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry){
     uint32_t i;
     uint32_t num_dir = boot_block -> num_directories;
-    uint32_t success_value;
 
     //check edge case of the file name that's greater than 32 characters
     if(fname[0] == (uint8_t) 'v'){
