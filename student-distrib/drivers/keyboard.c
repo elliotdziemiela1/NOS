@@ -67,7 +67,7 @@ static void clearBuffer(int num){
 /* static void addToBuffer;
  * Inputs: - int index: place in buffer we want to add a character, char c: character that we want to add
  * Return Value: None
- * Function: Adds a character to the corresponding buffer
+ * Function: Adds a character to the terminal buffer at the index specified by index
  * */
 static void addToBuffer(int index, char c){ // could be synchronization issues
     // buf1[index] = c; // SO FAR WE ONLY HAVE 1 SHELL EXECUTING THUS ONLY 1 BUFFER
