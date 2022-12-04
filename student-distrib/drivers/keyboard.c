@@ -116,20 +116,30 @@ int32_t gets(char * buffer, int nbytes){
     // handler, setting reading to false. If we call one instance of this function in one terminal, then switch to another 
     // executing terminal, the while loop wont end. It only ends when we are displaying the terminal that called gets
     // and press enter. This loop will however end until we start doing executing terminal context switching.
-    
+
     // disable_irq(KB_IRQ);
     if(current_terminal_displaying == 0){
         memcpy(buffer, buf1, terminals[0].kb_buffer_position);
         clearBuffer(0);
+        printfBetter("displaying 0\n");
     }
     if(current_terminal_displaying == 1){
         memcpy(buffer, buf2, terminals[1].kb_buffer_position);
         clearBuffer(1);
+        printfBetter("displaying 1\n");
     }
     if(current_terminal_displaying == 2){
         memcpy(buffer, buf3, terminals[2].kb_buffer_position);
         clearBuffer(2);
+        printfBetter("displaying 2\n");
     }
+    printfBetter("\nbuf1:");
+    printfBetter(buf1);
+    printfBetter("\nbuf2:");
+    printfBetter(buf2);
+    printfBetter("\nbuf3:");
+    printfBetter(buf3);
+    printfBetter("\n");
 
 
     return terminals[current_terminal_executing].kb_buffer_position;
@@ -153,7 +163,7 @@ int32_t gets(char * buffer, int nbytes){
  */
 void keyboard_handler(){
     cli();
-    disable_irq(PIT_IRQ);
+    // disable_irq(PIT_IRQ);
     uint8_t input = inb(KB_DATAPORT);
     disable_irq(KB_IRQ);
     if (alt){
@@ -188,13 +198,6 @@ void keyboard_handler(){
         uint32_t savedVramAddress = get_vram_address();
         change_vram_address(0xb8000);
         if (input == ENTER_CODE){
-            printfBetter("\nbuf1:");
-            printfBetter(buf1);
-            printfBetter("\nbuf2:");
-            printfBetter(buf2);
-            printfBetter("\nbuf3:");
-            printfBetter(buf3);
-            printfBetter("\n");
             // if (current_terminal_executing == 0){
             //     printfBetter("enter t0, buf: ");\
             // }
@@ -233,7 +236,7 @@ void keyboard_handler(){
 
     send_eoi(KB_IRQ);
     enable_irq(KB_IRQ);
-    enable_irq(PIT_IRQ);
+    // enable_irq(PIT_IRQ);
     sti();
     
     asm volatile(" \n\

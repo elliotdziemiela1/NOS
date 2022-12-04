@@ -5,10 +5,16 @@
 #include "rtc.h"
 #include "../scheduling.h"
 #include "../syscalls.h"
+#include "../paging.h"
 
 volatile uint32_t pit_timer = 0;
 uint8_t terminal_to_start;
 
+/* void pit_init;
+ * Inputs: - None
+ * Return Value: None
+ * Function: Initializes the pit by inserting its handler in the IDT table and setting its frequency
+ * */
 void pit_init(){
     terminal_to_start = 0;
     insert_handler(PIT_IRQ, (int) &pit_handler, 0); //0 for dpl 0
@@ -20,6 +26,11 @@ void pit_init(){
     enable_irq(PIT_IRQ);
 }
 
+/* void pit_handler;
+ * Inputs: - None
+ * Return Value: None
+ * Function: Handler which is called whenever a PIT interrupt occurs. 
+ * */
 void pit_handler(){
     // send_eoi(PIT_IRQ);
     cli();
@@ -33,6 +44,19 @@ void pit_handler(){
         displaying_terminal_switch(current_terminal_executing);
         terminal_to_start ++;
         clear();
+        
+        tss.ss0 = KERNEL_DS;
+        tss.esp0 = EIGHT_MB - EIGHT_KB * (0) - 4;
+
+        // change virtual program page mapping to next program
+        uint32_t physical_address = (2 + 0) * FOURMB; //2:you want to skip the first page which houses the kernel
+        page_dir[MB_128_PAGE].fourmb.addr = physical_address / FOURKB;
+        //flush tlb; takes place after change in paging structure
+        asm volatile("\
+        mov %cr3, %eax    ;\
+        mov %eax, %cr3    ;\
+        ");
+
         sti();
         enable_irq(PIT_IRQ);
         send_eoi(PIT_IRQ);
@@ -51,16 +75,32 @@ void pit_handler(){
                  :                                          /* no input */
                  );
                  
+
+        tss.ss0 = KERNEL_DS;
+        tss.esp0 = EIGHT_MB - EIGHT_KB * (terminal_to_start) - 4;
+
+        // change virtual program page mapping to next program
+        uint32_t physical_address = (2 + terminal_to_start) * FOURMB; //2:you want to skip the first page which houses the kernel
+        page_dir[MB_128_PAGE].fourmb.addr = physical_address / FOURKB;
+        //flush tlb; takes place after change in paging structure
+        asm volatile("\
+        mov %cr3, %eax    ;\
+        mov %eax, %cr3    ;\
+        ");
+
         terminal_to_start ++;
+
         sti();
         enable_irq(PIT_IRQ);
         send_eoi(PIT_IRQ);
+        
         execute((const uint8_t *)"shell");
     }
-    disable_irq(PIT_IRQ);
+    // disable_irq(PIT_IRQ);
 
     if(terminal_to_start == 3){
         // printf("pre terminal display switch");
+        
         displaying_terminal_switch(0);
         terminal_to_start++;
         // printf("post terminal display switch");

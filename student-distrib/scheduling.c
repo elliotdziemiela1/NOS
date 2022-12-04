@@ -33,6 +33,11 @@ void schedule_context_switch(){
     // change virtual program page mapping to next program
     uint32_t physical_address = (2 + new_pid) * FOURMB; //2:you want to skip the first page which houses the kernel
     page_dir[MB_128_PAGE].fourmb.addr = physical_address / FOURKB;
+    //flush tlb; takes place after change in paging structure
+    asm volatile("\
+    mov %cr3, %eax    ;\
+    mov %eax, %cr3    ;\
+    ");
 
     //printf("IIIIIIIIIIIIIIIIIII \n");
     //setCursor(terminals[current_terminal_executing].screen_x, terminals[current_terminal_executing].screen_y);
@@ -63,7 +68,22 @@ void schedule_context_switch(){
     return;
 }
 
+/* uint8_t displaying terminal_switch;
+ * Inputs: - uint8_t newTerminalNum - the index of the terminal that we want to switch into
+ * Return Value: None
+ * Function: Changes the video memory mapping to switch to the terminal that we want to switch to. Also saves the VRAM of the current_displaying_terminal to its respective video page
+ * */
 uint8_t displaying_terminal_switch(uint8_t newTerminalNum){ // 0,1, or 2
+
+    if(newTerminalNum < 0 || newTerminalNum > 2){
+        return -1;
+    }
+
+    // if (current_terminal_executing == current_terminal_displaying){
+    //     change_vram_address(VIDEO);
+    // } else {
+    //     change_vram_address(terminals[current_terminal_executing].video_mem);
+    // }
     switch_vram(current_terminal_displaying, newTerminalNum);
     terminals[current_terminal_displaying].screen_x = getCursorX(); // saves cursor x
     terminals[current_terminal_displaying].screen_y = getCursorY(); // saves cursor y

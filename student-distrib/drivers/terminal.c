@@ -70,6 +70,12 @@ int32_t terminal_read(int32_t fd, void* buf, int32_t nbytes){
 }
 
 //Scheduling Functions
+
+/* void initialize_terminals;
+ * Inputs: - None
+ * Return Value: None
+ * Function: Initializes three terminal structs to their default values
+ * */
 void initialize_terminals(){
     int i;
     int j;
